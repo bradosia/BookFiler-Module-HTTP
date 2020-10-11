@@ -6,11 +6,8 @@
  * @brief HTTP module for BookFiler™ applications.
  */
 
-#ifndef BOOKFILER_MODULE_HTTP_CURL_H
-#define BOOKFILER_MODULE_HTTP_CURL_H
-
-// config
-#include "config.hpp"
+#ifndef BOOKFILER_MODULE_HTTP_HTTP_UTIL_H
+#define BOOKFILER_MODULE_HTTP_HTTP_UTIL_H
 
 // C++17
 //#include <filesystem>
@@ -33,35 +30,32 @@
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
 
-/*
- * CURL 7.68.0
- * License: MIT/X inspired
- */
-#define CURL_STATICLIB
-#include <brotli/decode.h>
-#include <curl/curl.h>
-
 // Local Project
 #include <BookFiler-Module-HTTP-Curl/Interface.hpp>
 
 /*
- * bookfiler - Curl
+ * bookfiler - HTTP
  */
 namespace bookfiler {
-namespace curl {
+namespace HTTP {
 
-class InitImpl : public Init {
+class UrlImpl : public Url {
+private:
+  std::string base;
+  std::shared_ptr<std::unordered_map<std::string, std::string>> fieldsMapPtr;
+
 public:
-  InitImpl();
-  ~InitImpl();
+  UrlImpl();
+  ~UrlImpl();
+  int setBase(std::string);
+  int setFields(std::shared_ptr<std::unordered_map<std::string, std::string>>);
+  int setFields(std::shared_ptr<rapidjson::Document>);
+  std::string getURL();
+  std::string getBase();
+  std::string getFieldsStr();
 };
 
-/* Writes data from HTTP request into a string buffer
- * @param ptr data address
- */
-size_t writefunc(void *ptr, size_t size, size_t nmemb, std::string *s);
-
-} // namespace MySQL
+} // namespace HTTP
 } // namespace bookfiler
 
 #endif

@@ -15,7 +15,10 @@
 namespace bookfiler {
 namespace HTTP {
 
-ConnectionImpl::ConnectionImpl(){};
+ConnectionImpl::ConnectionImpl() {
+  urlPtr = std::make_shared<UrlImpl>();
+  method = "GET";
+};
 ConnectionImpl::~ConnectionImpl(){};
 
 int ConnectionImpl::setSettingsDoc(
@@ -25,39 +28,102 @@ int ConnectionImpl::setSettingsDoc(
 }
 
 int ConnectionImpl::setURL(std::string url_) {
-  url = url_;
+  urlPtr->setBase(url_);
   return 0;
 }
+int ConnectionImpl::setFields(
+    std::shared_ptr<std::unordered_map<std::string, std::string>>
+        fieldsMapPtr) {
+  urlPtr->setFields(fieldsMapPtr);
+  return 0;
+}
+
+int ConnectionImpl::setHeaders(
+    std::shared_ptr<std::unordered_map<std::string, std::string>>
+        headersMapPtr_) {
+  headersMapPtr = headersMapPtr_;
+  return 0;
+}
+
+int ConnectionImpl::setMethod(std::string method_) {
+  method = method_;
+  return 0;
+}
+
 int ConnectionImpl::exec() {
-  CURL *curl;
+  CURL *curlHandle;
   CURLcode res;
-  std::string bufferString;
+  std::string bufferString, CaInfoPath, fieldsStr;
+  bool skipPeerVerification, skipHostnameVerification;
+  skipPeerVerification = skipHostnameVerification = false;
+
+  /* Get settings from JSON document */
+  if (!settingsDoc->IsObject()) {
+    std::cout << moduleCode
+              << "::ConnectionImpl::exec ERROR:\nSettings document invalid"
+              << std::endl;
+    return -1;
+  }
+  char memberName01[] = "CaInfoPath";
+  if (settingsDoc->HasMember(memberName01) &&
+      (*settingsDoc)[memberName01].IsString()) {
+    CaInfoPath = (*settingsDoc)[memberName01].GetString();
+  }
+  char memberName02[] = "skipPeerVerification";
+  if (settingsDoc->HasMember(memberName02) &&
+      (*settingsDoc)[memberName02].IsBool()) {
+    skipPeerVerification = (*settingsDoc)[memberName02].GetBool();
+  }
+  char memberName03[] = "skipHostnameVerification";
+  if (settingsDoc->HasMember(memberName03) &&
+      (*settingsDoc)[memberName03].IsBool()) {
+    skipHostnameVerification = (*settingsDoc)[memberName03].GetBool();
+  }
 
   responseJSON_Doc = std::make_shared<rapidjson::Document>();
+  fieldsStr = urlPtr->getFieldsStr();
 
-  printf("HTTPS_GET_JSON called on: %s\n", url.c_str());
+  std::cout << moduleCode
+            << "::ConnectionImpl::open Connection Settings:\nURL Base: "
+            << urlPtr->getBase() << "\nURL Field String: " << fieldsStr
+            << "\nHTTP Method: " << method << "\nCaInfoPath: " << CaInfoPath
+            << "\nskipPeerVerification: " << skipPeerVerification
+            << "\nskipHostnameVerification: " << skipHostnameVerification
+            << std::endl;
 
-  curl = curl_easy_init();
-  if (!curl) {
+  curlHandle = curl_easy_init();
+  if (!curlHandle) {
     std::cout << "curl_easy_init ERROR" << std::endl;
     jsonReceivedSignal(responseJSON_Doc);
     return -1;
   }
 
-  curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-  // curl_easy_setopt(curl, CURLOPT_CAINFO,
-  // "/etc/ssl/certs/ca-certificates.crt");
+  if (method == "POST") {
+    std::cout << moduleCode << "::ConnectionImpl::open HTTP POST\n";
+    curl_easy_setopt(curlHandle, CURLOPT_URL, urlPtr->getBase().c_str());
+    curl_easy_setopt(curlHandle, CURLOPT_POSTFIELDS, fieldsStr.c_str());
+  } else {
+    curl_easy_setopt(curlHandle, CURLOPT_URL, urlPtr->getURL().c_str());
+  }
+  curl_easy_setopt(curlHandle, CURLOPT_CAINFO, CaInfoPath.c_str());
 
-  /* Disable SSL/TLS verification
-   * TODO: Write the SSL Certificate Manager
-   */
-  curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+  /* handle headers */
+  if (headersMapPtr && !headersMapPtr->empty()) {
+    struct curl_slist *chunk = NULL;
+    for (auto headerIt = headersMapPtr->begin();
+         headerIt != headersMapPtr->end(); ++headerIt) {
+      std::string headerLine = "";
+      headerLine.append(headerIt->first).append("").append(headerIt->second);
+      chunk = curl_slist_append(chunk, headerLine.c_str());
+    }
+    curl_easy_setopt(curlHandle, CURLOPT_HTTPHEADER, chunk);
+  }
 
   /*
-   * TODO: Write the SSL Certificate Manager
+   * TODO: Write a SSL Certificate Manager
    */
   // getCertificates(global);
-#if CURL_SKIP_PEER_VERIFICATION
+
   /*
    * If you want to connect to a site who isn't using a certificate that is
    * signed by one of the certs in the CA bundle you have, you can skip the
@@ -68,24 +134,30 @@ int ConnectionImpl::exec() {
    * default bundle, then the CURLOPT_CAPATH option might come handy for
    * you.
    */
-  curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-#endif
+  if (skipPeerVerification) {
+    curl_easy_setopt(curlHandle, CURLOPT_SSL_VERIFYPEER, 0L);
+  }
 
-#if CURL_SKIP_HOSTNAME_VERIFICATION
   /*
    * If the site you're connecting to uses a different host name that what
    * they have mentioned in their server certificate's commonName (or
    * subjectAltName) fields, libcurl will refuse to connect. You can skip
    * this check, but this will make the connection less secure.
    */
-  curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-#endif
+  if (skipHostnameVerification) {
+    curl_easy_setopt(curlHandle, CURLOPT_SSL_VERIFYHOST, 0L);
+  }
 
   /* setup callbacks */
-  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, bookfiler::curl::writefunc);
-  curl_easy_setopt(curl, CURLOPT_WRITEDATA, &bufferString);
+  curl_easy_setopt(curlHandle, CURLOPT_WRITEFUNCTION,
+                   bookfiler::curl::writefunc);
+  curl_easy_setopt(curlHandle, CURLOPT_WRITEDATA, &bufferString);
   /* Perform the request, res will get the return code */
-  res = curl_easy_perform(curl);
+  res = curl_easy_perform(curlHandle);
+
+  // Signal data is received
+  dataReceivedSignal(bufferString);
+
   responseJSON_Doc->Parse(bufferString.c_str());
 
   /* Check for errors */
@@ -95,6 +167,7 @@ int ConnectionImpl::exec() {
     return -1;
   }
 
+  // Signal JSON received
   jsonReceivedSignal(responseJSON_Doc);
 
 #if HTTPS_GET_JSON_DEBUG
@@ -102,42 +175,8 @@ int ConnectionImpl::exec() {
 #endif
 
   /* always cleanup */
-  curl_easy_cleanup(curl);
+  curl_easy_cleanup(curlHandle);
   return 0;
-}
-
-void printJSON_value(const rapidjson::Value &a, unsigned int depth) {
-  if (a.IsArray()) {
-    rapidjson::SizeType n =
-        a.Size(); // rapidjson uses SizeType instead of size_t.
-    for (rapidjson::SizeType i = 0; i < n; i++) {
-      if (a[i].IsObject()) {
-        rapidjson::Value::ConstMemberIterator itr = a[i].MemberBegin();
-        printJSON_iterator(itr, ++depth);
-      } else if (a[i].IsArray()) {
-        const rapidjson::Value &aa = a[i];
-        printJSON_value(aa, ++depth);
-      }
-    }
-  }
-}
-
-void printJSON_iterator(rapidjson::Value::ConstMemberIterator &itr,
-                        unsigned int depth) {
-  static const char *kTypeNames[] = {"Null",  "False",  "True",  "Object",
-                                     "Array", "String", "Number"};
-  printf("Type of member %s is %s\n", itr->name.GetString(),
-         kTypeNames[itr->value.GetType()]);
-  if (itr->value.GetType() == 3) {
-    const rapidjson::Value &a = itr->value;
-    for (rapidjson::Value::ConstMemberIterator itr2 = a.MemberBegin();
-         itr2 != a.MemberEnd(); ++itr2) {
-      printJSON_iterator(itr2, ++depth);
-    }
-  } else if (itr->value.GetType() == 4) {
-    const rapidjson::Value &a = itr->value;
-    printJSON_value(a, ++depth);
-  }
 }
 
 } // namespace HTTP

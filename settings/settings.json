@@ -1,11 +1,11 @@
 {
-  "MySQL_accounts" : {
-    "host" : "localhost",
-    "port": 3305,
-    "username": "root",
-    "password": "testpass123"
+  "HTTP_accounts" : {
+    "username": "admin",
+    "password": "password"
   },
-  "MySQL_settings" : {
-    "pluginDir" : "C:/msys64/mingw64/lib/mariadb/plugin"
+  "HTTP_settings" : {
+    "CaInfoPath" : "resources/curl-ca-bundle.crt",
+    "skipPeerVerification" : false,
+    "skipHostnameVerification" : false
   }
 }

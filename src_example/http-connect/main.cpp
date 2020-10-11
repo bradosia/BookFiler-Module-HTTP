@@ -103,13 +103,14 @@ int allModulesLoaded() {
       mySQL_Module->newConnection();
   rc = HTTP_Connection->setURL(
       "http://data.nba.net/prod/v1/20170201/0021600732_boxscore.json");
-  if (rc < 0) {
-    std::cout << "database could not be opened\n";
-    return 0;
-  }
   HTTP_Connection->jsonReceivedSignal.connect(
       std::bind(&jsonReceived, std::placeholders::_1));
-  HTTP_Connection->exec();
+  HTTP_Connection->setMethod("GET");
+  rc = HTTP_Connection->exec();
+  if (rc < 0) {
+    std::cout << "Could not access webpage by HTTP\n";
+    return -1;
+  }
 
   return 0;
 }
@@ -118,7 +119,7 @@ int jsonReceived(std::shared_ptr<rapidjson::Document> jsonDoc) {
   rapidjson::StringBuffer buffer;
   rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
   jsonDoc->Accept(writer);
-  std::cout << "bookfiler::MySQL::HTTPS_GET_JSON:\n"
+  std::cout << "jsonReceived:\n"
             << buffer.GetString() << std::endl;
   return 0;
 }

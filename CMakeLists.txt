@@ -4,6 +4,7 @@ set(PROJECT_NAME BookFiler-Module-HTTP-Curl)
 project(${PROJECT_NAME} VERSION 1.0.0 LANGUAGES CXX)
 set(RELEASE_DIR "${CMAKE_BINARY_DIR}/${PROJECT_NAME}/")
 set(INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${RELEASE_DIR})
 
 option(BUILD_SHARED_LIBS "Build shared library" ON)
@@ -31,6 +32,8 @@ set(SOURCES
   src/Module.cpp
   src/core/Curl.cpp
   src/core/httpCurl.cpp
+  src/core/httpUtil.cpp
+  src/core/json.cpp
 )
 
 set(HEADERS
@@ -38,6 +41,8 @@ set(HEADERS
   src/core/config.hpp
   src/core/Curl.hpp
   src/core/httpCurl.hpp
+  src/core/httpUtil.hpp
+  src/core/json.hpp
 
   include/BookFiler-Module-HTTP-Curl/Interface.hpp
 )
@@ -135,6 +140,7 @@ endif()
 
 # TESTS
 add_subdirectory(src_example/http-connect)
+add_subdirectory(src_example/oauth2-google)
 
 # Post build
 if(BUILD_SHARED_LIBS)

@@ -32,15 +32,15 @@ int ModuleExport::registerSettings(
         std::string, std::function<void(std::shared_ptr<rapidjson::Document>)>>>
         moduleCallbackMap) {
   moduleRequest->SetObject();
-  moduleRequest->AddMember("MySQL_accounts", "MySQL_accountsCB",
+  moduleRequest->AddMember("HTTP_accounts", "HTTP_accountsCB",
                            moduleRequest->GetAllocator());
   moduleCallbackMap->insert(
-      {"MySQL_accountsCB",
+      {"HTTP_accountsCB",
        std::bind(&ModuleExport::setAccounts, this, std::placeholders::_1)});
-  moduleRequest->AddMember("MySQL_settings", "MySQL_settingsCB",
+  moduleRequest->AddMember("HTTP_settings", "HTTP_settingsCB",
                            moduleRequest->GetAllocator());
   moduleCallbackMap->insert(
-      {"MySQL_settingsCB",
+      {"HTTP_settingsCB",
        std::bind(&ModuleExport::setSettings, this, std::placeholders::_1)});
   return 0;
 }
@@ -73,8 +73,13 @@ std::shared_ptr<Connection> ModuleExport::newConnection() {
   std::shared_ptr<ConnectionImpl> connectionPtr =
       std::make_shared<ConnectionImpl>();
   connectionPtr->setSettingsDoc(settingsDoc);
-  //connectionPtr->setAccountsDoc(accountsDoc);
+  // connectionPtr->setAccountsDoc(accountsDoc);
   return std::dynamic_pointer_cast<Connection>(connectionPtr);
+}
+
+std::shared_ptr<Url> ModuleExport::newUrl() {
+  std::shared_ptr<UrlImpl> urlPtr = std::make_shared<UrlImpl>();
+  return std::dynamic_pointer_cast<Url>(urlPtr);
 }
 
 } // namespace HTTP

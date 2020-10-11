@@ -39,6 +39,7 @@
 
 // Local Project
 #include "core/httpCurl.hpp"
+#include "core/json.hpp"
 #include <BookFiler-Module-HTTP-Curl/Interface.hpp>
 
 /*
@@ -77,6 +78,7 @@ public:
   int setAccounts(std::shared_ptr<rapidjson::Value>);
   int setSettings(std::shared_ptr<rapidjson::Value>);
   std::shared_ptr<Connection> newConnection();
+  std::shared_ptr<Url> newUrl();
 };
 
 // Exporting `my_namespace::module` variable with alias name `module`
@@ -84,7 +86,7 @@ public:
 extern "C" BOOST_SYMBOL_EXPORT ModuleExport mySQLModule;
 ModuleExport mySQLModule;
 
-} // namespace MySQL
+} // namespace HTTP
 } // namespace bookfiler
 
 #endif

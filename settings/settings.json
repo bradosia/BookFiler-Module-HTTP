@@ -1,0 +1,11 @@
+{
+  "MySQL_accounts" : {
+    "host" : "localhost",
+    "port": 3305,
+    "username": "root",
+    "password": "testpass123"
+  },
+  "MySQL_settings" : {
+    "pluginDir" : "C:/msys64/mingw64/lib/mariadb/plugin"
+  }
+}

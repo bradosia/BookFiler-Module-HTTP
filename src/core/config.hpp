@@ -12,6 +12,7 @@
 #define HTTPS_GET_JSON_DEBUG 0
 #define HTTPS_GET_JSON_ENABLE 1
 #define HTTPS_CURL_ENABLE 1
+#define RSA_KEY_LENGTH 2048
 
 #include <string>
 

@@ -32,6 +32,12 @@
 
 int loadModules();
 int moduleLoaded(std::shared_ptr<bookfiler::HTTP::ModuleInterface>);
+int routeSlot(
+    std::shared_ptr<rapidjson::Document>,
+    std::shared_ptr<
+        boost::beast::http::request<boost::beast::http::string_body>>,
+    std::shared_ptr<
+        boost::beast::http::response<boost::beast::http::string_body>>);
 int allModulesLoaded();
 int jsonReceived(std::shared_ptr<rapidjson::Document>);
 int apiJsonReceived(std::shared_ptr<rapidjson::Document>);
@@ -91,6 +97,27 @@ int moduleLoaded(std::shared_ptr<bookfiler::HTTP::ModuleInterface> module) {
   return 0;
 }
 
+int routeSlot(std::shared_ptr<rapidjson::Document> sessionDocument,
+              std::shared_ptr<
+                  boost::beast::http::request<boost::beast::http::string_body>>
+                  req,
+              std::shared_ptr<
+                  boost::beast::http::response<boost::beast::http::string_body>>
+                  res) {
+  std::string bodyStr = "<h1>URL Data</h1><br>";
+  bodyStr.append(req->target().data());
+
+  res->result(boost::beast::http::status::ok);
+  res->version(req->version());
+  res->set(boost::beast::http::field::server, BOOST_BEAST_VERSION_STRING);
+  res->set(boost::beast::http::field::content_type, "text/html");
+  res->keep_alive(req->keep_alive());
+  res->body() = bodyStr;
+  res->content_length(res->body().length());
+  res->prepare_payload();
+  return 0;
+}
+
 int allModulesLoaded() {
   int rc;
 
@@ -98,9 +125,28 @@ int allModulesLoaded() {
    */
   settingsManagerPtr->deployFile(SETTINGS_FILE);
 
-  /* Example using the module */
+  /* Start using the module
+   * Create an HTTP server for the authorization page to redirect to so that the
+   * authorization code can be captured.
+   */
+
+  std::shared_ptr<bookfiler::HTTP::Server> httpServer =
+      mySQL_Module->newServer();
+  httpServer->runAsync();
+  httpServer->routeSignal->connect(&routeSlot);
+
+  std::shared_ptr<bookfiler::certificate::Manager> certificateManager =
+      mySQL_Module->newCertificateManager();
+  std::shared_ptr<bookfiler::certificate::Certificate> certPtr;
+  certificateManager->generateX509("cert", "key", 365, certPtr);
+  if (certPtr) {
+      std::cout << "Certificate Info: " << certPtr->getInfo() << std::endl;
+    certificateManager->addCertificate(certPtr);
+    certificateManager->createX509Store();
+  }
 
   // authorization url
+
   std::shared_ptr<bookfiler::HTTP::Url> authUrl = mySQL_Module->newUrl();
   authUrl->setBase("https://accounts.google.com/o/oauth2/v2/auth");
   std::shared_ptr<std::unordered_map<std::string, std::string>> fieldsMap =
@@ -110,8 +156,15 @@ int allModulesLoaded() {
                      "googleusercontent.com"});
   fieldsMap->insert({"scope", "https://mail.google.com/"});
   fieldsMap->insert({"response_type", "code"});
-  fieldsMap->insert({"redirect_uri", "urn:ietf:wg:oauth:2.0:oob"});
+  fieldsMap->insert({"redirect_uri", "https://localhost:8081"});
   authUrl->setFields(fieldsMap);
+
+  boost::url authUrl2;
+  authUrl2.set_scheme("https");
+  authUrl2.set_host("accounts.google.com/o/oauth2/v2/auth");
+  std::string fieldsStr = authUrl->getFieldsStr();
+  authUrl2.set_query(fieldsStr);
+  std::cout << authUrl2.encoded_url() << "\n\n";
 
   // open google oauth2 window
   std::string windowOpenCommand = "explorer \"";

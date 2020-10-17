@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.4)
 
-set(PROJECT_NAME BookFiler-Module-HTTP-Curl)
+set(PROJECT_NAME BookFiler-Module-HTTP)
 project(${PROJECT_NAME} VERSION 1.0.0 LANGUAGES CXX)
 set(RELEASE_DIR "${CMAKE_BINARY_DIR}/${PROJECT_NAME}/")
 set(INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/")
@@ -9,12 +9,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${RELEASE_DIR})
 
 option(BUILD_SHARED_LIBS "Build shared library" ON)
 option(BUILD_STATIC_LIBS "Build static library" OFF)
-option(BUILD_TESTS "Build test executables" OFF)
+option(BUILD_EXAMPLES "Build example executables" ON)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.10")
+set(CMAKE_CXX_FLAGS "-g -Og -m64 -Wa,-mbig-obj")
+set(CMAKE_BUILD_TYPE "Release")
 
 find_package(Boost 1.56 REQUIRED COMPONENTS
              system filesystem)
@@ -22,6 +24,7 @@ find_package(Boost 1.56 REQUIRED COMPONENTS
 include_directories(
   include
   third_party/rapidjson/include
+  third_party/boost-url/include
 )
 
 link_directories(
@@ -33,7 +36,13 @@ set(SOURCES
   src/core/Curl.cpp
   src/core/httpCurl.cpp
   src/core/httpUtil.cpp
+  src/core/httpServer.cpp
+  src/core/httpServerListener.cpp
+  src/core/httpServerSession.cpp
+  src/core/httpServerUtil.cpp
+  src/core/httpServerCertificate.cpp
   src/core/json.cpp
+  src/core/certificateManager.hpp
 )
 
 set(HEADERS
@@ -42,7 +51,13 @@ set(HEADERS
   src/core/Curl.hpp
   src/core/httpCurl.hpp
   src/core/httpUtil.hpp
+  src/core/httpServer.hpp
+  src/core/httpServerListener.hpp
+  src/core/httpServerSession.hpp
+  src/core/httpServerUtil.hpp
+  src/core/httpServerCertificate.hpp
   src/core/json.hpp
+  src/core/certificateManager.cpp
 
   include/BookFiler-Module-HTTP-Curl/Interface.hpp
 )
@@ -138,7 +153,7 @@ if(BUILD_STATIC_LIBS)
   target_link_libraries(${lib_name} PUBLIC ${STATIC_LINK_LIBRARIES})
 endif()
 
-# TESTS
+# EXAMPLES
 add_subdirectory(src_example/http-connect)
 add_subdirectory(src_example/oauth2-google)
 

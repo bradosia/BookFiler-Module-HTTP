@@ -82,5 +82,17 @@ std::shared_ptr<Url> ModuleExport::newUrl() {
   return std::dynamic_pointer_cast<Url>(urlPtr);
 }
 
+std::shared_ptr<Server> ModuleExport::newServer() {
+  std::shared_ptr<ServerImpl> serverPtr = std::make_shared<ServerImpl>();
+  serverPtr->setSettingsDoc(settingsDoc);
+  return std::dynamic_pointer_cast<Server>(serverPtr);
+}
+
+std::shared_ptr<bookfiler::certificate::Manager>
+ModuleExport::newCertificateManager() {
+  std::shared_ptr<bookfiler::certificate::ManagerImpl> managerPtr = std::make_shared<bookfiler::certificate::ManagerImpl>();
+  return std::dynamic_pointer_cast<bookfiler::certificate::Manager>(managerPtr);
+}
+
 } // namespace HTTP
 } // namespace bookfiler

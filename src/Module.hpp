@@ -39,6 +39,8 @@
 
 // Local Project
 #include "core/httpCurl.hpp"
+#include "core/httpServer.hpp"
+#include "core/certificateManager.hpp"
 #include "core/json.hpp"
 #include <BookFiler-Module-HTTP-Curl/Interface.hpp>
 
@@ -79,6 +81,8 @@ public:
   int setSettings(std::shared_ptr<rapidjson::Value>);
   std::shared_ptr<Connection> newConnection();
   std::shared_ptr<Url> newUrl();
+  std::shared_ptr<Server> newServer();
+  std::shared_ptr<bookfiler::certificate::Manager> newCertificateManager();
 };
 
 // Exporting `my_namespace::module` variable with alias name `module`

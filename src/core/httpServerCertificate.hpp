@@ -50,7 +50,7 @@
 #include <boost/signals2.hpp>
 
 // Local Project
-#include <BookFiler-Module-HTTP-Curl/Interface.hpp>
+#include <BookFiler-Module-HTTP/Interface.hpp>
 
 /*
  * bookfiler - HTTP

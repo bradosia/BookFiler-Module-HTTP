@@ -42,7 +42,7 @@
 #include "core/httpServer.hpp"
 #include "core/certificateManager.hpp"
 #include "core/json.hpp"
-#include <BookFiler-Module-HTTP-Curl/Interface.hpp>
+#include <BookFiler-Module-HTTP/Interface.hpp>
 
 /*
  * bookfiler - MySQL

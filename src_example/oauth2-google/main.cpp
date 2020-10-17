@@ -25,7 +25,7 @@
 #include <SettingsManager/SettingsManager.hpp>
 
 // Modules
-#include <BookFiler-Module-HTTP-Curl/Interface.hpp>
+#include <BookFiler-Module-HTTP/Interface.hpp>
 
 // Local Project
 // #include ""

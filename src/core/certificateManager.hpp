@@ -55,7 +55,7 @@
 #include <wincrypt.h>
 
 // Local Project
-#include <BookFiler-Module-HTTP-Curl/Interface.hpp>
+#include <BookFiler-Module-HTTP/Interface.hpp>
 
 /*
  * bookfiler - certificate

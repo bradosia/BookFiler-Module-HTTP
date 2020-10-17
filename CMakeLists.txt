@@ -59,7 +59,7 @@ set(HEADERS
   src/core/json.hpp
   src/core/certificateManager.cpp
 
-  include/BookFiler-Module-HTTP-Curl/Interface.hpp
+  include/BookFiler-Module-HTTP/Interface.hpp
 )
 
 set(SHARED_COMPILE_DEFINITIONS

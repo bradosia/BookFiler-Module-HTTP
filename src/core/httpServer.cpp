@@ -15,7 +15,12 @@
 namespace bookfiler {
 namespace HTTP {
 
-ServerImpl::ServerImpl() { routeSignal = std::make_shared<routeSignalType>(); }
+ServerImpl::ServerImpl() {
+  routeSignal = std::make_shared<routeSignalType>();
+  // The SSL context holds certificates
+  sslContext = std::make_shared<boost::asio::ssl::context>(
+      boost::asio::ssl::context::tlsv12);
+}
 
 ServerImpl::~ServerImpl() {}
 
@@ -28,11 +33,6 @@ int ServerImpl::run() {
   extractSettings();
   // hint how much concurrency is used for the io context
   ioContext = std::make_shared<boost::asio::io_context>(threadsNum);
-  // The SSL context is required, and holds certificates
-  sslContext = std::make_shared<boost::asio::ssl::context>(
-      boost::asio::ssl::context::tlsv12);
-  // This holds the self-signed certificate used by the server
-  loadServerCertificate(sslContext);
   // Create and launch a listening port
   listener = std::make_shared<Listener>(*ioContext, *sslContext,
                                         tcp::endpoint{address, port}, docRoot);
@@ -55,11 +55,6 @@ int ServerImpl::runAsync() {
   extractSettings();
   // hint how much concurrency is used for the io context
   ioContext = std::make_shared<boost::asio::io_context>(threadsNum);
-  // The SSL context is required, and holds certificates
-  sslContext = std::make_shared<boost::asio::ssl::context>(
-      boost::asio::ssl::context::tlsv12);
-  // This holds the self-signed certificate used by the server
-  loadServerCertificate(sslContext);
   // Create and launch a listening port
   listener = std::make_shared<Listener>(*ioContext, *sslContext,
                                         tcp::endpoint{address, port}, docRoot);
@@ -132,6 +127,57 @@ int ServerImpl::extractSettings() {
   port = static_cast<unsigned short>(portInt);
   docRoot = std::make_shared<std::string>(docRootStr);
   threadsNum = std::max<int>(1, threadsNum);
+  return 0;
+}
+
+int ServerImpl::useCertificate(
+    std::shared_ptr<bookfiler::certificate::Certificate> certPtr) {
+  std::shared_ptr<bookfiler::certificate::CertificateImpl> certImplPtr =
+      std::static_pointer_cast<bookfiler::certificate::CertificateImpl>(
+          certPtr);
+
+  std::shared_ptr<std::string> certStr = certImplPtr->getCertStr();
+  if (!certStr) {
+    std::cout << moduleCode
+              << "::ServerImpl::useCertificate ERROR:\nCould not get cert."
+              << std::endl;
+    return -1;
+  }
+
+  std::shared_ptr<std::string> privateKeyStr = certImplPtr->getPrivateKeyStr();
+  if (!privateKeyStr) {
+    std::cout << moduleCode
+              << "::ServerImpl::useCertificate ERROR:\nCould not get cert."
+              << std::endl;
+    return -1;
+  }
+
+  std::shared_ptr<std::string> dhStr = certImplPtr->getDhStr();
+  if (!dhStr) {
+    std::cout << moduleCode
+              << "::ServerImpl::useCertificate ERROR:\nCould not get cert."
+              << std::endl;
+    return -1;
+  }
+
+  sslContext->set_password_callback(
+      [](std::size_t, boost::asio::ssl::context_base::password_purpose) {
+        return "test";
+      });
+
+  sslContext->set_options(boost::asio::ssl::context::default_workarounds |
+                          boost::asio::ssl::context::no_sslv2 |
+                          boost::asio::ssl::context::single_dh_use);
+
+  sslContext->use_certificate_chain(
+      boost::asio::buffer(certStr->data(), certStr->size()));
+
+  sslContext->use_private_key(
+      boost::asio::buffer(privateKeyStr->data(), privateKeyStr->size()),
+      boost::asio::ssl::context::file_format::pem);
+
+  sslContext->use_tmp_dh(boost::asio::buffer(dhStr->data(), dhStr->size()));
+
   return 0;
 }
 

@@ -61,10 +61,19 @@ public:
 class Manager {
 public:
   virtual int createX509Store() = 0;
-  virtual bool generateX509(const std::string &certFileName,
-                            const std::string &keyFileName, long daysValid,
-                            std::shared_ptr<Certificate> &) = 0;
+  virtual int newCertificate(std::shared_ptr<Certificate> &,
+                             std::shared_ptr<rapidjson::Document>) = 0;
+  virtual int newRequest(std::shared_ptr<Certificate> &,
+                         std::shared_ptr<rapidjson::Document>) = 0;
+  virtual int signRequest(std::shared_ptr<Certificate>,
+                          std::shared_ptr<Certificate>,
+                          std::shared_ptr<rapidjson::Document>) = 0;
+  virtual int newCertRootLocalhost(std::shared_ptr<Certificate> &,
+                                   std::shared_ptr<rapidjson::Document>) = 0;
+  virtual int newCertServerLocalhost(std::shared_ptr<Certificate> &,
+                                     std::shared_ptr<rapidjson::Document>) = 0;
   virtual int addCertificate(std::shared_ptr<Certificate>) = 0;
+  virtual int saveCertificate(std::shared_ptr<Certificate>, std::string) = 0;
 };
 
 } // namespace certificate
@@ -112,6 +121,8 @@ public:
   // virtual int run() = 0;
   std::shared_ptr<routeSignalType> routeSignal;
   virtual int runAsync() = 0;
+  virtual int
+      useCertificate(std::shared_ptr<bookfiler::certificate::Certificate>) = 0;
 };
 
 class ModuleInterface {

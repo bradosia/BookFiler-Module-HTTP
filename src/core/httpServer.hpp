@@ -50,7 +50,7 @@
 #include <boost/signals2.hpp>
 
 // Local Project
-#include "httpServerCertificate.hpp"
+#include "certificateManager.hpp"
 #include "httpServerListener.hpp"
 #include <BookFiler-Module-HTTP/Interface.hpp>
 
@@ -87,6 +87,7 @@ public:
   int runAsync();
   int extractSettings();
   void runIoContext();
+  int useCertificate(std::shared_ptr<bookfiler::certificate::Certificate>);
 };
 
 } // namespace HTTP

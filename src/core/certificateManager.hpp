@@ -42,19 +42,8 @@
  */
 #include <boost/signals2.hpp>
 
-/* ssl, win, crypt
- */
-#define _WINSOCKAPI_
-#include <windows.h>
-#include <winsock2.h>
-
-#include <cryptuiapi.h>
-#include <openssl/pem.h>
-#include <openssl/x509.h>
-#include <stdio.h>
-#include <wincrypt.h>
-
 // Local Project
+#include "certificate.hpp"
 #include <BookFiler-Module-HTTP/Interface.hpp>
 
 /*
@@ -63,41 +52,37 @@
 namespace bookfiler {
 namespace certificate {
 
-#define MY_ENCODING_TYPE (PKCS_7_ASN_ENCODING | X509_ASN_ENCODING)
-
-class CertificateImpl : public Certificate {
-public:
-  X509 *certX509 = nullptr;
-  EVP_PKEY *privateKey = nullptr;
-  CertificateImpl();
-  ~CertificateImpl();
-  std::string getInfo();
-};
-
-class CertificateNativeImpl : public CertificateImpl {
-public:
-  PCCERT_CONTEXT pCertContext = nullptr;
-  CertificateNativeImpl();
-  ~CertificateNativeImpl();
-  int toNative();
-  int toX509();
-  std::string getNativeName();
-};
-
 class ManagerImpl : public Manager {
 private:
   HCERTSTORE hCertStore;
   std::shared_ptr<X509_STORE> storePtr;
   std::vector<std::shared_ptr<CertificateNativeImpl>> certList;
+  std::shared_ptr<CertificateNativeImpl> certRootLocalhostPtr,
+      certServerLocalhostPtr;
 
 public:
   ManagerImpl();
   ~ManagerImpl();
   int createX509Store();
-  bool generateX509(const std::string &certFileName,
-                    const std::string &keyFileName, long daysValid,
-                    std::shared_ptr<Certificate> &);
+
+  /* Creates a new certificate using the settings specified in the json
+   * document.
+   */
+  int newCertificate(std::shared_ptr<Certificate> &,
+                     std::shared_ptr<rapidjson::Document>);
+  int newRequest(std::shared_ptr<Certificate> &,
+                 std::shared_ptr<rapidjson::Document>);
+  int signRequest(std::shared_ptr<Certificate>, std::shared_ptr<Certificate>,
+                  std::shared_ptr<rapidjson::Document>);
+  /* Creates a root certificate for bookfiler local apps */
+  int newCertRootLocalhost(std::shared_ptr<Certificate> &,
+                           std::shared_ptr<rapidjson::Document>);
+  /* Creates a server certificate for bookfiler local apps signed by the root
+   * certificate */
+  int newCertServerLocalhost(std::shared_ptr<Certificate> &,
+                             std::shared_ptr<rapidjson::Document>);
   int addCertificate(std::shared_ptr<Certificate>);
+  int saveCertificate(std::shared_ptr<Certificate>, std::string);
 };
 
 } // namespace certificate

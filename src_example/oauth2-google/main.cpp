@@ -130,23 +130,32 @@ int allModulesLoaded() {
    * authorization code can be captured.
    */
 
+  std::shared_ptr<bookfiler::certificate::Manager> certificateManager =
+      mySQL_Module->newCertificateManager();
+  std::shared_ptr<bookfiler::certificate::Certificate> certRootPtr,
+      certServerPtr;
+  certificateManager->newCertRootLocalhost(certRootPtr, nullptr);
+  if (certRootPtr) {
+    std::cout << "root Certificate Info: " << certRootPtr->getInfo()
+              << std::endl;
+    certificateManager->saveCertificate(certRootPtr,"root");
+    certificateManager->addCertificate(certRootPtr);
+    certificateManager->newCertServerLocalhost(certServerPtr, nullptr);
+    if (certServerPtr) {
+      std::cout << "Server Certificate Info: " << certServerPtr->getInfo()
+                << std::endl;
+      certificateManager->createX509Store();
+    }
+  }
+
+  // start server
   std::shared_ptr<bookfiler::HTTP::Server> httpServer =
       mySQL_Module->newServer();
+  httpServer->useCertificate(certServerPtr);
   httpServer->runAsync();
   httpServer->routeSignal->connect(&routeSlot);
 
-  std::shared_ptr<bookfiler::certificate::Manager> certificateManager =
-      mySQL_Module->newCertificateManager();
-  std::shared_ptr<bookfiler::certificate::Certificate> certPtr;
-  certificateManager->generateX509("cert", "key", 365, certPtr);
-  if (certPtr) {
-      std::cout << "Certificate Info: " << certPtr->getInfo() << std::endl;
-    certificateManager->addCertificate(certPtr);
-    certificateManager->createX509Store();
-  }
-
   // authorization url
-
   std::shared_ptr<bookfiler::HTTP::Url> authUrl = mySQL_Module->newUrl();
   authUrl->setBase("https://accounts.google.com/o/oauth2/v2/auth");
   std::shared_ptr<std::unordered_map<std::string, std::string>> fieldsMap =
@@ -156,7 +165,7 @@ int allModulesLoaded() {
                      "googleusercontent.com"});
   fieldsMap->insert({"scope", "https://mail.google.com/"});
   fieldsMap->insert({"response_type", "code"});
-  fieldsMap->insert({"redirect_uri", "https://localhost:8081"});
+  fieldsMap->insert({"redirect_uri", "https://localhost:8082"});
   authUrl->setFields(fieldsMap);
 
   boost::url authUrl2;

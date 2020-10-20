@@ -16,6 +16,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.10")
 set(CMAKE_CXX_FLAGS "-g -Og -m64 -Wa,-mbig-obj")
+#set(CMAKE_CXX_FLAGS "-O3")
 set(CMAKE_BUILD_TYPE "Release")
 
 find_package(Boost 1.56 REQUIRED COMPONENTS
@@ -43,6 +44,7 @@ set(SOURCES
   src/core/httpServerCertificate.cpp
   src/core/json.cpp
   src/core/certificateManager.hpp
+  src/core/certificate.hpp
 )
 
 set(HEADERS
@@ -58,6 +60,7 @@ set(HEADERS
   src/core/httpServerCertificate.hpp
   src/core/json.hpp
   src/core/certificateManager.cpp
+  src/core/certificate.cpp
 
   include/BookFiler-Module-HTTP/Interface.hpp
 )
@@ -167,6 +170,7 @@ if(BUILD_SHARED_LIBS)
     COMMAND ${CMAKE_COMMAND} -E make_directory "${RELEASE_DIR}modules/"
     COMMAND ${CMAKE_COMMAND} -E make_directory "${RELEASE_DIR}resources/"
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${lib_shared_name}> "${RELEASE_DIR}modules/"
+    COMMAND ${CMAKE_COMMAND} -E remove $<TARGET_FILE:${lib_shared_name}>
     COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_SOURCE_DIR}/resources/" "${RELEASE_DIR}resources"
     COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/settings/settings.json" "${RELEASE_DIR}settings.json"
   )

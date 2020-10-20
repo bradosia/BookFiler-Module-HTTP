@@ -22,7 +22,13 @@ namespace HTTP {
 static std::string moduleName = "BookFiler Module HTTP";
 static std::string moduleCode = "bookfiler::HTTP";
 
-} // namespace MySQL
+} // namespace HTTP
+namespace certificate {
+
+static std::string moduleName = "BookFiler Module Certificate";
+static std::string moduleCode = "bookfiler::certificate";
+
+} // namespace certificate
 } // namespace bookfiler
 
 #endif // BOOKFILER_MODULE_MYSQL_CONFIG_H

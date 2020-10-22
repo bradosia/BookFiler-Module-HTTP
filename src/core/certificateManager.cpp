@@ -18,6 +18,12 @@ namespace certificate {
 ManagerImpl::ManagerImpl() {}
 ManagerImpl::~ManagerImpl() {}
 
+int ManagerImpl::setSettingsDoc(
+    std::shared_ptr<rapidjson::Value> settingsDoc_) {
+  settingsDoc = settingsDoc_;
+  return 0;
+}
+
 int ManagerImpl::createX509Store() {
   std::cout << "ManagerImpl::createX509Store" << std::endl;
   int rc = 0;
@@ -76,7 +82,7 @@ int ManagerImpl::createX509Store() {
 
 int ManagerImpl::newCertificate(
     std::shared_ptr<Certificate> &certPtr,
-    std::shared_ptr<rapidjson::Document> settingsDoc) {
+    std::shared_ptr<rapidjson::Document> optionsDoc) {
   int daysValid = 365;
   std::string countryStr = "C";
   std::string companyStr = "O";
@@ -88,46 +94,46 @@ int ManagerImpl::newCertificate(
   int rc = 0;
 
   /* Get settings from JSON document */
-  if (!settingsDoc->IsObject()) {
+  if (!optionsDoc->IsObject()) {
     std::cout
         << moduleCode
         << "::ManagerImpl::newCertificate WARNING:\nSettings document invalid"
         << std::endl;
   } else {
     char memberName01[] = "daysValid";
-    if (settingsDoc->HasMember(memberName01) &&
-        (*settingsDoc)[memberName01].IsInt()) {
-      daysValid = (*settingsDoc)[memberName01].GetInt();
+    if (optionsDoc->HasMember(memberName01) &&
+        (*optionsDoc)[memberName01].IsInt()) {
+      daysValid = (*optionsDoc)[memberName01].GetInt();
     }
     char memberName02[] = "country";
-    if (settingsDoc->HasMember(memberName02) &&
-        (*settingsDoc)[memberName02].IsString()) {
-      countryStr = (*settingsDoc)[memberName02].GetString();
+    if (optionsDoc->HasMember(memberName02) &&
+        (*optionsDoc)[memberName02].IsString()) {
+      countryStr = (*optionsDoc)[memberName02].GetString();
     }
     char memberName03[] = "company";
-    if (settingsDoc->HasMember(memberName03) &&
-        (*settingsDoc)[memberName03].IsString()) {
-      companyStr = (*settingsDoc)[memberName03].GetString();
+    if (optionsDoc->HasMember(memberName03) &&
+        (*optionsDoc)[memberName03].IsString()) {
+      companyStr = (*optionsDoc)[memberName03].GetString();
     }
     char memberName04[] = "commonName";
-    if (settingsDoc->HasMember(memberName04) &&
-        (*settingsDoc)[memberName04].IsString()) {
-      commonNameStr = (*settingsDoc)[memberName04].GetString();
+    if (optionsDoc->HasMember(memberName04) &&
+        (*optionsDoc)[memberName04].IsString()) {
+      commonNameStr = (*optionsDoc)[memberName04].GetString();
     }
     char memberName05[] = "OU";
-    if (settingsDoc->HasMember(memberName05) &&
-        (*settingsDoc)[memberName05].IsString()) {
-      ouStr = (*settingsDoc)[memberName05].GetString();
+    if (optionsDoc->HasMember(memberName05) &&
+        (*optionsDoc)[memberName05].IsString()) {
+      ouStr = (*optionsDoc)[memberName05].GetString();
     }
     char memberName06[] = "city";
-    if (settingsDoc->HasMember(memberName06) &&
-        (*settingsDoc)[memberName06].IsString()) {
-      cityStr = (*settingsDoc)[memberName06].GetString();
+    if (optionsDoc->HasMember(memberName06) &&
+        (*optionsDoc)[memberName06].IsString()) {
+      cityStr = (*optionsDoc)[memberName06].GetString();
     }
     char memberName07[] = "state";
-    if (settingsDoc->HasMember(memberName07) &&
-        (*settingsDoc)[memberName07].IsString()) {
-      stateStr = (*settingsDoc)[memberName07].GetString();
+    if (optionsDoc->HasMember(memberName07) &&
+        (*optionsDoc)[memberName07].IsString()) {
+      stateStr = (*optionsDoc)[memberName07].GetString();
     }
   }
 
@@ -289,7 +295,7 @@ int ManagerImpl::newRequest(std::shared_ptr<Certificate> &certPtr,
 
 int ManagerImpl::signRequest(std::shared_ptr<Certificate> certPtr,
                              std::shared_ptr<Certificate> certCAPtr,
-                             std::shared_ptr<rapidjson::Document> settingsDoc) {
+                             std::shared_ptr<rapidjson::Document> optionsDoc) {
   int daysValid = 365;
   std::string countryStr = "C";
   std::string companyStr = "O";
@@ -301,46 +307,46 @@ int ManagerImpl::signRequest(std::shared_ptr<Certificate> certPtr,
   int rc = 0;
 
   /* Get settings from JSON document */
-  if (!settingsDoc->IsObject()) {
+  if (!optionsDoc->IsObject()) {
     std::cout
         << moduleCode
         << "::ManagerImpl::newCertificate WARNING:\nSettings document invalid"
         << std::endl;
   } else {
     char memberName01[] = "daysValid";
-    if (settingsDoc->HasMember(memberName01) &&
-        (*settingsDoc)[memberName01].IsInt()) {
-      daysValid = (*settingsDoc)[memberName01].GetInt();
+    if (optionsDoc->HasMember(memberName01) &&
+        (*optionsDoc)[memberName01].IsInt()) {
+      daysValid = (*optionsDoc)[memberName01].GetInt();
     }
     char memberName02[] = "country";
-    if (settingsDoc->HasMember(memberName02) &&
-        (*settingsDoc)[memberName02].IsString()) {
-      countryStr = (*settingsDoc)[memberName02].GetString();
+    if (optionsDoc->HasMember(memberName02) &&
+        (*optionsDoc)[memberName02].IsString()) {
+      countryStr = (*optionsDoc)[memberName02].GetString();
     }
     char memberName03[] = "company";
-    if (settingsDoc->HasMember(memberName03) &&
-        (*settingsDoc)[memberName03].IsString()) {
-      companyStr = (*settingsDoc)[memberName03].GetString();
+    if (optionsDoc->HasMember(memberName03) &&
+        (*optionsDoc)[memberName03].IsString()) {
+      companyStr = (*optionsDoc)[memberName03].GetString();
     }
     char memberName04[] = "commonName";
-    if (settingsDoc->HasMember(memberName04) &&
-        (*settingsDoc)[memberName04].IsString()) {
-      commonNameStr = (*settingsDoc)[memberName04].GetString();
+    if (optionsDoc->HasMember(memberName04) &&
+        (*optionsDoc)[memberName04].IsString()) {
+      commonNameStr = (*optionsDoc)[memberName04].GetString();
     }
     char memberName05[] = "OU";
-    if (settingsDoc->HasMember(memberName05) &&
-        (*settingsDoc)[memberName05].IsString()) {
-      ouStr = (*settingsDoc)[memberName05].GetString();
+    if (optionsDoc->HasMember(memberName05) &&
+        (*optionsDoc)[memberName05].IsString()) {
+      ouStr = (*optionsDoc)[memberName05].GetString();
     }
     char memberName06[] = "city";
-    if (settingsDoc->HasMember(memberName06) &&
-        (*settingsDoc)[memberName06].IsString()) {
-      cityStr = (*settingsDoc)[memberName06].GetString();
+    if (optionsDoc->HasMember(memberName06) &&
+        (*optionsDoc)[memberName06].IsString()) {
+      cityStr = (*optionsDoc)[memberName06].GetString();
     }
     char memberName07[] = "state";
-    if (settingsDoc->HasMember(memberName07) &&
-        (*settingsDoc)[memberName07].IsString()) {
-      stateStr = (*settingsDoc)[memberName07].GetString();
+    if (optionsDoc->HasMember(memberName07) &&
+        (*optionsDoc)[memberName07].IsString()) {
+      stateStr = (*optionsDoc)[memberName07].GetString();
     }
   }
 
@@ -425,25 +431,25 @@ int ManagerImpl::signRequest(std::shared_ptr<Certificate> certPtr,
 
 int ManagerImpl::newCertRootLocalhost(
     std::shared_ptr<Certificate> &certPtr,
-    std::shared_ptr<rapidjson::Document> settingsDoc) {
+    std::shared_ptr<rapidjson::Document> optionsDoc) {
   // some macro options
-  boost::ignore_unused(settingsDoc);
+  boost::ignore_unused(optionsDoc);
 
   int rc = 0;
-  std::shared_ptr<rapidjson::Document> settingsDoc2 =
+  std::shared_ptr<rapidjson::Document> optionsDoc2 =
       std::make_shared<rapidjson::Document>();
-  settingsDoc2->SetObject();
+  optionsDoc2->SetObject();
   rapidjson::Value daysValidValue(2000);
-  settingsDoc2->AddMember("daysValid", daysValidValue,
-                          settingsDoc2->GetAllocator());
-  settingsDoc2->AddMember("country", "US", settingsDoc2->GetAllocator());
-  settingsDoc2->AddMember("company", "BookFiler", settingsDoc2->GetAllocator());
-  settingsDoc2->AddMember("commonName", "BookFiler Certificate Authority",
-                          settingsDoc2->GetAllocator());
-  settingsDoc2->AddMember("OU", "bookfiler.com", settingsDoc2->GetAllocator());
-  settingsDoc2->AddMember("city", "San Jose", settingsDoc2->GetAllocator());
-  settingsDoc2->AddMember("state", "California", settingsDoc2->GetAllocator());
-  rc = newCertificate(certPtr, settingsDoc2);
+  optionsDoc2->AddMember("daysValid", daysValidValue,
+                         optionsDoc2->GetAllocator());
+  optionsDoc2->AddMember("country", "US", optionsDoc2->GetAllocator());
+  optionsDoc2->AddMember("company", "BookFiler", optionsDoc2->GetAllocator());
+  optionsDoc2->AddMember("commonName", "BookFiler Certificate Authority",
+                         optionsDoc2->GetAllocator());
+  optionsDoc2->AddMember("OU", "bookfiler.com", optionsDoc2->GetAllocator());
+  optionsDoc2->AddMember("city", "San Jose", optionsDoc2->GetAllocator());
+  optionsDoc2->AddMember("state", "California", optionsDoc2->GetAllocator());
+  rc = newCertificate(certPtr, optionsDoc2);
   if (rc < 0) {
     return -1;
   }
@@ -516,6 +522,109 @@ int ManagerImpl::addCertificate(std::shared_ptr<Certificate> certPtr) {
 
 int ManagerImpl::saveCertificate(std::shared_ptr<Certificate> certPtr,
                                  std::string fileName) {
+
+  std::shared_ptr<CertificateImpl> certImplPtr =
+      std::static_pointer_cast<CertificateImpl>(certPtr);
+
+  std::string certFileName = fileName.append(".pem");
+  std::string privateKeyFileName = fileName.append("privateKey.pem");
+  std::unique_ptr<BIO, void (*)(BIO *)> certFile{
+      BIO_new_file(certFileName.c_str(), "wb"), BIO_free_all};
+  std::unique_ptr<BIO, void (*)(BIO *)> keyFile{
+      BIO_new_file(privateKeyFileName.c_str(), "wb"), BIO_free_all};
+
+  int ret = PEM_write_bio_PrivateKey(keyFile.get(), certImplPtr->privateKey,
+                                     nullptr, nullptr, 0, nullptr, nullptr);
+  int ret2 = PEM_write_bio_X509(certFile.get(), certImplPtr->certX509);
+
+  return 0;
+}
+
+int ManagerImpl::loadCertificate(std::shared_ptr<Certificate> &certPtr) {
+  std::string certPath, privateKeyPath, dhKeyPath;
+
+  /* Get settings from JSON document */
+  if (!settingsDoc->IsObject()) {
+    std::cout << moduleCode
+              << "::ServerImpl::run ERROR:\nSettings document invalid"
+              << std::endl;
+    return -1;
+  }
+  if (!settingsDoc->HasMember("server")) {
+    std::cout << moduleCode
+              << "::ServerImpl::run ERROR:\nSettings document has no server "
+                 "definition."
+              << std::endl;
+    return -1;
+  }
+  const rapidjson::Value &serverSettingsJson = (*settingsDoc)["server"];
+
+  if (!serverSettingsJson.IsObject()) {
+    std::cout << moduleCode
+              << "::ServerImpl::run ERROR:\nSettings document server "
+                 "definition incorrect type."
+              << std::endl;
+    return -1;
+  }
+
+  char memberName01[] = "certPath";
+  if (serverSettingsJson.HasMember(memberName01) &&
+      serverSettingsJson[memberName01].IsString()) {
+    certPath = serverSettingsJson[memberName01].GetString();
+  }
+  char memberName02[] = "privateKeyPath";
+  if (serverSettingsJson.HasMember(memberName02) &&
+      serverSettingsJson[memberName02].GetString()) {
+    privateKeyPath = serverSettingsJson[memberName02].GetString();
+  }
+  char memberName03[] = "dhKeyPath";
+  if (serverSettingsJson.HasMember(memberName03) &&
+      serverSettingsJson[memberName03].IsString()) {
+    dhKeyPath = serverSettingsJson[memberName03].GetString();
+  }
+
+  std::cout << "certPath: " << certPath
+            << "\nprivateKeyPath: " << privateKeyPath
+            << "\ndhKeyPath: " << dhKeyPath << std::endl;
+
+  std::unique_ptr<BIO, void (*)(BIO *)> certFile{
+      BIO_new_file(certPath.c_str(), "r"), BIO_free_all};
+  std::unique_ptr<BIO, void (*)(BIO *)> privateKeyFile{
+      BIO_new_file(privateKeyPath.c_str(), "r"), BIO_free_all};
+  std::unique_ptr<BIO, void (*)(BIO *)> dhKeyFile{
+      BIO_new_file(dhKeyPath.c_str(), "r"), BIO_free_all};
+
+  std::shared_ptr<CertificateImpl> certImplPtr =
+      std::make_shared<CertificateImpl>();
+
+  certImplPtr->certX509 =
+      PEM_read_bio_X509(certFile.get(), nullptr, nullptr, nullptr);
+  if (!certImplPtr->certX509) {
+    std::cout << moduleCode
+              << "::ManagerImpl::loadCertificate PEM_read_bio_X509 ERROR"
+              << std::endl;
+    return -1;
+  }
+  certImplPtr->privateKey =
+      PEM_read_bio_PrivateKey(privateKeyFile.get(), nullptr, nullptr, nullptr);
+  if (!certImplPtr->privateKey) {
+    std::cout << moduleCode
+              << "::ManagerImpl::loadCertificate PEM_read_bio_PrivateKey ERROR"
+              << std::endl;
+    return -1;
+  }
+  certImplPtr->dhKey =
+      PEM_read_bio_DHparams(dhKeyFile.get(), nullptr, nullptr, nullptr);
+  if (!certImplPtr->dhKey) {
+    std::cout << moduleCode
+              << "::ManagerImpl::loadCertificate PEM_read_bio_DHparams ERROR"
+              << std::endl;
+    return -1;
+  }
+
+  // return
+  certPtr = std::dynamic_pointer_cast<Certificate>(certImplPtr);
+
   return 0;
 }
 

@@ -134,13 +134,14 @@ int allModulesLoaded() {
       mySQL_Module->newCertificateManager();
   std::shared_ptr<bookfiler::certificate::Certificate> certRootPtr,
       certServerPtr;
-  certificateManager->newCertRootLocalhost(certRootPtr, nullptr);
+  //certificateManager->newCertRootLocalhost(certRootPtr, nullptr);
+  certificateManager->loadCertificate(certRootPtr);
   if (certRootPtr) {
     std::cout << "root Certificate Info: " << certRootPtr->getInfo()
               << std::endl;
-    certificateManager->saveCertificate(certRootPtr,"root");
-    certificateManager->addCertificate(certRootPtr);
-    certificateManager->newCertServerLocalhost(certServerPtr, nullptr);
+    //certificateManager->saveCertificate(certRootPtr,"root");
+    //certificateManager->addCertificate(certRootPtr);
+    //certificateManager->newCertServerLocalhost(certServerPtr, nullptr);
     if (certServerPtr) {
       std::cout << "Server Certificate Info: " << certServerPtr->getInfo()
                 << std::endl;
@@ -151,7 +152,7 @@ int allModulesLoaded() {
   // start server
   std::shared_ptr<bookfiler::HTTP::Server> httpServer =
       mySQL_Module->newServer();
-  httpServer->useCertificate(certServerPtr);
+  httpServer->useCertificate(certRootPtr);
   httpServer->runAsync();
   httpServer->routeSignal->connect(&routeSlot);
 

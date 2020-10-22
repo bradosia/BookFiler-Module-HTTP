@@ -42,6 +42,8 @@
  * License: Boost Software License (similar to BSD and MIT)
  */
 #include <boost/signals2.hpp>
+#include <boost/certify/extensions.hpp>
+#include <boost/certify/https_verification.hpp>
 
 /* win API
  */

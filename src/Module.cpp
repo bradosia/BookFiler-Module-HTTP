@@ -91,6 +91,7 @@ std::shared_ptr<Server> ModuleExport::newServer() {
 std::shared_ptr<bookfiler::certificate::Manager>
 ModuleExport::newCertificateManager() {
   std::shared_ptr<bookfiler::certificate::ManagerImpl> managerPtr = std::make_shared<bookfiler::certificate::ManagerImpl>();
+  managerPtr->setSettingsDoc(settingsDoc);
   return std::dynamic_pointer_cast<bookfiler::certificate::Manager>(managerPtr);
 }
 

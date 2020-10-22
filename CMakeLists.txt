@@ -26,6 +26,7 @@ include_directories(
   include
   third_party/rapidjson/include
   third_party/boost-url/include
+  third_party/certify/include
 )
 
 link_directories(

@@ -74,6 +74,7 @@ public:
                                      std::shared_ptr<rapidjson::Document>) = 0;
   virtual int addCertificate(std::shared_ptr<Certificate>) = 0;
   virtual int saveCertificate(std::shared_ptr<Certificate>, std::string) = 0;
+  virtual int loadCertificate(std::shared_ptr<Certificate> &) = 0;
 };
 
 } // namespace certificate

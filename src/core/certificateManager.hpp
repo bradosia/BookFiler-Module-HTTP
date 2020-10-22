@@ -59,10 +59,12 @@ private:
   std::vector<std::shared_ptr<CertificateNativeImpl>> certList;
   std::shared_ptr<CertificateNativeImpl> certRootLocalhostPtr,
       certServerLocalhostPtr;
+  std::shared_ptr<rapidjson::Value> settingsDoc;
 
 public:
   ManagerImpl();
   ~ManagerImpl();
+  int setSettingsDoc(std::shared_ptr<rapidjson::Value> settingsDoc_);
   int createX509Store();
 
   /* Creates a new certificate using the settings specified in the json
@@ -83,6 +85,7 @@ public:
                              std::shared_ptr<rapidjson::Document>);
   int addCertificate(std::shared_ptr<Certificate>);
   int saveCertificate(std::shared_ptr<Certificate>, std::string);
+  int loadCertificate(std::shared_ptr<Certificate> &);
 };
 
 } // namespace certificate

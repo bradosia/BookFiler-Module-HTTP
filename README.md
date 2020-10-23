@@ -202,8 +202,6 @@ std::shared_ptr<bookfiler::HTTP::Server> httpServer;
 int main() {
   bookfiler::HTTP::loadModule("modules", std::bind(&allModulesLoaded),
                               httpModule);
-
-  system("pause");
   return 0;
 }
 

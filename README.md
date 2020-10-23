@@ -192,23 +192,50 @@ init();
 
 ### c++
 ```cpp
-#include <ExpressWeb.h>
+#include <BookFilerModuleHttpLoader.hpp>
 
-auto server = ExpressWeb::Server({{ "port", 3000 }, { "host", "localhost" }});
-server.route({
-    {"method", "GET"},
-    {"path", "/"},
-    {"handler", [](ExpressWeb::Request& request, ExpressWeb::Response& response) => {
-        return "Hello, world!";
-    }}
-});
+int allModulesLoaded();
 
-server.start((err) => {
-    if (err) {
-        throw err;
-    }
-    console.log(`Server running at: ${server.info.uri}`);
-});
+std::shared_ptr<bookfiler::HTTP::ModuleInterface> httpModule;
+std::shared_ptr<bookfiler::HTTP::Server> httpServer;
+
+int main() {
+  bookfiler::HTTP::loadModule("modules", std::bind(&allModulesLoaded),
+                              httpModule);
+
+  system("pause");
+  return 0;
+}
+
+int allModulesLoaded() {
+  // SSL Certificate manager
+  std::shared_ptr<bookfiler::certificate::Manager> certificateManager =
+      httpModule->newCertificateManager();
+  std::shared_ptr<bookfiler::certificate::Certificate> certRootPtr,
+      certServerPtr;
+  certificateManager->loadCertificate(certRootPtr);
+
+  // Setup server
+  httpServer = httpModule->newServer({{"port", 3000}, {"host", "localhost"}});
+  httpServer->useCertificate(certRootPtr);
+
+  // Route by using a lambda expression
+  httpServer->route(
+      {{"method", "GET"},
+       {"path", "/"},
+       {"handler",
+        [](bookfiler::HTTP::settings settings, bookfiler::HTTP::request req,
+           bookfiler::HTTP::response res) -> int {
+          std::cout << "Routed!" << std::endl;
+          return 0;
+        }}});
+
+  // Start server
+  httpServer->runAsync();
+
+  return 0;
+}
+
 ```
 
 

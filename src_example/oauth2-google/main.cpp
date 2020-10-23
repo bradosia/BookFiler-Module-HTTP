@@ -66,9 +66,9 @@ int loadModules() {
   /* Module Load
    */
   moduleManagerPtr = std::make_shared<bradosia::ModuleManager>();
-  moduleManagerPtr->addModule<bookfiler::HTTP::ModuleInterface>("mySQLModule");
+  moduleManagerPtr->addModule<bookfiler::HTTP::ModuleInterface>("bookfilerHttpModule");
   moduleManagerPtr
-      ->getCallbackLoadSignal<bookfiler::HTTP::ModuleInterface>("mySQLModule")
+      ->getCallbackLoadSignal<bookfiler::HTTP::ModuleInterface>("bookfilerHttpModule")
       ->connect(std::bind(&moduleLoaded, std::placeholders::_1));
   moduleManagerPtr->callbackLoadAllSignal.connect(std::bind(&allModulesLoaded));
   moduleManagerPtr->loadModules("modules");
@@ -134,14 +134,14 @@ int allModulesLoaded() {
       mySQL_Module->newCertificateManager();
   std::shared_ptr<bookfiler::certificate::Certificate> certRootPtr,
       certServerPtr;
-  //certificateManager->newCertRootLocalhost(certRootPtr, nullptr);
+  // certificateManager->newCertRootLocalhost(certRootPtr, nullptr);
   certificateManager->loadCertificate(certRootPtr);
   if (certRootPtr) {
     std::cout << "root Certificate Info: " << certRootPtr->getInfo()
               << std::endl;
-    //certificateManager->saveCertificate(certRootPtr,"root");
-    //certificateManager->addCertificate(certRootPtr);
-    //certificateManager->newCertServerLocalhost(certServerPtr, nullptr);
+    // certificateManager->saveCertificate(certRootPtr,"root");
+    // certificateManager->addCertificate(certRootPtr);
+    // certificateManager->newCertServerLocalhost(certServerPtr, nullptr);
     if (certServerPtr) {
       std::cout << "Server Certificate Info: " << certServerPtr->getInfo()
                 << std::endl;
@@ -155,6 +155,7 @@ int allModulesLoaded() {
   httpServer->useCertificate(certRootPtr);
   httpServer->runAsync();
   httpServer->routeSignal->connect(&routeSlot);
+  //httpServer->route({{{'method', 'GET'}, {'path', '/'}}});
 
   // authorization url
   std::shared_ptr<bookfiler::HTTP::Url> authUrl = mySQL_Module->newUrl();

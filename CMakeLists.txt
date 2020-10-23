@@ -158,7 +158,8 @@ if(BUILD_STATIC_LIBS)
 endif()
 
 # EXAMPLES
-add_subdirectory(src_example/http-connect)
+add_subdirectory(src_example/http-client-json)
+add_subdirectory(src_example/http-server)
 add_subdirectory(src_example/oauth2-google)
 
 # Post build

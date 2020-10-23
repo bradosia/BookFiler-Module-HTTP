@@ -1,4 +1,4 @@
-set(EXENAME http-connect)
+set(EXENAME http-server)
 
 set(SOURCES_SUB ${SOURCES_SUB}
   main.cpp
@@ -8,7 +8,7 @@ set(HEADERS_SUB
   src/Module.hpp
   src/core/config.hpp
 
-  BookFiler-Module-HTTP-Curl/Interface.hpp
+  BookFiler-Module-HTTP/Interface.hpp
 )
 
 include_directories(

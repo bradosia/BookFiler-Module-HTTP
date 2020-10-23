@@ -11,8 +11,11 @@
 
 // c++17
 #include <functional>
+#include <initializer_list>
+#include <iostream>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <unordered_map>
 
 /* boost 1.72.0
@@ -24,6 +27,10 @@
 #define BOOST_URL_HEADER_ONLY 1
 #include <boost/url.hpp>
 #include <boost/url/url.hpp>
+
+#include <boost/variant.hpp>
+#include <boost/variant/apply_visitor.hpp>
+#include <boost/variant/get.hpp>
 
 /* rapidjson v1.1 (2016-8-25)
  * Developed by Tencent
@@ -117,6 +124,43 @@ using routeSignalType = boost::signals2::signal<int(
     std::shared_ptr<
         boost::beast::http::response<boost::beast::http::string_body>>)>;
 
+class Pairx {
+  std::string key;
+  std::string val1;
+  int val2;
+  double val3;
+
+public:
+  Pairx(std::pair<std::string, std::string> pair_) {
+    key = pair_.first;
+    val1 = pair_.second;
+  }
+  Pairx(std::pair<std::string, int> pair_) {
+    key = pair_.first;
+    val2 = pair_.second;
+  }
+  Pairx(std::pair<std::string, double> pair_) {
+    key = pair_.first;
+    val3 = pair_.second;
+  }
+};
+
+class times_two_visitor : public boost::static_visitor<> {
+public:
+  void operator()(std::pair<std::string, int> &val_) const {
+    std::cout << "int: " << val_.second << std::endl;
+  }
+  void operator()(std::pair<std::string, double> &val_) const {
+    std::cout << "double: " << val_.second << std::endl;
+  }
+  void operator()(std::pair<std::string, bool> &val_) const {
+    std::cout << "bool: " << val_.second << std::endl;
+  }
+  void operator()(std::pair<std::string, std::string> &val_) const {
+    std::cout << "string: " << val_.second << std::endl;
+  }
+};
+
 class Server {
 public:
   // virtual int run() = 0;
@@ -124,6 +168,23 @@ public:
   virtual int runAsync() = 0;
   virtual int
       useCertificate(std::shared_ptr<bookfiler::certificate::Certificate>) = 0;
+  int route(
+      std::map<std::string, boost::variant<int, double, bool, std::string>>
+          map) {
+    for (auto val : map) {
+      std::cout << "type: " << val.second.which() << std::endl;
+      if (int *val_ = boost::get<int>(&val.second)) {
+        std::cout << "int: " << *val_ << std::endl;
+      } else if (double *val_ = boost::get<double>(&val.second)) {
+        std::cout << "double: " << *val_ << std::endl;
+      } else if (bool *val_ = boost::get<bool>(&val.second)) {
+        std::cout << "bool: " << *val_ << std::endl;
+      } else if (std::string *val_ = boost::get<std::string>(&val.second)) {
+        std::cout << "string: " << *val_ << std::endl;
+      }
+    }
+    return 0;
+  }
 };
 
 class ModuleInterface {

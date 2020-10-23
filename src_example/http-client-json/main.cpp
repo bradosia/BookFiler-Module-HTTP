@@ -58,9 +58,9 @@ int loadModules() {
   /* Module Load
    */
   moduleManagerPtr = std::make_shared<bradosia::ModuleManager>();
-  moduleManagerPtr->addModule<bookfiler::HTTP::ModuleInterface>("mySQLModule");
+  moduleManagerPtr->addModule<bookfiler::HTTP::ModuleInterface>("bookfilerHttpModule");
   moduleManagerPtr
-      ->getCallbackLoadSignal<bookfiler::HTTP::ModuleInterface>("mySQLModule")
+      ->getCallbackLoadSignal<bookfiler::HTTP::ModuleInterface>("bookfilerHttpModule")
       ->connect(std::bind(&moduleLoaded, std::placeholders::_1));
   moduleManagerPtr->callbackLoadAllSignal.connect(std::bind(&allModulesLoaded));
   moduleManagerPtr->loadModules("modules");

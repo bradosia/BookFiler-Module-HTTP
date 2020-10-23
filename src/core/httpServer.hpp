@@ -18,6 +18,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <functional>
+#include <initializer_list>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -88,7 +89,13 @@ public:
   int extractSettings();
   void runIoContext();
   int useCertificate(std::shared_ptr<bookfiler::certificate::Certificate>);
+  template <typename... Values> int route(std::initializer_list<Values>...);
 };
+
+template <typename... Values> int ServerImpl::route(std::initializer_list<Values>... args) {
+  std::cout << "route" << std::endl;
+  return 0;
+}
 
 } // namespace HTTP
 } // namespace bookfiler

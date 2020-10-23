@@ -87,8 +87,8 @@ public:
 
 // Exporting `my_namespace::module` variable with alias name `module`
 // (Has the same effect as `BOOST_DLL_ALIAS(my_namespace::module, module)`)
-extern "C" BOOST_SYMBOL_EXPORT ModuleExport mySQLModule;
-ModuleExport mySQLModule;
+extern "C" BOOST_SYMBOL_EXPORT ModuleExport bookfilerHttpModule;
+ModuleExport bookfilerHttpModule;
 
 } // namespace HTTP
 } // namespace bookfiler

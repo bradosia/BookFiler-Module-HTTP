@@ -1,4 +1,4 @@
-set(EXENAME oauth2-google)
+set(EXENAME http-client-json)
 
 set(SOURCES_SUB ${SOURCES_SUB}
   main.cpp

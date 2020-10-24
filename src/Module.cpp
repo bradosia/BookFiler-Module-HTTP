@@ -1,7 +1,7 @@
 /*
- * @name BookFiler Module - HTTP w/ Curl
+ * @name BookFiler Module - HTTP
  * @author Branden Lee
- * @version 1.00
+ * @version 1.01
  * @license MIT
  * @brief HTTP module for BookFiler™ applications.
  */
@@ -82,7 +82,7 @@ std::shared_ptr<Url> ModuleExport::newUrl() {
   return std::dynamic_pointer_cast<Url>(urlPtr);
 }
 
-std::shared_ptr<Server> ModuleExport::newServer() {
+std::shared_ptr<Server> ModuleExport::newServer(std::unordered_map<std::string, newServerVariantType> map) {
   std::shared_ptr<ServerImpl> serverPtr = std::make_shared<ServerImpl>();
   serverPtr->setSettingsDoc(settingsDoc);
   return std::dynamic_pointer_cast<Server>(serverPtr);

@@ -11,11 +11,9 @@
 
 // c++17
 #include <functional>
-#include <initializer_list>
 #include <iostream>
 #include <memory>
 #include <string>
-#include <tuple>
 #include <unordered_map>
 
 /* boost 1.72.0
@@ -117,74 +115,51 @@ public:
   virtual int exec() = 0;
 };
 
-using routeSignalType = boost::signals2::signal<int(
-    std::shared_ptr<rapidjson::Document>,
-    std::shared_ptr<
-        boost::beast::http::request<boost::beast::http::string_body>>,
-    std::shared_ptr<
-        boost::beast::http::response<boost::beast::http::string_body>>)>;
+using settings = std::shared_ptr<rapidjson::Document>;
+using requestBeast = std::shared_ptr<
+    boost::beast::http::request<boost::beast::http::string_body>>;
+using responseBeast = std::shared_ptr<
+    boost::beast::http::response<boost::beast::http::string_body>>;
 
-class Pairx {
-  std::string key;
-  std::string val1;
-  int val2;
-  double val3;
-
+class Request {
 public:
-  Pairx(std::pair<std::string, std::string> pair_) {
-    key = pair_.first;
-    val1 = pair_.second;
-  }
-  Pairx(std::pair<std::string, int> pair_) {
-    key = pair_.first;
-    val2 = pair_.second;
-  }
-  Pairx(std::pair<std::string, double> pair_) {
-    key = pair_.first;
-    val3 = pair_.second;
-  }
+  virtual requestBeast getRequest() = 0;
 };
 
-class times_two_visitor : public boost::static_visitor<> {
+class Response {
 public:
-  void operator()(std::pair<std::string, int> &val_) const {
-    std::cout << "int: " << val_.second << std::endl;
-  }
-  void operator()(std::pair<std::string, double> &val_) const {
-    std::cout << "double: " << val_.second << std::endl;
-  }
-  void operator()(std::pair<std::string, bool> &val_) const {
-    std::cout << "bool: " << val_.second << std::endl;
-  }
-  void operator()(std::pair<std::string, std::string> &val_) const {
-    std::cout << "string: " << val_.second << std::endl;
-  }
+  virtual responseBeast getResponse() = 0;
+  /* Sends the HTTP response.
+   */
+  virtual int send(std::string) = 0;
 };
+
+using request = std::shared_ptr<Request>;
+using response = std::shared_ptr<Response>;
+
+using routeSignalType =
+    boost::signals2::signal<int(settings, requestBeast, responseBeast)>;
+using routeFunctionBeastType =
+    std::function<int(settings, requestBeast, responseBeast)>;
+using routeFunctionExpressType = std::function<std::string(request, response)>;
+
+// makes the arguments look like JSON
+using routeVariantType =
+    boost::variant<int, double, std::string, routeFunctionBeastType,
+                   routeFunctionExpressType>;
+using routeObjectType = std::unordered_map<std::string, routeVariantType>;
+using routeArrayType = std::vector<routeVariantType>;
+
+using newServerVariantType = boost::variant<int, double, std::string>;
 
 class Server {
 public:
   // virtual int run() = 0;
-  std::shared_ptr<routeSignalType> routeSignal;
   virtual int runAsync() = 0;
   virtual int
       useCertificate(std::shared_ptr<bookfiler::certificate::Certificate>) = 0;
-  int route(
-      std::map<std::string, boost::variant<int, double, bool, std::string>>
-          map) {
-    for (auto val : map) {
-      std::cout << "type: " << val.second.which() << std::endl;
-      if (int *val_ = boost::get<int>(&val.second)) {
-        std::cout << "int: " << *val_ << std::endl;
-      } else if (double *val_ = boost::get<double>(&val.second)) {
-        std::cout << "double: " << *val_ << std::endl;
-      } else if (bool *val_ = boost::get<bool>(&val.second)) {
-        std::cout << "bool: " << *val_ << std::endl;
-      } else if (std::string *val_ = boost::get<std::string>(&val.second)) {
-        std::cout << "string: " << *val_ << std::endl;
-      }
-    }
-    return 0;
-  }
+  virtual int route(std::unordered_map<std::string, routeVariantType> map) = 0;
+  virtual std::shared_ptr<routeSignalType> getRouteSignal() = 0;
 };
 
 class ModuleInterface {
@@ -204,7 +179,8 @@ public:
           std::function<void(std::shared_ptr<rapidjson::Document>)>>>) = 0;
   virtual std::shared_ptr<Connection> newConnection() = 0;
   virtual std::shared_ptr<Url> newUrl() = 0;
-  virtual std::shared_ptr<Server> newServer() = 0;
+  virtual std::shared_ptr<Server>
+      newServer(std::unordered_map<std::string, newServerVariantType>) = 0;
   virtual std::shared_ptr<bookfiler::certificate::Manager>
   newCertificateManager() = 0;
 };

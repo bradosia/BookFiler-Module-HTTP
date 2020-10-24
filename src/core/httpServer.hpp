@@ -53,6 +53,8 @@
 // Local Project
 #include "certificateManager.hpp"
 #include "httpServerListener.hpp"
+#include "httpServerRequest.hpp"
+#include "httpServerResponse.hpp"
 #include <BookFiler-Module-HTTP/Interface.hpp>
 
 namespace beast = boost::beast;   // from <boost/beast.hpp>
@@ -80,6 +82,7 @@ private:
 
 public:
   boost::signals2::signal<int(std::string)> requestSignal;
+  std::shared_ptr<routeSignalType> routeSignal;
 
   ServerImpl();
   ~ServerImpl();
@@ -89,13 +92,9 @@ public:
   int extractSettings();
   void runIoContext();
   int useCertificate(std::shared_ptr<bookfiler::certificate::Certificate>);
-  template <typename... Values> int route(std::initializer_list<Values>...);
+  int route(std::unordered_map<std::string, routeVariantType> map);
+  std::shared_ptr<routeSignalType> getRouteSignal();
 };
-
-template <typename... Values> int ServerImpl::route(std::initializer_list<Values>... args) {
-  std::cout << "route" << std::endl;
-  return 0;
-}
 
 } // namespace HTTP
 } // namespace bookfiler

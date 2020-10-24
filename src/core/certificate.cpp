@@ -209,7 +209,7 @@ int CertificateNativeImpl::toX509() {
   return 0;
 }
 
-std::string CertificateNativeImpl::getNativeName() {}
+std::string CertificateNativeImpl::getNativeName() { return ""; }
 
 } // namespace certificate
 } // namespace bookfiler

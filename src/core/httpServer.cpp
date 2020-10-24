@@ -181,5 +181,59 @@ int ServerImpl::useCertificate(
   return 0;
 }
 
+int ServerImpl::route(std::unordered_map<std::string, routeVariantType> map) {
+  for (auto val : map) {
+    std::cout << "key: " << val.first << "\ntype: " << val.second.which()
+              << std::endl;
+    if (val.second.which() == 0) {
+      int *val_ = boost::get<int>(&val.second);
+      std::cout << "int: " << *val_ << std::endl;
+    } else if (val.second.which() == 1) {
+      double *val_ = boost::get<double>(&val.second);
+      std::cout << "double: " << *val_ << std::endl;
+    } else if (val.second.which() == 2) {
+      std::string *val_ = boost::get<std::string>(&val.second);
+      std::cout << "string: " << *val_ << std::endl;
+    } else if (val.second.which() == 3) {
+      routeFunctionBeastType *val_ =
+          boost::get<routeFunctionBeastType>(&val.second);
+      std::cout << "routeFunctionBeastType added" << std::endl;
+      routeSignal->connect(*val_);
+    } else if (val.second.which() == 4) {
+      /* converts from an Express-like callback to the native Beast callback */
+      routeFunctionExpressType val_ =
+          std::move(boost::get<routeFunctionExpressType>(val.second));
+
+      std::cout << "routeFunctionExpressType added" << std::endl;
+      routeSignal->connect([val_](settings settingsDoc, requestBeast reqBeast,
+                                  responseBeast resBeast) -> int {
+        std::shared_ptr<RequestImpl> reqImpl = std::make_shared<RequestImpl>();
+        std::shared_ptr<ResponseImpl> resImpl =
+            std::make_shared<ResponseImpl>();
+        reqImpl->setRequest(reqBeast);
+        resImpl->setResponse(resBeast);
+        request req = std::dynamic_pointer_cast<Request>(reqImpl);
+        response res = std::dynamic_pointer_cast<Response>(resImpl);
+        std::string returnStr = val_(req, res);
+        resBeast->result(boost::beast::http::status::ok);
+        resBeast->version(reqBeast->version());
+        resBeast->set(boost::beast::http::field::server,
+                      BOOST_BEAST_VERSION_STRING);
+        resBeast->set(boost::beast::http::field::content_type, "text/html");
+        resBeast->keep_alive(reqBeast->keep_alive());
+        resBeast->body() = returnStr;
+        resBeast->content_length(resBeast->body().length());
+        resBeast->prepare_payload();
+        return 0;
+      });
+    }
+  }
+  return 0;
+}
+
+std::shared_ptr<routeSignalType> ServerImpl::getRouteSignal() {
+  return routeSignal;
+}
+
 } // namespace HTTP
 } // namespace bookfiler

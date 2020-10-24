@@ -81,7 +81,7 @@ public:
   int setSettings(std::shared_ptr<rapidjson::Value>);
   std::shared_ptr<Connection> newConnection();
   std::shared_ptr<Url> newUrl();
-  std::shared_ptr<Server> newServer();
+  std::shared_ptr<Server> newServer(std::unordered_map<std::string, newServerVariantType>);
   std::shared_ptr<bookfiler::certificate::Manager> newCertificateManager();
 };
 

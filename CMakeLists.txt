@@ -39,6 +39,8 @@ set(SOURCES
   src/core/httpCurl.cpp
   src/core/httpUtil.cpp
   src/core/httpServer.cpp
+  src/core/httpServerRequest.cpp
+  src/core/httpServerResponse.cpp
   src/core/httpServerListener.cpp
   src/core/httpServerSession.cpp
   src/core/httpServerUtil.cpp
@@ -55,6 +57,8 @@ set(HEADERS
   src/core/httpCurl.hpp
   src/core/httpUtil.hpp
   src/core/httpServer.hpp
+  src/core/httpServerRequest.hpp
+  src/core/httpServerResponse.hpp
   src/core/httpServerListener.hpp
   src/core/httpServerSession.hpp
   src/core/httpServerUtil.hpp
@@ -64,6 +68,7 @@ set(HEADERS
   src/core/certificate.cpp
 
   include/BookFiler-Module-HTTP/Interface.hpp
+  include/BookFilerModuleHttpLoader.hpp
 )
 
 set(SHARED_COMPILE_DEFINITIONS
@@ -160,6 +165,7 @@ endif()
 # EXAMPLES
 add_subdirectory(src_example/http-client-json)
 add_subdirectory(src_example/http-server)
+add_subdirectory(src_example/http-server-minimal)
 add_subdirectory(src_example/oauth2-google)
 
 # Post build

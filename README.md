@@ -190,7 +190,7 @@ process.on('unhandledRejection', (err) => {
 init();
 ```
 
-### c++
+### C++
 ```cpp
 #include <BookFilerModuleHttpLoader.hpp>
 
@@ -202,6 +202,8 @@ std::shared_ptr<bookfiler::HTTP::Server> httpServer;
 int main() {
   bookfiler::HTTP::loadModule("modules", std::bind(&allModulesLoaded),
                               httpModule);
+
+  system("pause");
   return 0;
 }
 
@@ -218,22 +220,19 @@ int allModulesLoaded() {
   httpServer->useCertificate(certRootPtr);
 
   // Route by using a lambda expression
-  httpServer->route(
-      {{"method", "GET"},
-       {"path", "/"},
-       {"handler",
-        [](bookfiler::HTTP::settings settings, bookfiler::HTTP::request req,
-           bookfiler::HTTP::response res) -> int {
-          std::cout << "Routed!" << std::endl;
-          return 0;
-        }}});
+  httpServer->route({{"method", "GET"},
+                     {"path", "/"},
+                     {"handler",
+                      [](bookfiler::HTTP::request req,
+                         bookfiler::HTTP::response res) -> std::string {
+                        return "Hello World!";
+                      }}});
 
   // Start server
   httpServer->runAsync();
 
   return 0;
 }
-
 ```
 
 

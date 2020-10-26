@@ -90,14 +90,15 @@ public:
 namespace bookfiler {
 namespace HTTP {
 
+using newUrlVariantType = std::variant<int, double, std::string>;
+using queryMap = std::unordered_map<std::string, std::string>;
+
 class Url {
 public:
-  virtual int setBase(std::string) = 0;
-  virtual int setFields(
+  virtual int setQuery(
       std::shared_ptr<std::unordered_map<std::string, std::string>>) = 0;
-  virtual int setFields(std::shared_ptr<rapidjson::Document>) = 0;
-  virtual std::string getURL() = 0;
-  virtual std::string getFieldsStr() = 0;
+  virtual int setQuery(std::shared_ptr<rapidjson::Document>) = 0;
+  virtual std::string_view getURL() = 0;
 };
 
 using newClientVariantType = std::variant<int, double, std::string>;
@@ -108,12 +109,12 @@ public:
       jsonReceivedSignal;
   boost::signals2::signal<int(std::string)> dataReceivedSignal;
   virtual int setURL(std::string) = 0;
-  virtual int setFields(
+  virtual int setQuery(
       std::shared_ptr<std::unordered_map<std::string, std::string>>) = 0;
   virtual int setHeaders(
       std::shared_ptr<std::unordered_map<std::string, std::string>>) = 0;
   virtual int setMethod(std::string) = 0;
-  virtual int exec() = 0;
+  virtual int end() = 0;
 };
 
 #if BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE
@@ -209,7 +210,8 @@ public:
   virtual std::shared_ptr<Client> newClient() = 0;
   virtual std::shared_ptr<Client>
       newClient(std::unordered_map<std::string, newClientVariantType>) = 0;
-  virtual std::shared_ptr<Url> newUrl() = 0;
+  virtual std::shared_ptr<Url>
+      newUrl(std::unordered_map<std::string, newUrlVariantType>) = 0;
   virtual std::shared_ptr<Server>
       newServer(std::unordered_map<std::string, newServerVariantType>) = 0;
   virtual std::shared_ptr<bookfiler::certificate::Manager>

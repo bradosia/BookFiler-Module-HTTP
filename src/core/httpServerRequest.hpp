@@ -51,6 +51,7 @@
 #include <boost/signals2.hpp>
 
 // Local Project
+#include "httpUrl.hpp"
 #include <BookFiler-Module-HTTP/Interface.hpp>
 
 /*
@@ -67,6 +68,9 @@ private:
   requestBeastInternal reqBeast;
 
 public:
+  RequestImpl();
+  ~RequestImpl();
+  std::shared_ptr<UrlImpl> urlPtr;
   std::string methodStr, pathStr, queryStr;
   std::string_view refererStr, userAgentStr, targetStr, hostStr;
   // methods

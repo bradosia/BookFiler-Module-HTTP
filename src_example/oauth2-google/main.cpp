@@ -66,24 +66,21 @@ int allModulesLoaded() {
                                            std::placeholders::_2)}});
 
   // authorization url
-  std::shared_ptr<bookfiler::HTTP::Url> authUrl = httpModule->newUrl();
-  authUrl->setBase("https://accounts.google.com/o/oauth2/v2/auth");
-  std::shared_ptr<std::unordered_map<std::string, std::string>> fieldsMap =
-      std::make_shared<std::unordered_map<std::string, std::string>>();
-  fieldsMap->insert({"client_id",
-                     "854776203850-r64s69l8jmh71ugiio16impqfcp80j1m.apps."
-                     "googleusercontent.com"});
-  fieldsMap->insert({"scope", "https://mail.google.com/"});
-  fieldsMap->insert({"response_type", "code"});
-  fieldsMap->insert({"redirect_uri", "https://localhost:8082"});
-  authUrl->setFields(fieldsMap);
+  std::shared_ptr<bookfiler::HTTP::Url> authUrl =
+      httpModule->newUrl({{"host", "accounts.google.com"},
+                          {"path", "/o/oauth2/v2/auth"},
+                          {"scheme", "https"}});
+  std::shared_ptr<bookfiler::HTTP::queryMap> queryMap =
+      std::make_shared<bookfiler::HTTP::queryMap>();
+  queryMap->insert({"client_id",
+                    "854776203850-r64s69l8jmh71ugiio16impqfcp80j1m.apps."
+                    "googleusercontent.com"});
+  queryMap->insert({"scope", "https://mail.google.com/"});
+  queryMap->insert({"response_type", "code"});
+  queryMap->insert({"redirect_uri", "https://localhost:8082"});
+  authUrl->setQuery(queryMap);
 
-  boost::url authUrl2;
-  authUrl2.set_scheme("https");
-  authUrl2.set_host("accounts.google.com/o/oauth2/v2/auth");
-  std::string fieldsStr = authUrl->getFieldsStr();
-  authUrl2.set_query(fieldsStr);
-  std::cout << authUrl2.encoded_url() << "\n\n";
+  std::cout << "authUrl->getURL()" << authUrl->getURL() << "\n\n";
 
   // open google oauth2 window
   std::string windowOpenCommand = "explorer \"";
@@ -98,8 +95,12 @@ int allModulesLoaded() {
 
   /* Start an HTTP post request to get the access token
    */
-  std::shared_ptr<bookfiler::HTTP::Client> httpClient =
-      httpModule->newClient();
+  std::shared_ptr<bookfiler::HTTP::Client> httpClient = httpModule->newClient({
+      {"host", "oauth2.googleapis.com"},
+      {"path", "/token"},
+      {"scheme", "https"},
+      {"method", "POST"},
+  });
 
   // token url
   std::shared_ptr<std::unordered_map<std::string, std::string>> tokenFieldsMap =
@@ -114,10 +115,8 @@ int allModulesLoaded() {
 
   httpClient->jsonReceivedSignal.connect(
       std::bind(&jsonReceived, std::placeholders::_1));
-  httpClient->setURL("https://oauth2.googleapis.com/token");
-  httpClient->setFields(tokenFieldsMap);
-  httpClient->setMethod("POST");
-  rc = httpClient->exec();
+  httpClient->setQuery(tokenFieldsMap);
+  rc = httpClient->end();
   if (rc < 0) {
     std::cout << "Could not access webpage by HTTP\n";
     return 0;
@@ -160,13 +159,12 @@ int jsonReceived(std::shared_ptr<rapidjson::Document> jsonDoc) {
   baseUrl.append("https://gmail.googleapis.com/gmail/v1/users/")
       .append(userId)
       .append("/messages");
-  std::shared_ptr<bookfiler::HTTP::Client> httpClient =
-      httpModule->newClient();
+  std::shared_ptr<bookfiler::HTTP::Client> httpClient = httpModule->newClient();
   httpClient->setURL(baseUrl);
   std::shared_ptr<std::unordered_map<std::string, std::string>> fieldsMap =
       std::make_shared<std::unordered_map<std::string, std::string>>();
   fieldsMap->insert({"maxResults", "20"});
-  httpClient->setFields(fieldsMap);
+  httpClient->setQuery(fieldsMap);
 
   std::shared_ptr<std::unordered_map<std::string, std::string>> headerMap =
       std::make_shared<std::unordered_map<std::string, std::string>>();
@@ -177,7 +175,7 @@ int jsonReceived(std::shared_ptr<rapidjson::Document> jsonDoc) {
   httpClient->setMethod("GET");
   httpClient->jsonReceivedSignal.connect(
       std::bind(&apiJsonReceived, std::placeholders::_1));
-  rc = httpClient->exec();
+  rc = httpClient->end();
   if (rc < 0) {
     std::cout << "Could not access webpage by HTTP\n";
     return 0;
@@ -199,6 +197,6 @@ int apiJsonReceived(std::shared_ptr<rapidjson::Document> jsonDoc) {
 std::string routeAll(bookfiler::HTTP::request req,
                      bookfiler::HTTP::response res) {
   std::string bodyStr = "<h1>URL Data</h1><br>";
-  bodyStr.append(req->url());
+  bodyStr.append(req->path());
   return bodyStr;
 }

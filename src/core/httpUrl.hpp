@@ -44,18 +44,16 @@ namespace HTTP {
 
 class UrlImpl : public Url, public boost::url {
 private:
-  std::string base;
   std::shared_ptr<std::unordered_map<std::string, std::string>> fieldsMapPtr;
 
 public:
   UrlImpl();
+  UrlImpl(std::unordered_map<std::string, newUrlVariantType>);
   ~UrlImpl();
-  int setBase(std::string);
-  int setFields(std::shared_ptr<std::unordered_map<std::string, std::string>>);
-  int setFields(std::shared_ptr<rapidjson::Document>);
-  std::string getURL();
-  std::string getBase();
-  std::string getFieldsStr();
+  int setQuery(std::shared_ptr<queryMap>);
+  int setQuery(std::shared_ptr<rapidjson::Document>);
+  std::string getQueryStr();
+  std::string_view getURL();
 };
 
 } // namespace HTTP

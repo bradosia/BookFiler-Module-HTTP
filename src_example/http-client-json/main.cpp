@@ -42,14 +42,13 @@ int allModulesLoaded() {
   std::shared_ptr<bookfiler::HTTP::Client> httpClient = httpModule->newClient({
       {"host", "data.nba.net"},
       {"path", "/prod/v1/20170201/0021600732_boxscore.json"},
+      {"scheme", "http"},
       {"method", "GET"},
   });
-  rc = httpClient->setURL(
-      "http://data.nba.net/prod/v1/20170201/0021600732_boxscore.json");
   httpClient->jsonReceivedSignal.connect(
       std::bind(&jsonReceived, std::placeholders::_1));
   httpClient->setMethod("GET");
-  rc = httpClient->exec();
+  rc = httpClient->end();
   if (rc < 0) {
     std::cout << "Could not access webpage by HTTP\n";
     return -1;

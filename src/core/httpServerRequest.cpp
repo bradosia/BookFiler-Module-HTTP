@@ -15,6 +15,13 @@
 namespace bookfiler {
 namespace HTTP {
 
+RequestImpl::RequestImpl(){
+    urlPtr = std::make_shared<UrlImpl>();
+}
+RequestImpl::~RequestImpl(){
+
+}
+
 requestBeastInternal RequestImpl::getRequest() { return reqBeast; }
 int RequestImpl::setRequest(requestBeastInternal reqBeast_) {
   reqBeast = reqBeast_;

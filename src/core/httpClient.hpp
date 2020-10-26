@@ -36,10 +36,10 @@ public:
   ~ClientImpl();
   int setSettingsDoc(std::shared_ptr<rapidjson::Value>);
   int setURL(std::string);
-  int setFields(std::shared_ptr<std::unordered_map<std::string, std::string>>);
+  int setQuery(std::shared_ptr<std::unordered_map<std::string, std::string>>);
   int setHeaders(std::shared_ptr<std::unordered_map<std::string, std::string>>);
   int setMethod(std::string method);
-  int exec();
+  int end();
 };
 
 } // namespace HTTP

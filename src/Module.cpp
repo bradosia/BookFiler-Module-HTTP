@@ -84,8 +84,9 @@ std::shared_ptr<Client> ModuleExport::newClient(
   return std::dynamic_pointer_cast<Client>(connectionPtr);
 }
 
-std::shared_ptr<Url> ModuleExport::newUrl() {
-  std::shared_ptr<UrlImpl> urlPtr = std::make_shared<UrlImpl>();
+std::shared_ptr<Url>
+ModuleExport::newUrl(std::unordered_map<std::string, newUrlVariantType> map) {
+  std::shared_ptr<UrlImpl> urlPtr = std::make_shared<UrlImpl>(map);
   return std::dynamic_pointer_cast<Url>(urlPtr);
 }
 

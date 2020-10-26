@@ -57,10 +57,10 @@ int ClientImpl::setURL(std::string url_) {
   urlPtr->set_encoded_url(url_);
   return 0;
 }
-int ClientImpl::setFields(
+int ClientImpl::setQuery(
     std::shared_ptr<std::unordered_map<std::string, std::string>>
         fieldsMapPtr) {
-  urlPtr->setFields(fieldsMapPtr);
+  urlPtr->setQuery(fieldsMapPtr);
   return 0;
 }
 
@@ -76,7 +76,7 @@ int ClientImpl::setMethod(std::string method_) {
   return 0;
 }
 
-int ClientImpl::exec() {
+int ClientImpl::end() {
   CURL *curlHandle;
   CURLcode res;
   std::string bufferString, CaInfoPath, fieldsStr;
@@ -107,12 +107,12 @@ int ClientImpl::exec() {
   }
 
   responseJSON_Doc = std::make_shared<rapidjson::Document>();
-  fieldsStr = urlPtr->getFieldsStr();
 
   std::cout << moduleCode
             << "::ClientImpl::open Connection Settings:\nURL Host: "
             << urlPtr->encoded_host() << "\nURL: " << urlPtr->encoded_url()
-            << "\nURL Field String: " << fieldsStr
+            << "\nURL data: " << std::string(urlPtr->encoded_url()).c_str()
+            << "\nURL Field String: " << std::string(urlPtr->encoded_query()).c_str()
             << "\nHTTP Method: " << method << "\nCaInfoPath: " << CaInfoPath
             << "\nskipPeerVerification: " << skipPeerVerification
             << "\nskipHostnameVerification: " << skipHostnameVerification
@@ -127,10 +127,12 @@ int ClientImpl::exec() {
 
   if (method == "POST") {
     std::cout << moduleCode << "::ClientImpl::open HTTP POST\n";
-    curl_easy_setopt(curlHandle, CURLOPT_URL, urlPtr->encoded_url().data());
+    curl_easy_setopt(curlHandle, CURLOPT_URL,
+                     std::string(urlPtr->encoded_url()).c_str());
     curl_easy_setopt(curlHandle, CURLOPT_POSTFIELDS, fieldsStr.c_str());
   } else {
-    curl_easy_setopt(curlHandle, CURLOPT_URL, urlPtr->encoded_url().data());
+    curl_easy_setopt(curlHandle, CURLOPT_URL,
+                     std::string(urlPtr->encoded_url()).c_str());
   }
   curl_easy_setopt(curlHandle, CURLOPT_CAINFO, CaInfoPath.c_str());
 

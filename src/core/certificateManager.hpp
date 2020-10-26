@@ -44,7 +44,6 @@
 
 // Local Project
 #include "certificate.hpp"
-#include <BookFiler-Module-HTTP/Interface.hpp>
 
 /*
  * bookfiler - certificate

@@ -15,8 +15,8 @@
 namespace bookfiler {
 namespace HTTP {
 
-responseBeast ResponseImpl::getResponse() { return resBeast; }
-int ResponseImpl::setResponse(responseBeast resBeast_) {
+responseBeastInternal ResponseImpl::getResponse() { return resBeast; }
+int ResponseImpl::setResponse(responseBeastInternal resBeast_) {
   resBeast = resBeast_;
   return 0;
 }

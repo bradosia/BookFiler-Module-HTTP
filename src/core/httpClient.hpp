@@ -6,12 +6,15 @@
  * @brief HTTP module for BookFiler™ applications.
  */
 
-#ifndef BOOKFILER_MODULE_HTTP_HTTP_CURL_H
-#define BOOKFILER_MODULE_HTTP_HTTP_CURL_H
+#ifndef BOOKFILER_MODULE_HTTP_HTTP_CLIENT_H
+#define BOOKFILER_MODULE_HTTP_HTTP_CLIENT_H
+
+// config
+#include "config.hpp"
 
 // Local Project
 #include "Curl.hpp"
-#include "httpUtil.hpp"
+#include "httpUrl.hpp"
 
 /*
  * bookfiler - MySQL
@@ -19,7 +22,7 @@
 namespace bookfiler {
 namespace HTTP {
 
-class ConnectionImpl : public Connection {
+class ClientImpl : public Client {
 private:
   std::shared_ptr<UrlImpl> urlPtr;
   std::shared_ptr<rapidjson::Value> settingsDoc;
@@ -28,8 +31,9 @@ private:
   std::shared_ptr<std::unordered_map<std::string, std::string>> headersMapPtr;
 
 public:
-  ConnectionImpl();
-  ~ConnectionImpl();
+  ClientImpl();
+  ClientImpl(std::unordered_map<std::string, newClientVariantType> map);
+  ~ClientImpl();
   int setSettingsDoc(std::shared_ptr<rapidjson::Value>);
   int setURL(std::string);
   int setFields(std::shared_ptr<std::unordered_map<std::string, std::string>>);

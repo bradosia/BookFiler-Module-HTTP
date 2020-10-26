@@ -36,15 +36,15 @@ link_directories(
 set(SOURCES
   src/Module.cpp
   src/core/Curl.cpp
-  src/core/httpCurl.cpp
-  src/core/httpUtil.cpp
+  src/core/httpUrl.cpp
+  src/core/httpClient.cpp
   src/core/httpServer.cpp
   src/core/httpServerRequest.cpp
   src/core/httpServerResponse.cpp
   src/core/httpServerListener.cpp
+  src/core/httpServerAccept.cpp
   src/core/httpServerSession.cpp
   src/core/httpServerUtil.cpp
-  src/core/httpServerCertificate.cpp
   src/core/json.cpp
   src/core/certificateManager.hpp
   src/core/certificate.hpp
@@ -54,15 +54,15 @@ set(HEADERS
   src/Module.hpp
   src/core/config.hpp
   src/core/Curl.hpp
-  src/core/httpCurl.hpp
-  src/core/httpUtil.hpp
+  src/core/httpUrl.hpp
+  src/core/httpClient.hpp
   src/core/httpServer.hpp
   src/core/httpServerRequest.hpp
   src/core/httpServerResponse.hpp
   src/core/httpServerListener.hpp
+  src/core/httpServerAccept.hpp
   src/core/httpServerSession.hpp
   src/core/httpServerUtil.hpp
-  src/core/httpServerCertificate.hpp
   src/core/json.hpp
   src/core/certificateManager.cpp
   src/core/certificate.cpp

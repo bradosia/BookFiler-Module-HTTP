@@ -65,16 +65,18 @@ void Listener::on_accept(beast::error_code ec, tcp::socket socket) {
     fail(ec, "accept");
   } else {
     // Create the session and run it
-    session = std::make_shared<Session>(std::move(socket), sslContext, docRoot);
-    session->setRouteSignal(routeSignal);
-    session->run();
+    acceptPtr =
+        std::make_shared<Accept>(std::move(socket), sslContext, docRoot);
+    acceptPtr->setRouteSignal(routeSignal);
+    acceptPtr->run();
   }
 
   // Accept another connection
   do_accept();
 }
 
-int Listener::setRouteSignal(std::shared_ptr<routeSignalType> routeSignal_) {
+int Listener::setRouteSignal(
+    std::shared_ptr<routeSignalTypeInternal> routeSignal_) {
   routeSignal = routeSignal_;
   return 0;
 }

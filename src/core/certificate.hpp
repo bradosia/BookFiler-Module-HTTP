@@ -78,6 +78,7 @@
 #include <openssl/x509v3.h>
 
 // Local Project
+#define BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE 1
 #include <BookFiler-Module-HTTP/Interface.hpp>
 
 /*

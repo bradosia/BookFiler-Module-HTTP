@@ -7,6 +7,7 @@
  */
 
 // Bookfiler Modules
+#define BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE 1
 #include <BookFilerModuleHttpLoader.hpp>
 
 std::string routeAll(bookfiler::HTTP::request req,
@@ -97,8 +98,8 @@ int allModulesLoaded() {
 
   /* Start an HTTP post request to get the access token
    */
-  std::shared_ptr<bookfiler::HTTP::Connection> HTTP_Connection =
-      httpModule->newConnection();
+  std::shared_ptr<bookfiler::HTTP::Client> httpClient =
+      httpModule->newClient();
 
   // token url
   std::shared_ptr<std::unordered_map<std::string, std::string>> tokenFieldsMap =
@@ -111,12 +112,12 @@ int allModulesLoaded() {
   tokenFieldsMap->insert({"redirect_uri", "urn:ietf:wg:oauth:2.0:oob"});
   tokenFieldsMap->insert({"code", auth_code});
 
-  HTTP_Connection->jsonReceivedSignal.connect(
+  httpClient->jsonReceivedSignal.connect(
       std::bind(&jsonReceived, std::placeholders::_1));
-  HTTP_Connection->setURL("https://oauth2.googleapis.com/token");
-  HTTP_Connection->setFields(tokenFieldsMap);
-  HTTP_Connection->setMethod("POST");
-  rc = HTTP_Connection->exec();
+  httpClient->setURL("https://oauth2.googleapis.com/token");
+  httpClient->setFields(tokenFieldsMap);
+  httpClient->setMethod("POST");
+  rc = httpClient->exec();
   if (rc < 0) {
     std::cout << "Could not access webpage by HTTP\n";
     return 0;
@@ -159,24 +160,24 @@ int jsonReceived(std::shared_ptr<rapidjson::Document> jsonDoc) {
   baseUrl.append("https://gmail.googleapis.com/gmail/v1/users/")
       .append(userId)
       .append("/messages");
-  std::shared_ptr<bookfiler::HTTP::Connection> HTTP_Connection =
-      httpModule->newConnection();
-  HTTP_Connection->setURL(baseUrl);
+  std::shared_ptr<bookfiler::HTTP::Client> httpClient =
+      httpModule->newClient();
+  httpClient->setURL(baseUrl);
   std::shared_ptr<std::unordered_map<std::string, std::string>> fieldsMap =
       std::make_shared<std::unordered_map<std::string, std::string>>();
   fieldsMap->insert({"maxResults", "20"});
-  HTTP_Connection->setFields(fieldsMap);
+  httpClient->setFields(fieldsMap);
 
   std::shared_ptr<std::unordered_map<std::string, std::string>> headerMap =
       std::make_shared<std::unordered_map<std::string, std::string>>();
   headerMap->insert({"Authorization: Bearer ", accessToken});
   headerMap->insert({"Accept: ", "application/json"});
-  HTTP_Connection->setHeaders(headerMap);
+  httpClient->setHeaders(headerMap);
 
-  HTTP_Connection->setMethod("GET");
-  HTTP_Connection->jsonReceivedSignal.connect(
+  httpClient->setMethod("GET");
+  httpClient->jsonReceivedSignal.connect(
       std::bind(&apiJsonReceived, std::placeholders::_1));
-  rc = HTTP_Connection->exec();
+  rc = httpClient->exec();
   if (rc < 0) {
     std::cout << "Could not access webpage by HTTP\n";
     return 0;
@@ -198,6 +199,6 @@ int apiJsonReceived(std::shared_ptr<rapidjson::Document> jsonDoc) {
 std::string routeAll(bookfiler::HTTP::request req,
                      bookfiler::HTTP::response res) {
   std::string bodyStr = "<h1>URL Data</h1><br>";
-  bodyStr.append(req->getRequest()->target().data());
+  bodyStr.append(req->url());
   return bodyStr;
 }

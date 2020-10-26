@@ -69,12 +69,19 @@ int ModuleExport::setSettings(std::shared_ptr<rapidjson::Value> jsonDoc) {
   return 0;
 }
 
-std::shared_ptr<Connection> ModuleExport::newConnection() {
-  std::shared_ptr<ConnectionImpl> connectionPtr =
-      std::make_shared<ConnectionImpl>();
+std::shared_ptr<Client> ModuleExport::newClient() {
+  std::shared_ptr<ClientImpl> connectionPtr = std::make_shared<ClientImpl>();
   connectionPtr->setSettingsDoc(settingsDoc);
   // connectionPtr->setAccountsDoc(accountsDoc);
-  return std::dynamic_pointer_cast<Connection>(connectionPtr);
+  return std::dynamic_pointer_cast<Client>(connectionPtr);
+}
+
+std::shared_ptr<Client> ModuleExport::newClient(
+    std::unordered_map<std::string, newClientVariantType> map) {
+  std::shared_ptr<ClientImpl> connectionPtr = std::make_shared<ClientImpl>(map);
+  connectionPtr->setSettingsDoc(settingsDoc);
+  // connectionPtr->setAccountsDoc(accountsDoc);
+  return std::dynamic_pointer_cast<Client>(connectionPtr);
 }
 
 std::shared_ptr<Url> ModuleExport::newUrl() {
@@ -82,7 +89,8 @@ std::shared_ptr<Url> ModuleExport::newUrl() {
   return std::dynamic_pointer_cast<Url>(urlPtr);
 }
 
-std::shared_ptr<Server> ModuleExport::newServer(std::unordered_map<std::string, newServerVariantType> map) {
+std::shared_ptr<Server> ModuleExport::newServer(
+    std::unordered_map<std::string, newServerVariantType> map) {
   std::shared_ptr<ServerImpl> serverPtr = std::make_shared<ServerImpl>();
   serverPtr->setSettingsDoc(settingsDoc);
   return std::dynamic_pointer_cast<Server>(serverPtr);
@@ -90,7 +98,8 @@ std::shared_ptr<Server> ModuleExport::newServer(std::unordered_map<std::string, 
 
 std::shared_ptr<bookfiler::certificate::Manager>
 ModuleExport::newCertificateManager() {
-  std::shared_ptr<bookfiler::certificate::ManagerImpl> managerPtr = std::make_shared<bookfiler::certificate::ManagerImpl>();
+  std::shared_ptr<bookfiler::certificate::ManagerImpl> managerPtr =
+      std::make_shared<bookfiler::certificate::ManagerImpl>();
   managerPtr->setSettingsDoc(settingsDoc);
   return std::dynamic_pointer_cast<bookfiler::certificate::Manager>(managerPtr);
 }

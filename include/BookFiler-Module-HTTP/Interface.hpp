@@ -15,20 +15,19 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <variant>
 
 /* boost 1.72.0
  * License: Boost Software License (similar to BSD and MIT)
  */
+#if BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
+#endif
 #include <boost/signals2.hpp>
 #define BOOST_URL_HEADER_ONLY 1
 #include <boost/url.hpp>
 #include <boost/url/url.hpp>
-
-#include <boost/variant.hpp>
-#include <boost/variant/apply_visitor.hpp>
-#include <boost/variant/get.hpp>
 
 /* rapidjson v1.1 (2016-8-25)
  * Developed by Tencent
@@ -101,7 +100,9 @@ public:
   virtual std::string getFieldsStr() = 0;
 };
 
-class Connection {
+using newClientVariantType = std::variant<int, double, std::string>;
+
+class Client {
 public:
   boost::signals2::signal<int(std::shared_ptr<rapidjson::Document>)>
       jsonReceivedSignal;
@@ -115,42 +116,68 @@ public:
   virtual int exec() = 0;
 };
 
-using settings = std::shared_ptr<rapidjson::Document>;
+#if BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE
 using requestBeast = std::shared_ptr<
     boost::beast::http::request<boost::beast::http::string_body>>;
 using responseBeast = std::shared_ptr<
     boost::beast::http::response<boost::beast::http::string_body>>;
+#endif
 
 class Request {
 public:
+  virtual std::string_view url() = 0;
+  virtual std::string_view method() = 0;
+  virtual std::string_view host() = 0;
+  virtual std::string path() = 0;
+  virtual std::string query() = 0;
+#if BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE
   virtual requestBeast getRequest() = 0;
+#endif
 };
 
 class Response {
 public:
-  virtual responseBeast getResponse() = 0;
   /* Sends the HTTP response.
    */
   virtual int send(std::string) = 0;
+#if BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE
+  virtual responseBeast getResponse() = 0;
+#endif
+};
+
+class Session {
+public:
+  virtual int routeValidate(std::shared_ptr<Request> req,
+                            std::string_view method, std::string_view path) = 0;
+#if BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE
+  virtual std::shared_ptr<Request> parseRequest(requestBeast reqBeast) = 0;
+#endif
 };
 
 using request = std::shared_ptr<Request>;
 using response = std::shared_ptr<Response>;
 
-using routeSignalType =
-    boost::signals2::signal<int(settings, requestBeast, responseBeast)>;
+#if BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE
+using routeSignalType = boost::signals2::signal<int(
+    std::shared_ptr<Session>, requestBeast, responseBeast)>;
 using routeFunctionBeastType =
-    std::function<int(settings, requestBeast, responseBeast)>;
+    std::function<int(std::shared_ptr<Session>, requestBeast, responseBeast)>;
+#endif
 using routeFunctionExpressType = std::function<std::string(request, response)>;
 
 // makes the arguments look like JSON
+#if BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE
 using routeVariantType =
-    boost::variant<int, double, std::string, routeFunctionBeastType,
-                   routeFunctionExpressType>;
+    std::variant<int, double, std::string, routeFunctionExpressType,
+                 routeFunctionBeastType>;
+#else
+using routeVariantType =
+    std::variant<int, double, std::string, routeFunctionExpressType>;
+#endif
 using routeObjectType = std::unordered_map<std::string, routeVariantType>;
 using routeArrayType = std::vector<routeVariantType>;
 
-using newServerVariantType = boost::variant<int, double, std::string>;
+using newServerVariantType = std::variant<int, double, std::string>;
 
 class Server {
 public:
@@ -159,7 +186,9 @@ public:
   virtual int
       useCertificate(std::shared_ptr<bookfiler::certificate::Certificate>) = 0;
   virtual int route(std::unordered_map<std::string, routeVariantType> map) = 0;
+#if BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE
   virtual std::shared_ptr<routeSignalType> getRouteSignal() = 0;
+#endif
 };
 
 class ModuleInterface {
@@ -177,7 +206,9 @@ public:
       std::shared_ptr<std::unordered_map<
           std::string,
           std::function<void(std::shared_ptr<rapidjson::Document>)>>>) = 0;
-  virtual std::shared_ptr<Connection> newConnection() = 0;
+  virtual std::shared_ptr<Client> newClient() = 0;
+  virtual std::shared_ptr<Client>
+      newClient(std::unordered_map<std::string, newClientVariantType>) = 0;
   virtual std::shared_ptr<Url> newUrl() = 0;
   virtual std::shared_ptr<Server>
       newServer(std::unordered_map<std::string, newServerVariantType>) = 0;

@@ -9,6 +9,9 @@
 #ifndef BOOKFILER_MODULE_HTTP_HTTP_UTIL_H
 #define BOOKFILER_MODULE_HTTP_HTTP_UTIL_H
 
+// config
+#include "config.hpp"
+
 // C++17
 //#include <filesystem>
 #include <fstream>
@@ -39,7 +42,7 @@
 namespace bookfiler {
 namespace HTTP {
 
-class UrlImpl : public Url {
+class UrlImpl : public Url, public boost::url {
 private:
   std::string base;
   std::shared_ptr<std::unordered_map<std::string, std::string>> fieldsMapPtr;

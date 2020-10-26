@@ -59,13 +59,24 @@
 namespace bookfiler {
 namespace HTTP {
 
+using requestBeastInternal = std::shared_ptr<
+    boost::beast::http::request<boost::beast::http::string_body>>;
+
 class RequestImpl : public Request {
 private:
-  requestBeast reqBeast;
+  requestBeastInternal reqBeast;
 
 public:
-  requestBeast getRequest();
-  int setRequest(requestBeast);
+  std::string methodStr, pathStr, queryStr;
+  std::string_view refererStr, userAgentStr, targetStr, hostStr;
+  // methods
+  std::string_view url();
+  std::string_view method();
+  std::string_view host();
+  std::string path();
+  std::string query();
+  requestBeastInternal getRequest();
+  int setRequest(requestBeastInternal);
 };
 
 } // namespace HTTP

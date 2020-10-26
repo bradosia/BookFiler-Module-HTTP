@@ -6,6 +6,11 @@
  * @brief HTTP module for BookFiler™ applications.
  */
 
+/* boost 1.72.0
+ * License: Boost Software License (similar to BSD and MIT)
+ */
+#include <boost/core/ignore_unused.hpp>
+
 // Local Project
 #include "certificateManager.hpp"
 

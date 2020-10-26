@@ -38,11 +38,10 @@
 #include <rapidjson/writer.h>
 
 // Local Project
-#include "core/httpCurl.hpp"
+#include "core/httpClient.hpp"
 #include "core/httpServer.hpp"
 #include "core/certificateManager.hpp"
 #include "core/json.hpp"
-#include <BookFiler-Module-HTTP/Interface.hpp>
 
 /*
  * bookfiler - MySQL
@@ -79,7 +78,8 @@ public:
           std::function<void(std::shared_ptr<rapidjson::Document>)>>>);
   int setAccounts(std::shared_ptr<rapidjson::Value>);
   int setSettings(std::shared_ptr<rapidjson::Value>);
-  std::shared_ptr<Connection> newConnection();
+  std::shared_ptr<Client> newClient();
+  std::shared_ptr<Client> newClient(std::unordered_map<std::string, newClientVariantType>);
   std::shared_ptr<Url> newUrl();
   std::shared_ptr<Server> newServer(std::unordered_map<std::string, newServerVariantType>);
   std::shared_ptr<bookfiler::certificate::Manager> newCertificateManager();

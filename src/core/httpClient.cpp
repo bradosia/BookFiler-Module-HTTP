@@ -7,7 +7,7 @@
  */
 
 // Local Project
-#include "httpCurl.hpp"
+#include "httpClient.hpp"
 
 /*
  * bookfiler - MySQL
@@ -15,42 +15,68 @@
 namespace bookfiler {
 namespace HTTP {
 
-ConnectionImpl::ConnectionImpl() {
+ClientImpl::ClientImpl() {
   urlPtr = std::make_shared<UrlImpl>();
   method = "GET";
 };
-ConnectionImpl::~ConnectionImpl(){};
+ClientImpl::ClientImpl(
+    std::unordered_map<std::string, newClientVariantType> map) {
+  urlPtr = std::make_shared<UrlImpl>();
+  for (auto val : map) {
+    if (int *val_ = std::get_if<int>(&val.second)) {
+    } else if (double *val_ = std::get_if<double>(&val.second)) {
+    } else if (std::string *val_ = std::get_if<std::string>(&val.second)) {
+      if (val.first == "method") {
+        method = *val_;
+      } else if (val.first == "host") {
+        urlPtr->set_encoded_host(*val_);
+      } else if (val.first == "path") {
+        urlPtr->set_encoded_path(*val_);
+      } else if (val.first == "scheme") {
+        urlPtr->set_scheme(*val_);
+      } else if (val.first == "query") {
+        urlPtr->set_query(*val_);
+      }
+    }
+  }
+  if (urlPtr->scheme().empty()) {
+    if (method == "GET") {
+      urlPtr->set_scheme("https");
+    }
+  }
+  std::cout << "urlPtr->encoded_url: " << urlPtr->encoded_url() << std::endl;
+};
+ClientImpl::~ClientImpl(){};
 
-int ConnectionImpl::setSettingsDoc(
-    std::shared_ptr<rapidjson::Value> settingsDoc_) {
+int ClientImpl::setSettingsDoc(std::shared_ptr<rapidjson::Value> settingsDoc_) {
   settingsDoc = settingsDoc_;
   return 0;
 }
 
-int ConnectionImpl::setURL(std::string url_) {
-  urlPtr->setBase(url_);
+int ClientImpl::setURL(std::string url_) {
+  urlPtr->set_encoded_url(url_);
   return 0;
 }
-int ConnectionImpl::setFields(
+int ClientImpl::setFields(
     std::shared_ptr<std::unordered_map<std::string, std::string>>
         fieldsMapPtr) {
   urlPtr->setFields(fieldsMapPtr);
   return 0;
 }
 
-int ConnectionImpl::setHeaders(
+int ClientImpl::setHeaders(
     std::shared_ptr<std::unordered_map<std::string, std::string>>
         headersMapPtr_) {
   headersMapPtr = headersMapPtr_;
   return 0;
 }
 
-int ConnectionImpl::setMethod(std::string method_) {
+int ClientImpl::setMethod(std::string method_) {
   method = method_;
   return 0;
 }
 
-int ConnectionImpl::exec() {
+int ClientImpl::exec() {
   CURL *curlHandle;
   CURLcode res;
   std::string bufferString, CaInfoPath, fieldsStr;
@@ -60,7 +86,7 @@ int ConnectionImpl::exec() {
   /* Get settings from JSON document */
   if (!settingsDoc->IsObject()) {
     std::cout << moduleCode
-              << "::ConnectionImpl::exec ERROR:\nSettings document invalid"
+              << "::ClientImpl::exec ERROR:\nSettings document invalid"
               << std::endl;
     return -1;
   }
@@ -84,8 +110,9 @@ int ConnectionImpl::exec() {
   fieldsStr = urlPtr->getFieldsStr();
 
   std::cout << moduleCode
-            << "::ConnectionImpl::open Connection Settings:\nURL Base: "
-            << urlPtr->getBase() << "\nURL Field String: " << fieldsStr
+            << "::ClientImpl::open Connection Settings:\nURL Host: "
+            << urlPtr->encoded_host() << "\nURL: " << urlPtr->encoded_url()
+            << "\nURL Field String: " << fieldsStr
             << "\nHTTP Method: " << method << "\nCaInfoPath: " << CaInfoPath
             << "\nskipPeerVerification: " << skipPeerVerification
             << "\nskipHostnameVerification: " << skipHostnameVerification
@@ -99,11 +126,11 @@ int ConnectionImpl::exec() {
   }
 
   if (method == "POST") {
-    std::cout << moduleCode << "::ConnectionImpl::open HTTP POST\n";
-    curl_easy_setopt(curlHandle, CURLOPT_URL, urlPtr->getBase().c_str());
+    std::cout << moduleCode << "::ClientImpl::open HTTP POST\n";
+    curl_easy_setopt(curlHandle, CURLOPT_URL, urlPtr->encoded_url().data());
     curl_easy_setopt(curlHandle, CURLOPT_POSTFIELDS, fieldsStr.c_str());
   } else {
-    curl_easy_setopt(curlHandle, CURLOPT_URL, urlPtr->getURL().c_str());
+    curl_easy_setopt(curlHandle, CURLOPT_URL, urlPtr->encoded_url().data());
   }
   curl_easy_setopt(curlHandle, CURLOPT_CAINFO, CaInfoPath.c_str());
 

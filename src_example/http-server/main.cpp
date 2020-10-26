@@ -7,9 +7,11 @@
  */
 
 // Bookfiler Modules
+#define BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE 1
 #include <BookFilerModuleHttpLoader.hpp>
 
-int routeAll(bookfiler::HTTP::settings settings, bookfiler::HTTP::requestBeast req,
+int routeAll(std::shared_ptr<bookfiler::HTTP::Session> session,
+             bookfiler::HTTP::requestBeast req,
              bookfiler::HTTP::responseBeast res);
 std::string routeAbout(bookfiler::HTTP::request req,
                        bookfiler::HTTP::response res);
@@ -45,8 +47,10 @@ int allModulesLoaded() {
   httpServer->useCertificate(certRootPtr);
 
   // Route using signals and slots
+  std::cout << "httpServer->getRouteSignal()->connect" << std::endl;
   httpServer->getRouteSignal()->connect(&routeAll);
 
+  std::cout << "httpServer->route" << std::endl;
   // Route by using a lambda expression
   httpServer->route({{"method", "GET"},
                      {"path", "/"},
@@ -57,11 +61,10 @@ int allModulesLoaded() {
                       }}});
 
   // Route by binding a callback function
-  httpServer->route(
-      {{"method", "GET"},
-       {"path", "/about"},
-       {"handler", std::bind(&routeAbout, std::placeholders::_1,
-                             std::placeholders::_2)}});
+  httpServer->route({{"method", "GET"},
+                     {"path", "/about"},
+                     {"handler", std::bind(&routeAbout, std::placeholders::_1,
+                                           std::placeholders::_2)}});
 
   // Start server
   httpServer->runAsync();
@@ -69,17 +72,19 @@ int allModulesLoaded() {
   return 0;
 }
 
-int routeAll(bookfiler::HTTP::settings settings,
-             bookfiler::HTTP::requestBeast req,
+int routeAll(std::shared_ptr<bookfiler::HTTP::Session> session,
+             bookfiler::HTTP::requestBeast reqBeast,
              bookfiler::HTTP::responseBeast res) {
+  std::shared_ptr<bookfiler::HTTP::Request> req =
+      session->parseRequest(reqBeast);
   std::string bodyStr = "<h1>URL Data</h1><br>";
-  bodyStr.append(req->target().data());
+  bodyStr.append(req->query());
 
   res->result(boost::beast::http::status::ok);
-  res->version(req->version());
+  res->version(reqBeast->version());
   res->set(boost::beast::http::field::server, BOOST_BEAST_VERSION_STRING);
   res->set(boost::beast::http::field::content_type, "text/html");
-  res->keep_alive(req->keep_alive());
+  res->keep_alive(reqBeast->keep_alive());
   res->body() = bodyStr;
   res->content_length(res->body().length());
   res->prepare_payload();
@@ -89,7 +94,6 @@ int routeAll(bookfiler::HTTP::settings settings,
 std::string routeAbout(bookfiler::HTTP::request req,
                        bookfiler::HTTP::response res) {
   std::string bodyStr = "<h1>About</h1><br><h1>URL Data</h1><br>";
-  bodyStr.append(req->getRequest()->target().data());
-  std::cout << bodyStr << std::endl;
+  bodyStr.append(req->query());
   return bodyStr;
 }

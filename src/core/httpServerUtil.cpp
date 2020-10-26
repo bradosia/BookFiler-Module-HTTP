@@ -119,10 +119,8 @@ void fail(beast::error_code ec, char const *what) {
   std::cerr << what << ": " << ec.message() << "\n";
 }
 
-int badRequest(
-    std::shared_ptr<beast::http::request<beast::http::string_body>> req,
-    std::shared_ptr<beast::http::response<beast::http::string_body>> res,
-    beast::string_view what) {
+int badRequest(requestBeastInternal req, responseBeastInternal res,
+               beast::string_view what) {
   res->result(http::status::bad_request);
   res->version(req->version());
   res->set(http::field::server, BOOST_BEAST_VERSION_STRING);
@@ -134,10 +132,8 @@ int badRequest(
   return 0;
 }
 
-int notFound(
-    std::shared_ptr<beast::http::request<beast::http::string_body>> req,
-    std::shared_ptr<beast::http::response<beast::http::string_body>> res,
-    beast::string_view what) {
+int notFound(requestBeastInternal req, responseBeastInternal res,
+             beast::string_view what) {
   res->result(http::status::not_found);
   res->version(req->version());
   res->set(http::field::server, BOOST_BEAST_VERSION_STRING);
@@ -149,10 +145,8 @@ int notFound(
   return 0;
 }
 
-int serverError(
-    std::shared_ptr<beast::http::request<beast::http::string_body>> req,
-    std::shared_ptr<beast::http::response<beast::http::string_body>> res,
-    beast::string_view what) {
+int serverError(requestBeastInternal req, responseBeastInternal res,
+                beast::string_view what) {
   res->result(http::status::internal_server_error);
   res->version(req->version());
   res->set(http::field::server, BOOST_BEAST_VERSION_STRING);
@@ -164,10 +158,8 @@ int serverError(
   return 0;
 }
 
-int getRequest(
-    std::shared_ptr<beast::http::request<beast::http::string_body>> req,
-    std::shared_ptr<beast::http::response<beast::http::string_body>> res,
-    beast::string_view why) {
+int getRequest(requestBeastInternal req, responseBeastInternal res,
+               beast::string_view why) {
   res->result(http::status::ok);
   res->version(req->version());
   res->set(http::field::server, BOOST_BEAST_VERSION_STRING);
@@ -179,11 +171,10 @@ int getRequest(
   return 0;
 }
 
-int handleRequest(
-    std::shared_ptr<rapidjson::Document> sessionDocument,
-    std::shared_ptr<beast::http::request<beast::http::string_body>> req,
-    std::shared_ptr<beast::http::response<beast::http::string_body>> res,
-    std::shared_ptr<routeSignalType> routeSignal) {
+int handleRequest(std::shared_ptr<Session> session, requestBeastInternal req,
+                  responseBeastInternal res,
+                  std::shared_ptr<routeSignalTypeInternal> routeSignal) {
+  std::cout << "handleRequest" << std::endl;
   // Make sure we can handle the method
   if (req->method() != http::verb::get && req->method() != http::verb::head) {
     return badRequest(req, res, "Unknown HTTP-method");
@@ -193,7 +184,7 @@ int handleRequest(
       req->target().find("..") != beast::string_view::npos) {
     return badRequest(req, res, "Illegal request-target");
   }
-  (*routeSignal)(sessionDocument, req, res);
+  (*routeSignal)(session, req, res);
   // Respond to HEAD request
   /*if (req->method() == http::verb::head) {
     getRequest(req, res, "TESTING RESPONSE");

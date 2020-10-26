@@ -41,21 +41,12 @@
 /* boost 1.72.0
  * License: Boost Software License (similar to BSD and MIT)
  */
-#include <boost/asio/dispatch.hpp>
-#include <boost/asio/strand.hpp>
-#include <boost/beast/core.hpp>
-#include <boost/beast/http.hpp>
-#include <boost/beast/ssl.hpp>
-#include <boost/beast/version.hpp>
 #include <boost/config.hpp>
 #include <boost/signals2.hpp>
 
 // Local Project
 #include "certificateManager.hpp"
 #include "httpServerListener.hpp"
-#include "httpServerRequest.hpp"
-#include "httpServerResponse.hpp"
-#include <BookFiler-Module-HTTP/Interface.hpp>
 
 namespace beast = boost::beast;   // from <boost/beast.hpp>
 namespace http = beast::http;     // from <boost/beast/http.hpp>
@@ -82,7 +73,7 @@ private:
 
 public:
   boost::signals2::signal<int(std::string)> requestSignal;
-  std::shared_ptr<routeSignalType> routeSignal;
+  std::shared_ptr<routeSignalTypeInternal> routeSignal;
 
   ServerImpl();
   ~ServerImpl();
@@ -92,8 +83,12 @@ public:
   int extractSettings();
   void runIoContext();
   int useCertificate(std::shared_ptr<bookfiler::certificate::Certificate>);
-  int route(std::unordered_map<std::string, routeVariantType> map);
-  std::shared_ptr<routeSignalType> getRouteSignal();
+  int route(std::unordered_map<std::string, routeVariantType_Beast> map);
+  int route(std::unordered_map<std::string, routeVariantType_NoBeast> map);
+  int routeSignalAdd(
+      std::shared_ptr<routeFunctionExpressType> routeFunctionExpress,
+      std::string method, std::string path);
+  std::shared_ptr<routeSignalTypeInternal> getRouteSignal();
 };
 
 } // namespace HTTP

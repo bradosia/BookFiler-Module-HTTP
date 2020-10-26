@@ -1,7 +1,7 @@
 /*
- * @name BookFiler Module - HTTP
+ * @name BookFiler Module - HTTP w/ Curl
  * @author Branden Lee
- * @version 1.01
+ * @version 1.00
  * @license MIT
  * @brief HTTP module for BookFiler™ applications.
  */
@@ -15,115 +15,48 @@
 namespace bookfiler {
 namespace HTTP {
 
-Session::Session(tcp::socket &&socket, ssl::context &sslContext,
-                 std::shared_ptr<std::string const> const &docRoot_)
-    : sslStream(std::move(socket), sslContext), docRoot(docRoot_) {
-  req = std::make_shared<http::request<http::string_body>>();
-}
-
-// Start the asynchronous operation
-void Session::run() {
-  // We need to be executing within a strand to perform async operations
-  // on the I/O objects in this session. Although not strictly necessary
-  // for single-threaded contexts, this example code is written to be
-  // thread-safe by default.
-  net::dispatch(
-      sslStream.get_executor(),
-      beast::bind_front_handler(&Session::on_run, shared_from_this()));
-}
-
-void Session::on_run() {
-  // Set the timeout.
-  beast::get_lowest_layer(sslStream).expires_after(std::chrono::seconds(30));
-
-  // Perform the SSL handshake
-  sslStream.async_handshake(
-      ssl::stream_base::server,
-      beast::bind_front_handler(&Session::on_handshake, shared_from_this()));
-}
-
-void Session::on_handshake(beast::error_code ec) {
-  if (ec)
-    return fail(ec, "handshake");
-
-  do_read();
-}
-
-void Session::do_read() {
-  // Make the request empty before reading,
-  // otherwise the operation behavior is undefined.
-  // req_ = {};
-  req = std::make_shared<http::request<http::string_body>>();
-
-  // Set the timeout.
-  beast::get_lowest_layer(sslStream).expires_after(std::chrono::seconds(30));
-
-  // Read a request
-  http::async_read(
-      sslStream, buffer, *req,
-      beast::bind_front_handler(&Session::on_read, shared_from_this()));
-}
-
-void Session::on_read(beast::error_code ec, std::size_t bytes_transferred) {
-  boost::ignore_unused(bytes_transferred);
-
-  // This means they closed the connection
-  if (ec == http::error::end_of_stream)
-    return do_close();
-
-  if (ec)
-    return fail(ec, "read");
-
-  // Send the response
-  res = std::make_shared<http::response<http::string_body>>();
-  handleRequest(sessionDocument, req, res, routeSignal);
-  // this lines 1,152KB -> 3,887KB
-  //http::write(sslStream, *res, ec);
-  //on_write(true, ec, 0);
-  http::async_write(sslStream, *res,
-                    beast::bind_front_handler(&Session::on_write,
-                                              shared_from_this(),
-                                              res->need_eof()));
-}
-
-void Session::on_write(bool close, beast::error_code ec,
-                       std::size_t bytes_transferred) {
-  boost::ignore_unused(bytes_transferred);
-
-  if (ec)
-    return fail(ec, "write");
-
-  if (close) {
-    // This means we should close the connection, usually because
-    // the response indicated the "Connection: close" semantic.
-    return do_close();
+std::shared_ptr<Request> SessionImpl::parseRequest(requestBeastInternal reqBeast) {
+  std::shared_ptr<RequestImpl> reqImpl = std::make_shared<RequestImpl>();
+  reqImpl->methodStr = std::string_view(reqBeast->method_string().data(),
+                                        reqBeast->method_string().size());
+  reqImpl->targetStr =
+      std::string_view(reqBeast->target().data(), reqBeast->target().size());
+  auto userAgentIt = reqBeast->base().find("User-Agent");
+  if (userAgentIt != reqBeast->base().end()) {
+    reqImpl->userAgentStr = std::string_view(userAgentIt->value().data(),
+                                             userAgentIt->value().size());
   }
-
-  // We're done with the response so delete it
-  res = nullptr;
-
-  // Read another request
-  do_read();
+  auto refererIt = reqBeast->base().find("Referer");
+  if (refererIt != reqBeast->base().end()) {
+    reqImpl->refererStr =
+        std::string_view(refererIt->value().data(), refererIt->value().size());
+  }
+  auto hostIt = reqBeast->base().find("Host");
+  if (hostIt != reqBeast->base().end()) {
+    reqImpl->hostStr =
+        std::string_view(hostIt->value().data(), hostIt->value().size());
+  }
+  std::vector<std::string> result;
+  boost::split(result, reqImpl->targetStr, boost::is_any_of("?"));
+  reqImpl->pathStr = result.at(0);
+  reqImpl->queryStr = "";
+  if (result.size() > 1) {
+    reqImpl->queryStr = result.at(1);
+  }
+  reqImpl->setRequest(reqBeast);
+  return std::dynamic_pointer_cast<Request>(reqImpl);
 }
 
-void Session::do_close() {
-  // Set the timeout.
-  beast::get_lowest_layer(sslStream).expires_after(std::chrono::seconds(30));
-
-  // Perform the SSL shutdown
-  sslStream.async_shutdown(
-      beast::bind_front_handler(&Session::on_shutdown, shared_from_this()));
-}
-
-void Session::on_shutdown(beast::error_code ec) {
-  if (ec)
-    return fail(ec, "shutdown");
-
-  // At this point the connection is closed gracefully
-}
-
-int Session::setRouteSignal(std::shared_ptr<routeSignalType> routeSignal_) {
-  routeSignal = routeSignal_;
+int SessionImpl::routeValidate(std::shared_ptr<Request> req, std::string_view method,
+                  std::string_view path) {
+  std::shared_ptr<RequestImpl> reqImpl =
+      std::static_pointer_cast<RequestImpl>(req);
+  if (reqImpl->method() != method) {
+    return -1;
+  }
+  if (reqImpl->path() != path) {
+    return -1;
+  }
   return 0;
 }
 

@@ -50,7 +50,8 @@
 #include <boost/signals2.hpp>
 
 // Local Project
-#include <BookFiler-Module-HTTP/Interface.hpp>
+#include "httpServerRequest.hpp"
+#include "httpServerResponse.hpp"
 
 namespace beast = boost::beast;   // from <boost/beast.hpp>
 namespace http = beast::http;     // from <boost/beast/http.hpp>
@@ -64,6 +65,17 @@ using tcp = boost::asio::ip::tcp; // from <boost/asio/ip/tcp.hpp>
 namespace bookfiler {
 namespace HTTP {
 
+using routeSignalTypeInternal = boost::signals2::signal<int(
+    std::shared_ptr<Session>, requestBeastInternal, responseBeastInternal)>;
+using routeFunctionBeastTypeInternal = std::function<int(
+    std::shared_ptr<Session>, requestBeastInternal, responseBeastInternal)>;
+
+using routeVariantType_Beast =
+    std::variant<int, double, std::string, routeFunctionExpressType,
+                 routeFunctionBeastTypeInternal>;
+using routeVariantType_NoBeast =
+    std::variant<int, double, std::string, routeFunctionExpressType>;
+
 // Return a reasonable mime type based on the extension of a file.
 beast::string_view mime_type(beast::string_view path);
 
@@ -74,31 +86,21 @@ std::string path_cat(beast::string_view base, beast::string_view path);
 // Report a failure
 void fail(beast::error_code ec, char const *what);
 
-int badRequest(
-    std::shared_ptr<beast::http::request<beast::http::string_body>> req,
-    std::shared_ptr<beast::http::response<beast::http::string_body>> res,
-    beast::string_view why);
+int badRequest(requestBeastInternal req, responseBeastInternal res,
+               beast::string_view why);
 
-int notFound(
-    std::shared_ptr<beast::http::request<beast::http::string_body>> req,
-    std::shared_ptr<beast::http::response<beast::http::string_body>> res,
-    beast::string_view why);
+int notFound(requestBeastInternal req, responseBeastInternal res,
+             beast::string_view why);
 
-int serverError(
-    std::shared_ptr<beast::http::request<beast::http::string_body>> req,
-    std::shared_ptr<beast::http::response<beast::http::string_body>> res,
-    beast::string_view why);
+int serverError(requestBeastInternal req, responseBeastInternal res,
+                beast::string_view why);
 
-int getRequest(
-    std::shared_ptr<beast::http::request<beast::http::string_body>> req,
-    std::shared_ptr<beast::http::response<beast::http::string_body>> res,
-    beast::string_view why);
+int getRequest(requestBeastInternal req, responseBeastInternal res,
+               beast::string_view why);
 
-int handleRequest(
-    std::shared_ptr<rapidjson::Document> sessionDocument,
-    std::shared_ptr<beast::http::request<beast::http::string_body>> req,
-    std::shared_ptr<beast::http::response<beast::http::string_body>> res,
-    std::shared_ptr<routeSignalType> routeSignal);
+int handleRequest(std::shared_ptr<Session>, requestBeastInternal req,
+                  responseBeastInternal res,
+                  std::shared_ptr<routeSignalTypeInternal> routeSignal);
 
 } // namespace HTTP
 } // namespace bookfiler

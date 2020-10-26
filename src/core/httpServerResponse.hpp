@@ -59,12 +59,15 @@
 namespace bookfiler {
 namespace HTTP {
 
+using responseBeastInternal = std::shared_ptr<
+    boost::beast::http::response<boost::beast::http::string_body>>;
+
 class ResponseImpl : public Response {
 private:
-    responseBeast resBeast;
+    responseBeastInternal resBeast;
 public:
-    responseBeast getResponse();
-    int setResponse(responseBeast);
+    responseBeastInternal getResponse();
+    int setResponse(responseBeastInternal);
     int send(std::string);
 };
 

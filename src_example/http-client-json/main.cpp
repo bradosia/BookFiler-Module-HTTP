@@ -21,7 +21,6 @@ int jsonReceived(std::shared_ptr<rapidjson::Document>);
 
 std::string testName = "HTTP Client Example";
 std::shared_ptr<bookfiler::HTTP::ModuleInterface> httpModule;
-std::shared_ptr<bookfiler::HTTP::Server> httpServer;
 
 int main() {
   std::cout << testName << " BEGIN" << std::endl;
@@ -40,8 +39,11 @@ int allModulesLoaded() {
   /* Example using the module */
   bookfiler::curl::Init initObj;
 
-  std::shared_ptr<bookfiler::HTTP::Connection> httpClient =
-      httpModule->newConnection();
+  std::shared_ptr<bookfiler::HTTP::Client> httpClient = httpModule->newClient({
+      {"host", "data.nba.net"},
+      {"path", "/prod/v1/20170201/0021600732_boxscore.json"},
+      {"method", "GET"},
+  });
   rc = httpClient->setURL(
       "http://data.nba.net/prod/v1/20170201/0021600732_boxscore.json");
   httpClient->jsonReceivedSignal.connect(

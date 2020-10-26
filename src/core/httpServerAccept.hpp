@@ -6,8 +6,8 @@
  * @brief HTTP module for BookFiler™ applications.
  */
 
-#ifndef BOOKFILER_MODULE_HTTP_HTTP_SERVER_LISTENER_H
-#define BOOKFILER_MODULE_HTTP_HTTP_SERVER_LISTENER_H
+#ifndef BOOKFILER_MODULE_HTTP_HTTP_SERVER_ACCEPT_H
+#define BOOKFILER_MODULE_HTTP_HTTP_SERVER_ACCEPT_H
 
 // config
 #include "config.hpp"
@@ -44,7 +44,8 @@
 #include <boost/signals2.hpp>
 
 // Local Project
-#include "httpServerAccept.hpp"
+#include "httpServerSession.hpp"
+#include "httpServerUtil.hpp"
 
 namespace beast = boost::beast;   // from <boost/beast.hpp>
 namespace http = beast::http;     // from <boost/beast/http.hpp>
@@ -58,27 +59,33 @@ using tcp = boost::asio::ip::tcp; // from <boost/asio/ip/tcp.hpp>
 namespace bookfiler {
 namespace HTTP {
 
-// Accepts incoming connections and launches the sessions
-class Listener : public std::enable_shared_from_this<Listener> {
-  net::io_context &ioContext;
-  ssl::context &sslContext;
-  tcp::acceptor acceptor;
+// Handles an HTTP server connection
+class Accept : public std::enable_shared_from_this<Accept> {
+private:
+  std::shared_ptr<Session> session;
+  beast::ssl_stream<beast::tcp_stream> sslStream;
+  beast::flat_buffer buffer;
   std::shared_ptr<std::string const> docRoot;
+  requestBeastInternal req;
+  responseBeastInternal res;
   std::shared_ptr<routeSignalTypeInternal> routeSignal;
-  std::shared_ptr<Accept> acceptPtr;
 
 public:
-  Listener(net::io_context &ioContext_, ssl::context &sslContext_,
-           tcp::endpoint endpoint,
-           std::shared_ptr<std::string const> const &docRoot);
+  // Take ownership of the socket
+  Accept(tcp::socket &&socket, ssl::context &ctx,
+         std::shared_ptr<std::string const> const &doc_root);
 
-  // Start accepting incoming connections
+  // Start the asynchronous operation
   void run();
+  void on_run();
+  void on_handshake(beast::error_code ec);
+  void do_read();
+  void on_read(beast::error_code ec, std::size_t bytes_transferred);
+  void on_write(bool close, beast::error_code ec,
+                std::size_t bytes_transferred);
+  void do_close();
+  void on_shutdown(beast::error_code ec);
   int setRouteSignal(std::shared_ptr<routeSignalTypeInternal>);
-
-private:
-  void do_accept();
-  void on_accept(beast::error_code ec, tcp::socket socket);
 };
 
 } // namespace HTTP

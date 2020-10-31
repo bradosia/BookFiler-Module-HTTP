@@ -78,7 +78,11 @@ int routeAll(std::shared_ptr<bookfiler::HTTP::Session> session,
   std::shared_ptr<bookfiler::HTTP::Request> req =
       session->parseRequest(reqBeast);
   std::string bodyStr = "<h1>URL Data</h1><br>";
-  bodyStr.append(req->query());
+  bodyStr.append(req->getEncodedQuery());
+  auto codeQuery = req->getQuery("code");
+  if (codeQuery) {
+    bodyStr.append("<br>").append(codeQuery.value());
+  }
 
   res->result(boost::beast::http::status::ok);
   res->version(reqBeast->version());
@@ -94,6 +98,10 @@ int routeAll(std::shared_ptr<bookfiler::HTTP::Session> session,
 std::string routeAbout(bookfiler::HTTP::request req,
                        bookfiler::HTTP::response res) {
   std::string bodyStr = "<h1>About</h1><br><h1>URL Data</h1><br>";
-  bodyStr.append(req->query());
+  bodyStr.append(req->getEncodedQuery());
+  auto codeQuery = req->getQuery("code");
+  if (codeQuery) {
+    bodyStr.append("<br>").append(codeQuery.value());
+  }
   return bodyStr;
 }

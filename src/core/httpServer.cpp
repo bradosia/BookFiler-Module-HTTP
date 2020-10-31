@@ -243,7 +243,6 @@ int ServerImpl::route(
 int ServerImpl::routeSignalAdd(
     std::shared_ptr<routeFunctionExpressType> routeFunctionExpress,
     std::string method, std::string path) {
-  std::cout << "rsdfsdfsdfsdfsdf" << std::endl;
   routeSignal->connect([routeFunctionExpress, method,
                         path](std::shared_ptr<Session> session,
                               requestBeastInternal reqBeast,

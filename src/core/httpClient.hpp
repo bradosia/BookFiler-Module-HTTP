@@ -35,11 +35,13 @@ public:
   ClientImpl(std::unordered_map<std::string, newClientVariantType> map);
   ~ClientImpl();
   int setSettingsDoc(std::shared_ptr<rapidjson::Value>);
+  std::string_view url();
   int setURL(std::string);
-  int setQuery(std::shared_ptr<std::unordered_map<std::string, std::string>>);
+  int setQuery(std::unordered_map<std::string, std::string>);
   int setHeaders(std::shared_ptr<std::unordered_map<std::string, std::string>>);
   int setMethod(std::string method);
   int end();
+  int endCurl();
 };
 
 } // namespace HTTP

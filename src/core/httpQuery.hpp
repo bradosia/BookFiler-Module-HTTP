@@ -6,33 +6,16 @@
  * @brief HTTP module for BookFiler™ applications.
  */
 
-#ifndef BOOKFILER_MODULE_HTTP_HTTP_URL_H
-#define BOOKFILER_MODULE_HTTP_HTTP_URL_H
+#ifndef BOOKFILER_MODULE_HTTP_HTTP_QUERY_H
+#define BOOKFILER_MODULE_HTTP_HTTP_QUERY_H
 
 // config
 #include "config.hpp"
 
 // C++17
-//#include <filesystem>
-#include <fstream>
-#include <iomanip>
 #include <iostream>
-#include <memory>
 #include <string>
-#include <thread>
 #include <unordered_map>
-#include <utility>
-
-/* rapidjson v1.1 (2016-8-25)
- * Developed by Tencent
- * License: MITs
- */
-#include <rapidjson/document.h>
-#include <rapidjson/filewritestream.h>
-#include <rapidjson/ostreamwrapper.h>
-#include <rapidjson/reader.h> // rapidjson::ParseResult
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/writer.h>
 
 /* boost 1.72.0
  * License: Boost Software License (similar to BSD and MIT)
@@ -42,7 +25,7 @@
 #include <boost/url.hpp>
 
 // Local Project
-#include "httpQuery.hpp"
+#include "httpUtil.hpp"
 #include <BookFiler-Module-HTTP/Interface.hpp>
 
 /*
@@ -51,26 +34,28 @@
 namespace bookfiler {
 namespace HTTP {
 
-class UrlImpl : public Url, public QueryImpl, public boost::url {
+class QueryImpl {
 private:
-  int setEncodedQueryBase(std::string);
+  std::unordered_map<std::string, std::string> queryMap;
+  std::string queryEncodedStr;
+  Util util;
 
 public:
-  UrlImpl();
-  UrlImpl(std::unordered_map<std::string, newUrlVariantType>);
-  ~UrlImpl();
-  // Query Methods
+  QueryImpl();
+  QueryImpl(std::string);
+  ~QueryImpl();
   int setQuery(std::unordered_map<std::string, std::string>);
   int setQuery(std::shared_ptr<rapidjson::Document>);
   int setEncodedQuery(std::string);
+  std::string getQuery();
   std::string getEncodedQuery();
   std::optional<std::string> getQuery(std::string);
-  // Url Methods
-  std::string_view url();
+  std::string flattenQueryMap();
+  int generateQueryMap(std::string);
 };
 
 } // namespace HTTP
 } // namespace bookfiler
 
 #endif
-// end BOOKFILER_MODULE_MYSQL_HTTP_H
+// end BOOKFILER_MODULE_HTTP_HTTP_QUERY_H

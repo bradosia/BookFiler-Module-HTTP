@@ -993,7 +993,7 @@ set_query(
         detail::query_pct_set();
     auto const n =
         e.encoded_size(s);
-    auto const dest = resize(
+    auto const dest = (resize)(
         detail::id_query,
         1 + n);
     dest[0] = '?';

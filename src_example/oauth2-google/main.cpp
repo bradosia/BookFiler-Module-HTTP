@@ -6,9 +6,17 @@
  * @brief HTTP module for BookFiler™ applications.
  */
 
+// C++
+#include <condition_variable>
+
 // Bookfiler Modules
 #define BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE 1
 #include <BookFilerModuleHttpLoader.hpp>
+
+std::mutex globalMutex;
+bool authFlag, userIdFlag, applicationFlag;
+std::condition_variable authCondition, userIdCondition, applicationCondition;
+std::string authCode, userId, accessToken, refreshToken;
 
 std::string routeAll(bookfiler::HTTP::request req,
                      bookfiler::HTTP::response res);
@@ -34,6 +42,7 @@ int main() {
 
 int allModulesLoaded() {
   int rc = 0;
+  authFlag = userIdFlag = false;
 
   // SSL Certificate manager
   std::shared_ptr<bookfiler::certificate::Manager> certificateManager =
@@ -70,28 +79,29 @@ int allModulesLoaded() {
       httpModule->newUrl({{"host", "accounts.google.com"},
                           {"path", "/o/oauth2/v2/auth"},
                           {"scheme", "https"}});
-  std::shared_ptr<bookfiler::HTTP::queryMap> queryMap =
-      std::make_shared<bookfiler::HTTP::queryMap>();
-  queryMap->insert({"client_id",
-                    "854776203850-r64s69l8jmh71ugiio16impqfcp80j1m.apps."
-                    "googleusercontent.com"});
-  queryMap->insert({"scope", "https://mail.google.com/"});
-  queryMap->insert({"response_type", "code"});
-  queryMap->insert({"redirect_uri", "https://localhost:8082"});
-  authUrl->setQuery(queryMap);
+  authUrl->setQuery(
+      {{"client_id", "854776203850-r64s69l8jmh71ugiio16impqfcp80j1m.apps."
+                     "googleusercontent.com"},
+       {"scope", "https://mail.google.com/"},
+       {"response_type", "code"},
+       {"redirect_uri", "https://localhost:8081"},
+       {"test", "/*&op=4$@"}});
 
-  std::cout << "authUrl->getURL()" << authUrl->getURL() << "\n\n";
+  std::cout << "allModulesLoaded::authUrl->getURL() = " << authUrl->url()
+            << "\n\n";
 
   // open google oauth2 window
   std::string windowOpenCommand = "explorer \"";
-  windowOpenCommand.append(authUrl->getURL()).append("\"");
+  windowOpenCommand.append(authUrl->url()).append("\"");
   system(windowOpenCommand.c_str());
 
-  std::string auth_code;
-  std::cout << "Please login to your google account and paste in the "
-               "authorization code.\nauthorization code:";
-  std::getline(std::cin, auth_code);
-  std::cout << "\nAuthorization Code: " << auth_code << "\n";
+  std::cout << "\n===MAIN THREAD===\nPlease login to your google account in "
+               "the new window.";
+  {
+    std::unique_lock<std::mutex> mutexLock(globalMutex);
+    authCondition.wait(mutexLock, [] { return authFlag; });
+  }
+  std::cout << "\n===MAIN THREAD===\nAuthorization Code: " << authCode << "\n";
 
   /* Start an HTTP post request to get the access token
    */
@@ -102,21 +112,27 @@ int allModulesLoaded() {
       {"method", "POST"},
   });
 
-  // token url
-  std::shared_ptr<std::unordered_map<std::string, std::string>> tokenFieldsMap =
-      std::make_shared<std::unordered_map<std::string, std::string>>();
-  tokenFieldsMap->insert({"client_id",
-                          "854776203850-r64s69l8jmh71ugiio16impqfcp80j1m.apps."
-                          "googleusercontent.com"});
-  tokenFieldsMap->insert({"client_secret", "18e_rRNMBIJOJ0jWUthY7RKp"});
-  tokenFieldsMap->insert({"grant_type", "authorization_code"});
-  tokenFieldsMap->insert({"redirect_uri", "urn:ietf:wg:oauth:2.0:oob"});
-  tokenFieldsMap->insert({"code", auth_code});
+  std::cout << "allModulesLoaded httpClient->url() = " << httpClient->url()
+            << "\n\n";
 
+  // token url
   httpClient->jsonReceivedSignal.connect(
       std::bind(&jsonReceived, std::placeholders::_1));
-  httpClient->setQuery(tokenFieldsMap);
+  httpClient->setQuery(
+      {{"client_id", "854776203850-r64s69l8jmh71ugiio16impqfcp80j1m.apps."
+                     "googleusercontent.com"},
+       {"client_secret", "18e_rRNMBIJOJ0jWUthY7RKp"},
+       {"grant_type", "authorization_code"},
+       {"redirect_uri", "https://localhost:8081"},
+       {"code", authCode}});
+
+  std::cout << "allModulesLoaded httpClient->url() = " << httpClient->url()
+            << "\n\n";
+
   rc = httpClient->end();
+
+  std::cout << "allModulesLoaded httpClient->url() = " << httpClient->url()
+            << "\n\n";
   if (rc < 0) {
     std::cout << "Could not access webpage by HTTP\n";
     return 0;
@@ -132,7 +148,6 @@ int jsonReceived(std::shared_ptr<rapidjson::Document> jsonDoc) {
   std::cout << "jsonReceived:\n" << buffer.GetString() << std::endl;
 
   /* parse the response */
-  std::string accessToken, refreshToken;
   if (!jsonDoc->IsObject()) {
     std::cout << "jsonReceived ERROR:\nJSON document invalid" << std::endl;
     return -1;
@@ -147,39 +162,20 @@ int jsonReceived(std::shared_ptr<rapidjson::Document> jsonDoc) {
   }
 
   /* Get the user's ID */
-  std::string userId;
-  std::cout << "Please enter your email address.\nuserId:";
-  std::getline(std::cin, userId);
-  std::cout << "\nuserId: " << userId << "\n";
-
-  /* Let's test a call to the Google API!
-   */
-  int rc;
-  std::string baseUrl = "";
-  baseUrl.append("https://gmail.googleapis.com/gmail/v1/users/")
-      .append(userId)
-      .append("/messages");
-  std::shared_ptr<bookfiler::HTTP::Client> httpClient = httpModule->newClient();
-  httpClient->setURL(baseUrl);
-  std::shared_ptr<std::unordered_map<std::string, std::string>> fieldsMap =
-      std::make_shared<std::unordered_map<std::string, std::string>>();
-  fieldsMap->insert({"maxResults", "20"});
-  httpClient->setQuery(fieldsMap);
-
-  std::shared_ptr<std::unordered_map<std::string, std::string>> headerMap =
-      std::make_shared<std::unordered_map<std::string, std::string>>();
-  headerMap->insert({"Authorization: Bearer ", accessToken});
-  headerMap->insert({"Accept: ", "application/json"});
-  httpClient->setHeaders(headerMap);
-
-  httpClient->setMethod("GET");
-  httpClient->jsonReceivedSignal.connect(
-      std::bind(&apiJsonReceived, std::placeholders::_1));
-  rc = httpClient->end();
-  if (rc < 0) {
-    std::cout << "Could not access webpage by HTTP\n";
-    return 0;
+  std::cout << "\n===MAIN THREAD===\nPlease enter your google user ID "
+               "into the form on the new window.";
+  {
+    std::unique_lock<std::mutex> mutexLock(globalMutex);
+    userIdCondition.wait(mutexLock, [] { return userIdFlag; });
   }
+  std::cout << "\n===MAIN THREAD===\nUser ID: " << userId << "\n";
+
+  std::cout << "\n===MAIN THREAD===\nApplication waiting until shut down.";
+  {
+    std::unique_lock<std::mutex> mutexLock(globalMutex);
+    userIdCondition.wait(mutexLock, [] { return applicationFlag; });
+  }
+  std::cout << "\n===MAIN THREAD===\nApplication Shutting Done\n";
 
   return 0;
 }
@@ -196,7 +192,73 @@ int apiJsonReceived(std::shared_ptr<rapidjson::Document> jsonDoc) {
 
 std::string routeAll(bookfiler::HTTP::request req,
                      bookfiler::HTTP::response res) {
-  std::string bodyStr = "<h1>URL Data</h1><br>";
-  bodyStr.append(req->path());
+  std::string bodyStr = "<h1>Google OAUTH2 Example</h1>";
+  auto codeQuery = req->getQuery("code");
+  auto userIdQuery = req->getQuery("userId");
+  auto messagesPageQuery = req->getQuery("messagesPage");
+  if (userIdQuery) {
+    userId = userIdQuery.value();
+    userIdFlag = true;
+    userIdCondition.notify_one();
+    bodyStr.append("<br>userId=")
+        .append(userId)
+        .append("<form action=\"/\" method=\"GET\"><label for=\"resultNum"
+                "\">Results:</label><br><input "
+                "type=\"text\" id=\"resultNum"
+                "\" name=\"resultNum\" value=\"20\"><br><input type=\"hidden\" "
+                "name=\"messagesPage\" value=\"1\"><input type=\"hidden\" "
+                "name=\"userId\" value=\"")
+        .append(userId)
+        .append("\"><input type=\"submit"
+                "\" value=\"Submit\"></form>");
+    if (messagesPageQuery) {
+      std::string resultsNum = "20";
+      auto resultNumQuery = req->getQuery("resultNum");
+      if (resultNumQuery) {
+        resultsNum = resultNumQuery.value();
+      }
+      /* Let's test a call to the Google API!
+       */
+      int rc;
+      std::string baseUrl = "";
+      baseUrl.append("https://gmail.googleapis.com/gmail/v1/users/")
+          .append(userId)
+          .append("/messages");
+      std::shared_ptr<bookfiler::HTTP::Client> httpClient =
+          httpModule->newClient();
+      httpClient->setURL(baseUrl);
+      httpClient->setQuery({{"maxResults", resultsNum}});
+
+      std::shared_ptr<std::unordered_map<std::string, std::string>> headerMap =
+          std::make_shared<std::unordered_map<std::string, std::string>>();
+      headerMap->insert({"Authorization: Bearer ", accessToken});
+      headerMap->insert({"Accept: ", "application/json"});
+      httpClient->setHeaders(headerMap);
+
+      httpClient->setMethod("GET");
+      httpClient->jsonReceivedSignal.connect(
+          std::bind(&apiJsonReceived, std::placeholders::_1));
+      rc = httpClient->end();
+      if (rc < 0) {
+        bodyStr.append("Could not access webpage by HTTP\n");
+        std::cout << "Could not access webpage by HTTP\n";
+        return bodyStr;
+      }
+    }
+  } else if (codeQuery) {
+    authCode = codeQuery.value();
+    authFlag = true;
+    authCondition.notify_one();
+    bodyStr.append("<br>code=")
+        .append(authCode)
+        .append("<form action=\"/\" method=\"GET\"><label for=\"userId"
+                "\">Google User ID (Email address):</label><br><input "
+                "type=\"text\" id=\"userId"
+                "\" name=\"userId\" value=\"\"><br><input type=\"submit"
+                "\" value=\"Submit\"></form>");
+  } else {
+    bodyStr.append("<br>Error: Code not received");
+  }
+  bodyStr.append("<br>path: ").append(req->path());
   return bodyStr;
 }

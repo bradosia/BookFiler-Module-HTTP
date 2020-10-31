@@ -15,8 +15,9 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.10")
-set(CMAKE_CXX_FLAGS "-g -Og -m64 -Wa,-mbig-obj")
-#set(CMAKE_CXX_FLAGS "-O3")
+set(CMAKE_CXX_FLAGS "-g -Og -m64 -Wa,-mbig-obj -static-libstdc++")
+#set(CMAKE_CXX_FLAGS "-O3 -static-libgcc -static-libstdc++ -Wl,-Bstatic")
+#set(CMAKE_CXX_FLAGS "-O3 -static-libgcc -static-libstdc++")
 set(CMAKE_BUILD_TYPE "Release")
 
 find_package(Boost 1.56 REQUIRED COMPONENTS
@@ -37,6 +38,11 @@ set(SOURCES
   src/Module.cpp
   src/core/Curl.cpp
   src/core/httpUrl.cpp
+  src/core/httpUtil.cpp
+  src/core/httpCookieMap.cpp
+  src/core/httpCookie.cpp
+  src/core/httpHeader.cpp
+  src/core/httpQuery.cpp
   src/core/httpClient.cpp
   src/core/httpServer.cpp
   src/core/httpServerRequest.cpp
@@ -55,6 +61,11 @@ set(HEADERS
   src/core/config.hpp
   src/core/Curl.hpp
   src/core/httpUrl.hpp
+  src/core/httpUtil.hpp
+  src/core/httpCookieMap.hpp
+  src/core/httpCookie.hpp
+  src/core/httpHeader.hpp
+  src/core/httpQuery.hpp
   src/core/httpClient.hpp
   src/core/httpServer.hpp
   src/core/httpServerRequest.hpp
@@ -105,11 +116,14 @@ set(LIBRARIES ${LIBRARIES}
 
   # zlib
   z
-  libz
+  #libz
 )
 
 if(WIN32)
     set(LIBRARIES ${LIBRARIES}
+        #stdc++
+        #pthread
+
         # Windows Libraries
         ws2_32
         secur32

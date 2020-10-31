@@ -51,6 +51,8 @@
 #include <boost/signals2.hpp>
 
 // Local Project
+#include "httpCookieMap.hpp"
+#include "httpHeader.hpp"
 #include "httpUrl.hpp"
 #include <BookFiler-Module-HTTP/Interface.hpp>
 
@@ -66,19 +68,24 @@ using requestBeastInternal = std::shared_ptr<
 class RequestImpl : public Request {
 private:
   requestBeastInternal reqBeast;
+  HeaderImpl headerMap;
+  CookieMapImpl cookieMap;
 
 public:
   RequestImpl();
   ~RequestImpl();
   std::shared_ptr<UrlImpl> urlPtr;
-  std::string methodStr, pathStr, queryStr;
-  std::string_view refererStr, userAgentStr, targetStr, hostStr;
-  // methods
+  std::string methodStr;
+  std::string_view refererStr, userAgentStr;
+  // url methods
   std::string_view url();
   std::string_view method();
   std::string_view host();
   std::string path();
-  std::string query();
+  // query methods
+  std::string getEncodedQuery();
+  std::optional<std::string> getQuery(std::string);
+  // boost beast methods
   requestBeastInternal getRequest();
   int setRequest(requestBeastInternal);
 };

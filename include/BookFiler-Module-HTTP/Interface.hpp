@@ -91,14 +91,14 @@ namespace bookfiler {
 namespace HTTP {
 
 using newUrlVariantType = std::variant<int, double, std::string>;
-using queryMap = std::unordered_map<std::string, std::string>;
 
 class Url {
 public:
-  virtual int setQuery(
-      std::shared_ptr<std::unordered_map<std::string, std::string>>) = 0;
+  virtual int setQuery(std::unordered_map<std::string, std::string>) = 0;
   virtual int setQuery(std::shared_ptr<rapidjson::Document>) = 0;
-  virtual std::string_view getURL() = 0;
+  virtual std::string getEncodedQuery() = 0;
+  virtual std::optional<std::string> getQuery(std::string) = 0;
+  virtual std::string_view url() = 0;
 };
 
 using newClientVariantType = std::variant<int, double, std::string>;
@@ -108,9 +108,9 @@ public:
   boost::signals2::signal<int(std::shared_ptr<rapidjson::Document>)>
       jsonReceivedSignal;
   boost::signals2::signal<int(std::string)> dataReceivedSignal;
+  virtual std::string_view url() = 0;
   virtual int setURL(std::string) = 0;
-  virtual int setQuery(
-      std::shared_ptr<std::unordered_map<std::string, std::string>>) = 0;
+  virtual int setQuery(std::unordered_map<std::string, std::string>) = 0;
   virtual int setHeaders(
       std::shared_ptr<std::unordered_map<std::string, std::string>>) = 0;
   virtual int setMethod(std::string) = 0;
@@ -130,7 +130,8 @@ public:
   virtual std::string_view method() = 0;
   virtual std::string_view host() = 0;
   virtual std::string path() = 0;
-  virtual std::string query() = 0;
+  virtual std::string getEncodedQuery() = 0;
+  virtual std::optional<std::string> getQuery(std::string) = 0;
 #if BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE
   virtual requestBeast getRequest() = 0;
 #endif

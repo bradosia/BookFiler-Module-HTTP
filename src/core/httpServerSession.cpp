@@ -15,12 +15,20 @@
 namespace bookfiler {
 namespace HTTP {
 
-std::shared_ptr<Request> SessionImpl::parseRequest(requestBeastInternal reqBeast) {
+std::shared_ptr<Request>
+SessionImpl::parseRequest(requestBeastInternal reqBeast) {
   std::shared_ptr<RequestImpl> reqImpl = std::make_shared<RequestImpl>();
   reqImpl->methodStr = std::string_view(reqBeast->method_string().data(),
                                         reqBeast->method_string().size());
-  reqImpl->targetStr =
-      std::string_view(reqBeast->target().data(), reqBeast->target().size());
+  const auto pos = reqBeast->target().find_first_of('?');
+  if (std::string::npos != pos) {
+    reqImpl->urlPtr->set_encoded_path(reqBeast->target().substr(0, pos));
+    reqImpl->urlPtr->setEncodedQuery(
+        std::string(reqBeast->target().substr(pos + 1).data(),
+                    reqBeast->target().substr(pos + 1).size()));
+  } else {
+    reqImpl->urlPtr->set_encoded_path(reqBeast->target());
+  }
   auto userAgentIt = reqBeast->base().find("User-Agent");
   if (userAgentIt != reqBeast->base().end()) {
     reqImpl->userAgentStr = std::string_view(userAgentIt->value().data(),
@@ -33,22 +41,14 @@ std::shared_ptr<Request> SessionImpl::parseRequest(requestBeastInternal reqBeast
   }
   auto hostIt = reqBeast->base().find("Host");
   if (hostIt != reqBeast->base().end()) {
-    reqImpl->hostStr =
-        std::string_view(hostIt->value().data(), hostIt->value().size());
-  }
-  std::vector<std::string> result;
-  boost::split(result, reqImpl->targetStr, boost::is_any_of("?"));
-  reqImpl->pathStr = result.at(0);
-  reqImpl->queryStr = "";
-  if (result.size() > 1) {
-    reqImpl->queryStr = result.at(1);
+    reqImpl->urlPtr->set_host(hostIt->value());
   }
   reqImpl->setRequest(reqBeast);
   return std::dynamic_pointer_cast<Request>(reqImpl);
 }
 
-int SessionImpl::routeValidate(std::shared_ptr<Request> req, std::string_view method,
-                  std::string_view path) {
+int SessionImpl::routeValidate(std::shared_ptr<Request> req,
+                               std::string_view method, std::string_view path) {
   std::shared_ptr<RequestImpl> reqImpl =
       std::static_pointer_cast<RequestImpl>(req);
   if (reqImpl->method() != method) {

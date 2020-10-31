@@ -53,14 +53,15 @@ int ClientImpl::setSettingsDoc(std::shared_ptr<rapidjson::Value> settingsDoc_) {
   return 0;
 }
 
+std::string_view ClientImpl::url() { return urlPtr->url(); }
+
 int ClientImpl::setURL(std::string url_) {
   urlPtr->set_encoded_url(url_);
   return 0;
 }
 int ClientImpl::setQuery(
-    std::shared_ptr<std::unordered_map<std::string, std::string>>
-        fieldsMapPtr) {
-  urlPtr->setQuery(fieldsMapPtr);
+    std::unordered_map<std::string, std::string> fieldsMap_) {
+  urlPtr->setQuery(fieldsMap_);
   return 0;
 }
 
@@ -76,7 +77,7 @@ int ClientImpl::setMethod(std::string method_) {
   return 0;
 }
 
-int ClientImpl::end() {
+int ClientImpl::endCurl() {
   CURL *curlHandle;
   CURLcode res;
   std::string bufferString, CaInfoPath, fieldsStr;
@@ -112,7 +113,8 @@ int ClientImpl::end() {
             << "::ClientImpl::open Connection Settings:\nURL Host: "
             << urlPtr->encoded_host() << "\nURL: " << urlPtr->encoded_url()
             << "\nURL data: " << std::string(urlPtr->encoded_url()).c_str()
-            << "\nURL Field String: " << std::string(urlPtr->encoded_query()).c_str()
+            << "\nURL Field String: "
+            << std::string(urlPtr->encoded_query()).c_str()
             << "\nHTTP Method: " << method << "\nCaInfoPath: " << CaInfoPath
             << "\nskipPeerVerification: " << skipPeerVerification
             << "\nskipHostnameVerification: " << skipHostnameVerification
@@ -207,6 +209,8 @@ int ClientImpl::end() {
   curl_easy_cleanup(curlHandle);
   return 0;
 }
+
+int ClientImpl::end() { return 0; }
 
 } // namespace HTTP
 } // namespace bookfiler

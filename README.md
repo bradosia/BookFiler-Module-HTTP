@@ -1,18 +1,20 @@
 # BookFiler HTTP Module
-A hand-picked HTTP and WebSocket toolkit for C++. This criteria for the selection was compatibility with MSVC, mingw, GCC, and clang and free use for commercial applications.
+A hand-picked HTTP and WebSocket toolkit for C++. This criteria for the selection was compatibility with MSVC, mingw, GCC, and clang and free use for commercial applications. This module is a glue between established libraries. This module tries to integrate other projects rather than reinventing the wheel.
+
+## Dependencies
 
 | Library				| Purpose					|
 | :---					| :---						|
 | Boost::Asio			| Networking 				|
 | Boost::Beast			| HTTP and WebSocket		|
 | Boost::Filesystem		| Filesystem				|
+| Boost::url		| URL				|
 | Boost::nowide			| utf8 support				|
 | rapidJSON				| JSON parser				|
 | bustache				| templating and views		|
 | openssl				| SSL						|
 | curl/lib/cookie.c		| HTTP cookie parser		|
 | ua-parser/uap-cpp		| HTTP User agent parser	|
-| jbeder/yaml-cpp		| YAML parser				|
 
 Boost::Beast does simple HTTP header parsing of each field with name/value pairs. <BR>
 Boost::Beast does not do cookie parsing, Forms/File Uploads, or User Agent parsing. <BR>
@@ -36,33 +38,18 @@ Unfortunately, there is not a mysql connector that can accompany this list. The 
 
 # Build Instructions
 
-No searching around and configuring all the dependencies. All sources are in ```contrib``` and certain libraries are already pre-compiled in ```lib```. After installing boost and configuring paths in the makefile.mk, simply run the make command.
-
-## Prerequisites
-Install boost libraries<BR>
-The current make script was created for a versioned layout installation of boost:
+## Windows - MinGW-w64
+Install MSYS2<BR>
+  
 ```shell
-./b2 toolset=gcc stage --build-type=complete --layout=versioned
+pacman -S mingw-w64-x86_64-fmt
 ```
-Go into the makefile.mk and change the ```BOOST_LIBS_POST``` directive to the correct version. <BR> 
-The version for GCC 4.9 on a 32-bit machine for boost 1.67 would look like this:
-```make
-BOOST_LIBS_POST = -gcc49-mt-x32-1_67
-```
-The version for MinGW-w64 7.3 on a 64-bit machine for boost 1.67 would look like this:
-```make
-BOOST_LIBS_POST = -mgw73-mt-x64-1_67
-```
-If you built boost with ```--layout=system``` then keep the version blank:
-```make
-BOOST_LIBS_POST = 
-```
-NOTE: for macOS you need to remove all the .dylibs because we want the .a
 
-## Windows
-Only Windows host<BR>
-Install MinGW-w64<BR>
-Add ```<MinGW_PATH>\bin``` to PATH<BR>
+## Windows - MSVC
+
+```shell
+pacman -S mingw-w64-x86_64-fmt
+```
 
 ## Mac OSX
 Only Mac OSX host<BR>
@@ -70,13 +57,8 @@ Install clang
 
 ## Linux Ubuntu
 Install GCC
-For C language:
 ```shell
 sudo apt-get install gcc-multilib
-```
-For C++ language:
-```shell
-sudo apt-get install g++-multilib
 ```
 
 ## Android
@@ -249,7 +231,6 @@ int allModulesLoaded() {
 | openssl				| attribute						| https://github.com/openssl/openssl						|
 | curl/lib/cookie.c		| MIT-style						| https://github.com/curl/curl/blob/master/lib/cookie.c		|
 | ua-parser/uap-cpp		| MIT							| https://github.com/ua-parser/uap-cpp						|
-| jbeder/yaml-cpp		| MIT							| https://github.com/jbeder/yaml-cpp						|
 
 # License
 The library is licensed under the MIT License: <BR>

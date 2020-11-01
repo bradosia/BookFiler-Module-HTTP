@@ -42,13 +42,13 @@ Unfortunately, there is not a mysql connector that can accompany this list. The 
 Install MSYS2<BR>
   
 ```shell
-pacman -S mingw-w64-x86_64-fmt
+pacman -S mingw-w64-x86_64-fmt mingw-w64-x86_64-boost
 ```
 
 ## Windows - MSVC
 
 ```shell
-pacman -S mingw-w64-x86_64-fmt
+
 ```
 
 ## Mac OSX

@@ -30,6 +30,10 @@
 namespace bookfiler {
 namespace JSON {
 
+std::optional<std::string> getMemberString(const rapidjson::Value &val,
+                                           const char *key);
+std::optional<int> getMemberInt(const rapidjson::Value &val, const char *key);
+
 /* Unused JSON utilities that demonstrate how to traverse JSON documents
  */
 void printJSON_value(const rapidjson::Value &a, unsigned int depth);

@@ -18,6 +18,12 @@ namespace HTTP {
 ClientImpl::ClientImpl() {
   urlPtr = std::make_shared<UrlImpl>();
   method = "GET";
+  skipPeerVerification = skipHostnameVerification = false;
+  // request
+  requestBeast = std::make_shared<
+      boost::beast::http::request<boost::beast::http::string_body>>();
+  requestPtr = std::make_shared<RequestImpl>();
+  requestPtr->setRequest(requestBeast);
 };
 ClientImpl::ClientImpl(
     std::unordered_map<std::string, newClientVariantType> map) {
@@ -35,7 +41,7 @@ ClientImpl::ClientImpl(
       } else if (val.first == "scheme") {
         urlPtr->set_scheme(*val_);
       } else if (val.first == "query") {
-        urlPtr->set_query(*val_);
+        urlPtr->setEncodedQuery(*val_);
       }
     }
   }
@@ -44,7 +50,16 @@ ClientImpl::ClientImpl(
       urlPtr->set_scheme("https");
     }
   }
-  std::cout << "urlPtr->encoded_url: " << urlPtr->encoded_url() << std::endl;
+#if BOOKFILER_HTTP_CLIENT_CLIENT_DEBUG_URL
+  std::cout << "\n=== THREAD " << std::this_thread::get_id() << " ===\n"
+            << moduleCode << "::ClientImpl::ClientImpl urlPtr->encoded_url: "
+            << urlPtr->encoded_url() << std::endl;
+#endif
+  // request
+  requestBeast = std::make_shared<
+      boost::beast::http::request<boost::beast::http::string_body>>();
+  requestPtr = std::make_shared<RequestImpl>();
+  requestPtr->setRequest(requestBeast);
 };
 ClientImpl::~ClientImpl(){};
 
@@ -53,42 +68,15 @@ int ClientImpl::setSettingsDoc(std::shared_ptr<rapidjson::Value> settingsDoc_) {
   return 0;
 }
 
-std::string_view ClientImpl::url() { return urlPtr->url(); }
-
-int ClientImpl::setURL(std::string url_) {
-  urlPtr->set_encoded_url(url_);
-  return 0;
-}
-int ClientImpl::setQuery(
-    std::unordered_map<std::string, std::string> fieldsMap_) {
-  urlPtr->setQuery(fieldsMap_);
-  return 0;
-}
-
-int ClientImpl::setHeaders(
-    std::shared_ptr<std::unordered_map<std::string, std::string>>
-        headersMapPtr_) {
-  headersMapPtr = headersMapPtr_;
-  return 0;
-}
-
-int ClientImpl::setMethod(std::string method_) {
-  method = method_;
-  return 0;
-}
-
-int ClientImpl::endCurl() {
-  CURL *curlHandle;
-  CURLcode res;
-  std::string bufferString, CaInfoPath, fieldsStr;
-  bool skipPeerVerification, skipHostnameVerification;
-  skipPeerVerification = skipHostnameVerification = false;
-
+int ClientImpl::loadSettingsDoc() {
   /* Get settings from JSON document */
   if (!settingsDoc->IsObject()) {
-    std::cout << moduleCode
-              << "::ClientImpl::exec ERROR:\nSettings document invalid"
-              << std::endl;
+    std::thread::id threadId = std::this_thread::get_id();
+    std::cout
+        << "\n=== THREAD " << threadId << " ===\n"
+        << moduleCode
+        << "::ClientImpl::loadSettingsDoc ERROR:\nSettings document invalid"
+        << std::endl;
     return -1;
   }
   char memberName01[] = "CaInfoPath";
@@ -106,111 +94,155 @@ int ClientImpl::endCurl() {
       (*settingsDoc)[memberName03].IsBool()) {
     skipHostnameVerification = (*settingsDoc)[memberName03].GetBool();
   }
+  return 0;
+}
 
-  responseJSON_Doc = std::make_shared<rapidjson::Document>();
+std::string_view ClientImpl::url() { return urlPtr->url(); }
 
-  std::cout << moduleCode
-            << "::ClientImpl::open Connection Settings:\nURL Host: "
-            << urlPtr->encoded_host() << "\nURL: " << urlPtr->encoded_url()
-            << "\nURL data: " << std::string(urlPtr->encoded_url()).c_str()
-            << "\nURL Field String: "
-            << std::string(urlPtr->encoded_query()).c_str()
+std::string_view ClientImpl::getEncodedHost() {
+  return urlPtr->getEncodedHost();
+}
+
+int ClientImpl::setURL(std::string url_) {
+  urlPtr->set_encoded_url(url_);
+  return 0;
+}
+int ClientImpl::setQuery(
+    std::unordered_map<std::string, std::string> fieldsMap_) {
+  urlPtr->setQuery(fieldsMap_);
+  return 0;
+}
+
+int ClientImpl::setHeader(
+    std::unordered_map<std::string, std::string> headerMap_) {
+  requestPtr->setHeader(headerMap_);
+  return 0;
+}
+
+int ClientImpl::setCookie(
+    std::unordered_map<std::string, std::string> cookieMap_) {
+  return 0;
+}
+
+int ClientImpl::setMethod(std::string method_) {
+  method = method_;
+  return 0;
+}
+
+std::unique_ptr<ssl::stream<tcp::socket>>
+ClientImpl::connect(asio::io_context &ctx, ssl::context &ssl_ctx,
+                    std::string const &hostname) {
+  // resolve
+  tcp::resolver resolver{ctx};
+  tcp::resolver::results_type resolved = resolver.resolve(hostname, "https");
+
+  // socket
+  tcp::socket socket{ctx};
+  asio::connect(socket, resolved);
+
+  auto streamPtr =
+      boost::make_unique<ssl::stream<tcp::socket>>(std::move(socket), ssl_ctx);
+  // tag::stream_setup_source[]
+  boost::certify::set_server_hostname(*streamPtr, hostname);
+  boost::certify::sni_hostname(*streamPtr, hostname);
+  // end::stream_setup_source[]
+
+  streamPtr->handshake(ssl::stream_base::handshake_type::client);
+  return streamPtr;
+}
+
+std::optional<std::string_view> ClientImpl::getResponseStr() {
+  if (!responseStr.empty()) {
+    return responseStr;
+  }
+  return {};
+}
+
+std::optional<std::shared_ptr<rapidjson::Document>>
+ClientImpl::getResponseJson() {
+  if (responseJsonDoc) {
+    return responseJsonDoc;
+  }
+  return {};
+}
+
+int ClientImpl::end() {
+  const std::string hostname(urlPtr->getEncodedHost());
+
+  std::thread::id threadId = std::this_thread::get_id();
+  std::cout << "\n=== THREAD " << threadId << " ===\n"
+            << moduleCode << "::ClientImpl::end Connection Settings:"
+            << "\nhostname: " << hostname << "\nURL: " << urlPtr->url()
+            << "\nURL Field String: " << urlPtr->getEncodedQuery()
+            << "\nURL target: " << urlPtr->target()
             << "\nHTTP Method: " << method << "\nCaInfoPath: " << CaInfoPath
             << "\nskipPeerVerification: " << skipPeerVerification
             << "\nskipHostnameVerification: " << skipHostnameVerification
             << std::endl;
 
-  curlHandle = curl_easy_init();
-  if (!curlHandle) {
-    std::cout << "curl_easy_init ERROR" << std::endl;
-    jsonReceivedSignal(responseJSON_Doc);
-    return -1;
-  }
+  asio::io_context ctx;
+  ssl::context ssl_ctx{ssl::context::tls_client};
+  ssl_ctx.set_verify_mode(ssl::context::verify_peer |
+                          ssl::context::verify_fail_if_no_peer_cert);
+  ssl_ctx.set_default_verify_paths();
+  // tag::ctx_setup_source[]
+  boost::certify::enable_native_https_server_verification(ssl_ctx);
+  // end::ctx_setup_source[]
+  std::unique_ptr<ssl::stream<tcp::socket>> streamPtr =
+      connect(ctx, ssl_ctx, hostname);
+
+  // response
+  responseBeast = std::make_shared<
+      boost::beast::http::response<boost::beast::http::string_body>>();
+  responsePtr = std::make_shared<ResponseImpl>();
+  responsePtr->setResponse(responseBeast);
 
   if (method == "POST") {
-    std::cout << moduleCode << "::ClientImpl::open HTTP POST\n";
-    curl_easy_setopt(curlHandle, CURLOPT_URL,
-                     std::string(urlPtr->encoded_url()).c_str());
-    curl_easy_setopt(curlHandle, CURLOPT_POSTFIELDS, fieldsStr.c_str());
+    requestBeast->method(http::verb::post);
   } else {
-    curl_easy_setopt(curlHandle, CURLOPT_URL,
-                     std::string(urlPtr->encoded_url()).c_str());
+    requestBeast->method(http::verb::get);
   }
-  curl_easy_setopt(curlHandle, CURLOPT_CAINFO, CaInfoPath.c_str());
+  requestBeast->target(urlPtr->target());
+  requestBeast->keep_alive(false);
+  requestBeast->set(http::field::host, hostname);
 
-  /* handle headers */
-  if (headersMapPtr && !headersMapPtr->empty()) {
-    struct curl_slist *chunk = NULL;
-    for (auto headerIt = headersMapPtr->begin();
-         headerIt != headersMapPtr->end(); ++headerIt) {
-      std::string headerLine = "";
-      headerLine.append(headerIt->first).append("").append(headerIt->second);
-      chunk = curl_slist_append(chunk, headerLine.c_str());
-    }
-    curl_easy_setopt(curlHandle, CURLOPT_HTTPHEADER, chunk);
-  }
-
-  /*
-   * TODO: Write a SSL Certificate Manager
-   */
-  // getCertificates(global);
-
-  /*
-   * If you want to connect to a site who isn't using a certificate that is
-   * signed by one of the certs in the CA bundle you have, you can skip the
-   * verification of the server's certificate. This makes the connection
-   * A LOT LESS SECURE.
-   *
-   * If you have a CA cert for the server stored someplace else than in the
-   * default bundle, then the CURLOPT_CAPATH option might come handy for
-   * you.
-   */
-  if (skipPeerVerification) {
-    curl_easy_setopt(curlHandle, CURLOPT_SSL_VERIFYPEER, 0L);
-  }
-
-  /*
-   * If the site you're connecting to uses a different host name that what
-   * they have mentioned in their server certificate's commonName (or
-   * subjectAltName) fields, libcurl will refuse to connect. You can skip
-   * this check, but this will make the connection less secure.
-   */
-  if (skipHostnameVerification) {
-    curl_easy_setopt(curlHandle, CURLOPT_SSL_VERIFYHOST, 0L);
-  }
-
-  /* setup callbacks */
-  curl_easy_setopt(curlHandle, CURLOPT_WRITEFUNCTION,
-                   bookfiler::curl::writefunc);
-  curl_easy_setopt(curlHandle, CURLOPT_WRITEDATA, &bufferString);
-  /* Perform the request, res will get the return code */
-  res = curl_easy_perform(curlHandle);
-
-  // Signal data is received
-  dataReceivedSignal(bufferString);
-
-  responseJSON_Doc->Parse(bufferString.c_str());
-
-  /* Check for errors */
-  if (res != CURLE_OK) {
-    fprintf(stderr, "curl_easy_perform() failed: %s\n",
-            curl_easy_strerror(res));
-    return -1;
-  }
-
-  // Signal JSON received
-  jsonReceivedSignal(responseJSON_Doc);
-
-#if HTTPS_GET_JSON_DEBUG
-  std::cout << bufferString << std::endl;
+#if BOOKFILER_HTTP_CLIENT_END_DEBUG_RESPONSE
+  std::cout << "\n=== THREAD " << threadId << " ===\n"
+            << moduleCode << "::ClientImpl::end request:\n"
+            << *requestBeast << std::endl;
 #endif
 
-  /* always cleanup */
-  curl_easy_cleanup(curlHandle);
+  http::write(*streamPtr, *requestBeast);
+
+  beast::flat_buffer buffer;
+  http::read(*streamPtr, buffer, *responseBeast);
+
+  if (responseBeast->result() == boost::beast::http::status::ok) {
+    responseStr = responseBeast->body();
+    // Try to parse the response as JSON
+    responseJsonDoc = std::make_shared<rapidjson::Document>();
+    rapidjson::ParseResult ok =
+        responseJsonDoc->Parse(responseBeast->body().c_str());
+    if (!ok) {
+      responseJsonDoc.reset();
+    }
+  }
+
+#if BOOKFILER_HTTP_CLIENT_END_DEBUG_RESPONSE
+  std::cout << "\n=== THREAD " << threadId << " ===\n"
+            << moduleCode << "::ClientImpl::end response:\n"
+            << *responseBeast << std::endl;
+#endif
+
+  boost::system::error_code ec;
+  streamPtr->shutdown(ec);
+  streamPtr->next_layer().close(ec);
+
   return 0;
 }
 
-int ClientImpl::end() { return 0; }
+int ClientImpl::endAsync() { return 0; }
+int ClientImpl::wait() { return 0; }
 
 } // namespace HTTP
 } // namespace bookfiler

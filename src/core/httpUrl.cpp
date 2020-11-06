@@ -83,5 +83,17 @@ std::string_view UrlImpl::url() {
   return std::string_view(encoded_url().data(), encoded_url().size());
 }
 
+std::string_view UrlImpl::getEncodedHost() {
+  return std::string_view(encoded_host().data(), encoded_host().size());
+}
+
+std::string UrlImpl::target() {
+  std::string targetStr;
+  targetStr.append(std::string(encoded_path().data(), encoded_path().size()))
+      .append("?")
+      .append(getEncodedQuery());
+  return targetStr;
+}
+
 } // namespace HTTP
 } // namespace bookfiler

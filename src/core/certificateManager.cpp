@@ -43,7 +43,7 @@ int ManagerImpl::createX509Store() {
     return -1;
   }
 
-  hCertStore = CertOpenSystemStoreW(NULL, L"ROOT");
+  hCertStore = CertOpenSystemStoreW(0, L"ROOT");
   if (!hCertStore) {
     std::cout << "ManagerImpl::createX509Store CertOpenSystemStoreW ERROR"
               << std::endl;
@@ -502,7 +502,7 @@ int ManagerImpl::newCertServerLocalhost(
 
 int ManagerImpl::addCertificate(std::shared_ptr<Certificate> certPtr) {
   int rc = 0;
-  hCertStore = CertOpenSystemStoreW(NULL, L"ROOT");
+  hCertStore = CertOpenSystemStoreW(0, L"ROOT");
   std::cout << "Certificate Info:\n" << certPtr->getInfo() << std::endl;
   std::shared_ptr<CertificateNativeImpl> certNativeImplPtr =
       std::static_pointer_cast<CertificateNativeImpl>(certPtr);

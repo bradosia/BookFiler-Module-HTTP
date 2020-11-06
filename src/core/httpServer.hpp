@@ -63,32 +63,22 @@ namespace HTTP {
 class ServerImpl : public Server {
 private:
   std::shared_ptr<rapidjson::Value> settingsDoc;
-  boost::asio::ip::address address;
-  std::shared_ptr<std::string> docRoot;
+  std::shared_ptr<ServerState> serverState;
   std::shared_ptr<boost::asio::io_context> ioContext;
   std::shared_ptr<boost::asio::ssl::context> sslContext;
   std::shared_ptr<Listener> listener;
-  unsigned short port;
-  int threadsNum;
+  std::vector<std::thread> threadList;
+  std::shared_ptr<RouteImpl> routePtr;
 
 public:
-  boost::signals2::signal<int(std::string)> requestSignal;
-  std::shared_ptr<routeSignalTypeInternal> routeSignal;
-
   ServerImpl();
   ~ServerImpl();
   int setSettingsDoc(std::shared_ptr<rapidjson::Value>);
   int run();
-  int runAsync();
-  int extractSettings();
   void runIoContext();
+  int extractSettings();
   int useCertificate(std::shared_ptr<bookfiler::certificate::Certificate>);
-  int route(std::unordered_map<std::string, routeVariantType_Beast> map);
-  int route(std::unordered_map<std::string, routeVariantType_NoBeast> map);
-  int routeSignalAdd(
-      std::shared_ptr<routeFunctionExpressType> routeFunctionExpress,
-      std::string method, std::string path);
-  std::shared_ptr<routeSignalTypeInternal> getRouteSignal();
+  int route(std::unordered_map<std::string, routeVariantTypeExternal> map_);
 };
 
 } // namespace HTTP

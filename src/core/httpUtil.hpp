@@ -13,10 +13,12 @@
 #include "config.hpp"
 
 // C++17
+#include <filesystem>
 #include <iomanip>
 #include <iostream>
 #include <memory>
 #include <string>
+#include <thread>
 
 /* boost 1.72.0
  * License: Boost Software License (similar to BSD and MIT)
@@ -32,6 +34,8 @@
 namespace bookfiler {
 namespace HTTP {
 
+extern std::mutex globalMutex;
+
 class Util {
 private:
   const std::string illegalCharStr = "%<>{}|\\\"^`";
@@ -44,7 +48,9 @@ public:
   int uriDecode(const std::string &str, std::string &decodedStr);
 };
 
-//Util util;
+void logStatus(std::string functionStr, std::string msg);
+void logStatus(std::string functionStr, std::string msg, boost::beast::error_code ec);
+std::string read_file(char const *path);
 
 } // namespace HTTP
 } // namespace bookfiler

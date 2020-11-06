@@ -44,7 +44,7 @@
 #include <boost/signals2.hpp>
 
 // Local Project
-#include "httpServerAccept.hpp"
+#include "httpServerConnection.hpp"
 
 namespace beast = boost::beast;   // from <boost/beast.hpp>
 namespace http = beast::http;     // from <boost/beast/http.hpp>
@@ -59,26 +59,20 @@ namespace bookfiler {
 namespace HTTP {
 
 // Accepts incoming connections and launches the sessions
-class Listener : public std::enable_shared_from_this<Listener> {
+class Listener {
+private:
   net::io_context &ioContext;
   ssl::context &sslContext;
-  tcp::acceptor acceptor;
-  std::shared_ptr<std::string const> docRoot;
-  std::shared_ptr<routeSignalTypeInternal> routeSignal;
-  std::shared_ptr<Accept> acceptPtr;
+  tcp::endpoint endpoint;
+  std::shared_ptr<ServerState> serverState;
+  std::shared_ptr<RouteImpl> routePtr;
 
 public:
-  Listener(net::io_context &ioContext_, ssl::context &sslContext_,
-           tcp::endpoint endpoint,
-           std::shared_ptr<std::string const> const &docRoot);
+  Listener(net::io_context &, ssl::context &, tcp::endpoint,
+           std::shared_ptr<ServerState>, std::shared_ptr<RouteImpl>);
 
   // Start accepting incoming connections
-  void run();
-  int setRouteSignal(std::shared_ptr<routeSignalTypeInternal>);
-
-private:
-  void do_accept();
-  void on_accept(beast::error_code ec, tcp::socket socket);
+  int run(net::yield_context yieldContext);
 };
 
 } // namespace HTTP

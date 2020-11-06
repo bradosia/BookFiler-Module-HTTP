@@ -13,6 +13,7 @@
 #include "core/config.hpp"
 
 // c++17
+#include <condition_variable>
 #include <fstream>
 #include <functional>
 #include <iostream>
@@ -20,6 +21,11 @@
 #include <string>
 #include <thread>
 #include <unordered_map>
+
+/* bustache 0.1.0
+ * License: Boost Software License (similar to BSD and MIT)
+ */
+#include <bustache/model.hpp>
 
 /* boost 1.72.0
  * License: Boost Software License (similar to BSD and MIT)
@@ -38,9 +44,9 @@
 #include <rapidjson/writer.h>
 
 // Local Project
+#include "core/certificateManager.hpp"
 #include "core/httpClient.hpp"
 #include "core/httpServer.hpp"
-#include "core/certificateManager.hpp"
 #include "core/json.hpp"
 
 /*
@@ -58,6 +64,7 @@ class ModuleExport : public ModuleInterface {
 private:
   std::shared_ptr<rapidjson::Value> settingsDoc;
   std::shared_ptr<rapidjson::Value> accountsDoc;
+  std::unordered_map<std::string, std::condition_variable> conditionVariableMap;
 
 public:
   ModuleExport(){};
@@ -79,10 +86,16 @@ public:
   int setAccounts(std::shared_ptr<rapidjson::Value>);
   int setSettings(std::shared_ptr<rapidjson::Value>);
   std::shared_ptr<Client> newClient();
-  std::shared_ptr<Client> newClient(std::unordered_map<std::string, newClientVariantType>);
-  std::shared_ptr<Url> newUrl(std::unordered_map<std::string, newUrlVariantType>);
-  std::shared_ptr<Server> newServer(std::unordered_map<std::string, newServerVariantType>);
+  std::shared_ptr<Client>
+      newClient(std::unordered_map<std::string, newClientVariantType>);
+  std::shared_ptr<Url>
+      newUrl(std::unordered_map<std::string, newUrlVariantType>);
+  std::shared_ptr<Server>
+      newServer(std::unordered_map<std::string, newServerVariantType>);
   std::shared_ptr<bookfiler::certificate::Manager> newCertificateManager();
+  // Not very related, but good for the examples
+  void wait(const std::string handle_);
+  void notify(const std::string handle_);
 };
 
 // Exporting `my_namespace::module` variable with alias name `module`

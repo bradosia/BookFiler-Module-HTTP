@@ -17,7 +17,11 @@ namespace HTTP {
 
 HeaderImpl::HeaderImpl() {}
 
-HeaderImpl::HeaderImpl(std::string headerStr_) {}
+HeaderImpl::HeaderImpl(std::string headerStr_) { setHeaderStr(headerStr_); }
+
+int HeaderImpl::setHeader(std::unordered_map<std::string, std::string>){
+return 0;
+}
 
 HeaderImpl::~HeaderImpl() {}
 

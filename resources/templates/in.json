@@ -1,0 +1,30 @@
+{
+    "pi": 3.141,
+    "happy": true,
+    "website": {
+      "css" : "https://localhost:8081/static/nicepage.css"
+    },
+    "nothing": null,
+    "page":
+        {
+            "title": "Example Website",
+            "index": {
+              "section1" : {
+                "header" : "Example",
+                "tagline" : "Growth Strategy. Strategic Planning.",
+                "contactBut" : "Contact Us"
+              },
+              "section2" : {
+                "header" : "How we work",
+                "tagline" : "We do the greatest work for our clients.",
+                "contactBut" : "Contact Us"
+              }
+            }
+        },
+    "list": [1, 0, 2],
+    "object":
+        {
+            "currency": "USD",
+            "value": 42.99
+        }
+}

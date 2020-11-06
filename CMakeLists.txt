@@ -11,23 +11,24 @@ option(BUILD_SHARED_LIBS "Build shared library" ON)
 option(BUILD_STATIC_LIBS "Build static library" OFF)
 option(BUILD_EXAMPLES "Build example executables" ON)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.10")
-set(CMAKE_CXX_FLAGS "-g -Og -m64 -Wa,-mbig-obj -static-libstdc++")
-#set(CMAKE_CXX_FLAGS "-O3 -static-libgcc -static-libstdc++ -Wl,-Bstatic")
-#set(CMAKE_CXX_FLAGS "-O3 -static-libgcc -static-libstdc++")
+set(CMAKE_CXX_FLAGS "-g -Og -m64 -Wa,-mbig-obj")
+#set(CMAKE_CXX_FLAGS "-O3")
+#set(CMAKE_SHARED_LINKER_FLAGS "-static -static-libgcc -static-libstdc++ -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive")
 set(CMAKE_BUILD_TYPE "Release")
 
-find_package(Boost 1.56 REQUIRED COMPONENTS
-             system filesystem)
+find_package(Boost REQUIRED COMPONENTS
+             coroutine system filesystem)
 
 include_directories(
   include
   third_party/rapidjson/include
   third_party/boost-url/include
   third_party/certify/include
+  third_party/bustache/include
 )
 
 link_directories(
@@ -36,21 +37,21 @@ link_directories(
 # Set up source files
 set(SOURCES
   src/Module.cpp
-  src/core/Curl.cpp
   src/core/httpUrl.cpp
   src/core/httpUtil.cpp
   src/core/httpCookieMap.cpp
   src/core/httpCookie.cpp
-  src/core/httpHeader.cpp
   src/core/httpQuery.cpp
   src/core/httpClient.cpp
   src/core/httpServer.cpp
   src/core/httpServerRequest.cpp
   src/core/httpServerResponse.cpp
   src/core/httpServerListener.cpp
-  src/core/httpServerAccept.cpp
+  src/core/httpServerConnection.cpp
   src/core/httpServerSession.cpp
+  src/core/httpServerState.cpp
   src/core/httpServerUtil.cpp
+  src/core/httpServerRoute.cpp
   src/core/json.cpp
   src/core/certificateManager.hpp
   src/core/certificate.hpp
@@ -59,21 +60,21 @@ set(SOURCES
 set(HEADERS
   src/Module.hpp
   src/core/config.hpp
-  src/core/Curl.hpp
   src/core/httpUrl.hpp
   src/core/httpUtil.hpp
   src/core/httpCookieMap.hpp
   src/core/httpCookie.hpp
-  src/core/httpHeader.hpp
   src/core/httpQuery.hpp
   src/core/httpClient.hpp
   src/core/httpServer.hpp
   src/core/httpServerRequest.hpp
   src/core/httpServerResponse.hpp
   src/core/httpServerListener.hpp
-  src/core/httpServerAccept.hpp
+  src/core/httpServerConnection.hpp
   src/core/httpServerSession.hpp
+  src/core/httpServerState.hpp
   src/core/httpServerUtil.hpp
+  src/core/httpServerRoute.hpp
   src/core/json.hpp
   src/core/certificateManager.cpp
   src/core/certificate.cpp
@@ -91,44 +92,28 @@ set(STATIC_COMPILE_DEFINITIONS
 )
 
 set(LIBRARIES ${LIBRARIES}
-  # Boost
-  Boost::system
-  Boost::filesystem
+    # Boost
+    Boost::system
+    Boost::filesystem
+    Boost::coroutine
 
-  # curl
-  curl
-  nghttp2
-  psl.dll
-  idn2
-  cares
-  ssh2
-  brotlidec-static
-  brotlienc-static
-  brotlicommon-static
-  unistring
-  wldap32
-  bcrypt
+    # Bustache
+    bustache
 
-  # ssl
-  ssl
-  crypto
-  crypt32
+    # ssl
+    ssl
+    crypto
+    crypt32
 
-  # zlib
-  z
-  #libz
+    # zlib
+    z
 )
 
 if(WIN32)
     set(LIBRARIES ${LIBRARIES}
-        #stdc++
-        #pthread
-
         # Windows Libraries
         ws2_32
-        secur32
         wsock32
-        shlwapi
     )
 elseif(UNIX)
     set(LIBRARIES ${LIBRARIES}
@@ -176,10 +161,16 @@ if(BUILD_STATIC_LIBS)
   target_link_libraries(${lib_name} PUBLIC ${STATIC_LINK_LIBRARIES})
 endif()
 
+# THIRD PARTY
+add_subdirectory(third_party/bustache)
+
 # EXAMPLES
 add_subdirectory(src_example/http-client-json)
 add_subdirectory(src_example/http-server)
 add_subdirectory(src_example/http-server-minimal)
+add_subdirectory(src_example/http-server-beast)
+add_subdirectory(src_example/http-server-template)
+add_subdirectory(src_example/http-server-complex)
 add_subdirectory(src_example/oauth2-google)
 
 # Post build

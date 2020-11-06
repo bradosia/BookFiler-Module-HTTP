@@ -82,7 +82,7 @@ BOOST_CERTIFY_DECL std::unique_ptr<::CERT_CONTEXT const, cert_context_deleter>
     std::unique_ptr<HCERTSTORE, cert_store_deleter> store{
       CertOpenStore(CERT_STORE_PROV_MEMORY,
                     0,
-                    NULL,
+                    0,
                     CERT_STORE_DEFER_CLOSE_UNTIL_LAST_FREE_FLAG,
                     nullptr)};
 

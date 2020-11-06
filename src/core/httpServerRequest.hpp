@@ -27,20 +27,10 @@
 #include <utility>
 #include <vector>
 
-/* rapidjson v1.1 (2016-8-25)
- * Developed by Tencent
- * License: MITs
- */
-#include <rapidjson/document.h>
-#include <rapidjson/filewritestream.h>
-#include <rapidjson/ostreamwrapper.h>
-#include <rapidjson/reader.h> // rapidjson::ParseResult
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/writer.h>
-
 /* boost 1.72.0
  * License: Boost Software License (similar to BSD and MIT)
  */
+#include <boost/asio/spawn.hpp>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/strand.hpp>
 #include <boost/beast/core.hpp>
@@ -52,8 +42,8 @@
 
 // Local Project
 #include "httpCookieMap.hpp"
-#include "httpHeader.hpp"
 #include "httpUrl.hpp"
+#include "json.hpp"
 #include <BookFiler-Module-HTTP/Interface.hpp>
 
 /*
@@ -67,8 +57,7 @@ using requestBeastInternal = std::shared_ptr<
 
 class RequestImpl : public Request {
 private:
-  requestBeastInternal reqBeast;
-  HeaderImpl headerMap;
+  requestBeastInternal requestBeast;
   CookieMapImpl cookieMap;
 
 public:
@@ -82,12 +71,24 @@ public:
   std::string_view method();
   std::string_view host();
   std::string path();
+  // header methods
+  int setHeader(std::unordered_map<std::string, std::string>);
   // query methods
   std::string getEncodedQuery();
   std::optional<std::string> getQuery(std::string);
+  // header methods
+
   // boost beast methods
   requestBeastInternal getRequest();
   int setRequest(requestBeastInternal);
+  /* Use after setRequest to populate the convenience features
+   * not included with boost::beast::http::request
+   */
+  int parseRequest();
+  /* Arguments provided are from the routing function arguments
+   * They will be used to match requests.
+   */
+  int routeValidate(std::string_view method, std::string_view path);
 };
 
 } // namespace HTTP

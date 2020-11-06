@@ -60,6 +60,9 @@
 namespace bookfiler {
 namespace HTTP {
 
+/* This session is passed when routing with raw boost::beast::http objects.
+ * This class provides convenience functions to help with routing and request parsing
+ */
 class SessionImpl : public Session {
 private:
 public:

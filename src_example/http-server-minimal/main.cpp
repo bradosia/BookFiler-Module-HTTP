@@ -44,7 +44,7 @@ int allModulesLoaded() {
                       }}});
 
   // Start server
-  httpServer->runAsync();
+  httpServer->run();
 
   return 0;
 }

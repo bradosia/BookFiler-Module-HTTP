@@ -105,5 +105,23 @@ ModuleExport::newCertificateManager() {
   return std::dynamic_pointer_cast<bookfiler::certificate::Manager>(managerPtr);
 }
 
+void ModuleExport::wait(const std::string handle_) {
+  std::unique_lock<std::mutex> mutexLock(globalMutex);
+  conditionVariableMap.emplace(std::piecewise_construct,
+                               std::forward_as_tuple(handle_), // args for key
+                               std::forward_as_tuple());
+  auto it = conditionVariableMap.find(handle_);
+  if (it != conditionVariableMap.end()) {
+    conditionVariableMap.at(handle_).wait(mutexLock);
+  }
+}
+
+void ModuleExport::notify(const std::string handle_) {
+  auto it = conditionVariableMap.find(handle_);
+  if (it != conditionVariableMap.end()) {
+    conditionVariableMap.at(handle_).notify_one();
+  }
+}
+
 } // namespace HTTP
 } // namespace bookfiler

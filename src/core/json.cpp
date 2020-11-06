@@ -15,6 +15,21 @@
 namespace bookfiler {
 namespace JSON {
 
+std::optional<std::string> getMemberString(const rapidjson::Value &val,
+                                           const char *key) {
+  if (val.HasMember(key) && val[key].IsString()) {
+    return val[key].GetString();
+  }
+  return {};
+}
+
+std::optional<int> getMemberInt(const rapidjson::Value &val, const char *key) {
+  if (val.HasMember(key) && val[key].IsInt()) {
+    return val[key].GetInt();
+  }
+  return {};
+}
+
 void printJSON_value(const rapidjson::Value &a, unsigned int depth) {
   if (a.IsArray()) {
     rapidjson::SizeType n =
@@ -49,5 +64,5 @@ void printJSON_iterator(rapidjson::Value::ConstMemberIterator &itr,
   }
 }
 
-} // namespace HTTP
+} // namespace JSON
 } // namespace bookfiler

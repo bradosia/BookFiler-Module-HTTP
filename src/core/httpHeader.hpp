@@ -34,11 +34,16 @@ namespace HTTP {
 class HeaderImpl {
 private:
   std::unordered_map<std::string, std::string> headerMap;
+  std::string headerStr;
 
 public:
   HeaderImpl();
   HeaderImpl(std::string);
   ~HeaderImpl();
+
+  int setHeader(std::unordered_map<std::string, std::string>);
+  std::string flattenHeaderMap();
+  int generateHeaderMap(std::string);
 };
 
 } // namespace HTTP

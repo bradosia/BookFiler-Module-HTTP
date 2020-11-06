@@ -26,7 +26,9 @@ link_directories(
 add_executable(${EXENAME} ${SOURCES_SUB})
 
 target_link_libraries(${EXENAME} PRIVATE
-  ${lib_shared_name}
+  # Boost
+  Boost::system
+  Boost::filesystem
 
   ModuleManager
   SettingsManager

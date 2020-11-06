@@ -42,9 +42,9 @@
  */
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/strand.hpp>
-#include <boost/beast/core.hpp>
+// #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
-#include <boost/beast/ssl.hpp>
+// #include <boost/beast/ssl.hpp>
 #include <boost/beast/version.hpp>
 #include <boost/config.hpp>
 #include <boost/signals2.hpp>
@@ -65,42 +65,32 @@ using tcp = boost::asio::ip::tcp; // from <boost/asio/ip/tcp.hpp>
 namespace bookfiler {
 namespace HTTP {
 
-using routeSignalTypeInternal = boost::signals2::signal<int(
+/*
+using routeSignalTypeInternal2 = boost::signals2::signal<int(
     std::shared_ptr<Session>, requestBeastInternal, responseBeastInternal)>;
 using routeFunctionBeastTypeInternal = std::function<int(
     std::shared_ptr<Session>, requestBeastInternal, responseBeastInternal)>;
+*/
 
+
+class RouteCombiner;
+using routeFunctionTypeExternal =
+    std::function<std::string(std::shared_ptr<Request>, std::shared_ptr<Response>)>;
+using routeSignalTypeInternal = boost::signals2::signal<std::string(
+    std::shared_ptr<Request>, std::shared_ptr<Response>), RouteCombiner>;
+using routeFunctionTypeInternal = std::function<std::string(
+    std::shared_ptr<Request>, std::shared_ptr<Response>)>;
+
+/*
 using routeVariantType_Beast =
     std::variant<int, double, std::string, routeFunctionExpressType,
                  routeFunctionBeastTypeInternal>;
 using routeVariantType_NoBeast =
     std::variant<int, double, std::string, routeFunctionExpressType>;
+*/
 
 // Return a reasonable mime type based on the extension of a file.
 beast::string_view mime_type(beast::string_view path);
-
-// Append an HTTP rel-path to a local filesystem path.
-// The returned path is normalized for the platform.
-std::string path_cat(beast::string_view base, beast::string_view path);
-
-// Report a failure
-void fail(beast::error_code ec, char const *what);
-
-int badRequest(requestBeastInternal req, responseBeastInternal res,
-               beast::string_view why);
-
-int notFound(requestBeastInternal req, responseBeastInternal res,
-             beast::string_view why);
-
-int serverError(requestBeastInternal req, responseBeastInternal res,
-                beast::string_view why);
-
-int getRequest(requestBeastInternal req, responseBeastInternal res,
-               beast::string_view why);
-
-int handleRequest(std::shared_ptr<Session>, requestBeastInternal req,
-                  responseBeastInternal res,
-                  std::shared_ptr<routeSignalTypeInternal> routeSignal);
 
 } // namespace HTTP
 } // namespace bookfiler

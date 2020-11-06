@@ -6,8 +6,8 @@
  * @brief HTTP module for BookFiler™ applications.
  */
 
-#ifndef BOOKFILER_MODULE_HTTP_HTTP_SERVER_ACCEPT_H
-#define BOOKFILER_MODULE_HTTP_HTTP_SERVER_ACCEPT_H
+#ifndef BOOKFILER_MODULE_HTTP_HTTP_SERVER_CONNECTION_H
+#define BOOKFILER_MODULE_HTTP_HTTP_SERVER_CONNECTION_H
 
 // config
 #include "config.hpp"
@@ -44,7 +44,9 @@
 #include <boost/signals2.hpp>
 
 // Local Project
+#include "httpServerRoute.hpp"
 #include "httpServerSession.hpp"
+#include "httpServerState.hpp"
 #include "httpServerUtil.hpp"
 
 namespace beast = boost::beast;   // from <boost/beast.hpp>
@@ -59,33 +61,30 @@ using tcp = boost::asio::ip::tcp; // from <boost/asio/ip/tcp.hpp>
 namespace bookfiler {
 namespace HTTP {
 
+class ServerState;
+
 // Handles an HTTP server connection
-class Accept : public std::enable_shared_from_this<Accept> {
+class Connection {
 private:
-  std::shared_ptr<Session> session;
   beast::ssl_stream<beast::tcp_stream> sslStream;
-  beast::flat_buffer buffer;
-  std::shared_ptr<std::string const> docRoot;
-  requestBeastInternal req;
-  responseBeastInternal res;
-  std::shared_ptr<routeSignalTypeInternal> routeSignal;
+  std::shared_ptr<ServerState> serverState;
+  std::shared_ptr<RouteImpl> routePtr;
 
 public:
   // Take ownership of the socket
-  Accept(tcp::socket &&socket, ssl::context &ctx,
-         std::shared_ptr<std::string const> const &doc_root);
+  Connection(tcp::socket, ssl::context &, std::shared_ptr<ServerState>,
+             std::shared_ptr<RouteImpl>);
+  ~Connection();
 
   // Start the asynchronous operation
-  void run();
-  void on_run();
-  void on_handshake(beast::error_code ec);
-  void do_read();
-  void on_read(beast::error_code ec, std::size_t bytes_transferred);
-  void on_write(bool close, beast::error_code ec,
-                std::size_t bytes_transferred);
-  void do_close();
-  void on_shutdown(beast::error_code ec);
-  int setRouteSignal(std::shared_ptr<routeSignalTypeInternal>);
+  int run(net::yield_context yieldContext);
+
+  int badRequest(requestBeastInternal req, responseBeastInternal res,
+             beast::string_view what);
+  int notFound(requestBeastInternal req, responseBeastInternal res,
+           beast::string_view what);
+  int serverError(requestBeastInternal req, responseBeastInternal res,
+              beast::string_view what);
 };
 
 } // namespace HTTP

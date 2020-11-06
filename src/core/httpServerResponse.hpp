@@ -27,17 +27,6 @@
 #include <utility>
 #include <vector>
 
-/* rapidjson v1.1 (2016-8-25)
- * Developed by Tencent
- * License: MITs
- */
-#include <rapidjson/document.h>
-#include <rapidjson/filewritestream.h>
-#include <rapidjson/ostreamwrapper.h>
-#include <rapidjson/reader.h> // rapidjson::ParseResult
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/writer.h>
-
 /* boost 1.72.0
  * License: Boost Software License (similar to BSD and MIT)
  */
@@ -51,6 +40,7 @@
 #include <boost/signals2.hpp>
 
 // Local Project
+#include "json.hpp"
 #include <BookFiler-Module-HTTP/Interface.hpp>
 
 /*
@@ -64,11 +54,28 @@ using responseBeastInternal = std::shared_ptr<
 
 class ResponseImpl : public Response {
 private:
-    responseBeastInternal resBeast;
+  responseBeastInternal resBeast;
+  bool writableEndedFlag;
+  std::shared_ptr<std::string> bodyStrPtr;
+
 public:
-    responseBeastInternal getResponse();
-    int setResponse(responseBeastInternal);
-    int send(std::string);
+  ResponseImpl();
+  ~ResponseImpl();
+  responseBeastInternal getResponse();
+  int setResponse(responseBeastInternal);
+
+  /* This method signals to the server that all of the response headers and body
+   * have been sent; that server should consider this message complete.
+   */
+  int end(std::string);
+  /* Is true after response.end() has been called. This property does not
+   * indicate whether the data has been flushed, for this use
+   * response.writableFinished instead.
+   */
+  bool writableEnded();
+  std::shared_ptr<std::string> body();
+  int parseResponse();
+  void nothing();
 };
 
 } // namespace HTTP

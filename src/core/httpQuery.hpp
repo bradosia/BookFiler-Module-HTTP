@@ -44,6 +44,7 @@ public:
   QueryImpl();
   QueryImpl(std::string);
   ~QueryImpl();
+
   int setQuery(std::unordered_map<std::string, std::string>);
   int setQuery(std::shared_ptr<rapidjson::Document>);
   int setEncodedQuery(std::string);

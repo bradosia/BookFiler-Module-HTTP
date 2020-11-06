@@ -15,6 +15,8 @@
 namespace bookfiler {
 namespace HTTP {
 
+std::mutex globalMutex;
+
 Util::Util() {}
 Util::~Util() {}
 
@@ -84,6 +86,31 @@ int Util::uriDecode(const std::string &str, std::string &decodedStr) {
     decodedStr += c;
   }
   return 0;
+}
+
+void logStatus(std::string functionStr, std::string msg) {
+  const std::lock_guard<std::mutex> lock(globalMutex);
+  std::cout << "\n=== THREAD " << std::this_thread::get_id() << " ===\n"
+            << moduleCode << functionStr << " " << msg << std::endl;
+}
+
+void logStatus(std::string functionStr, std::string msg,
+               boost::beast::error_code ec) {
+  const std::lock_guard<std::mutex> lock(globalMutex);
+  std::cout << "\n=== THREAD " << std::this_thread::get_id() << " ===\n"
+            << moduleCode << functionStr << " " << msg << " ERROR:\n"
+            << ec.message() << std::endl;
+}
+
+std::string read_file(char const *path) {
+  std::string ret;
+  if (auto const fd = std::fopen(path, "rb")) {
+    auto const bytes = std::filesystem::file_size(path);
+    ret.resize(bytes);
+    std::fread(ret.data(), 1, bytes, fd);
+    std::fclose(fd);
+  }
+  return ret;
 }
 
 } // namespace HTTP

@@ -16,13 +16,18 @@ namespace bookfiler {
 namespace HTTP {
 
 ServerImpl::ServerImpl() {
-  routeSignal = std::make_shared<routeSignalTypeInternal>();
+  routePtr = std::make_shared<RouteImpl>();
   // The SSL context holds certificates
   sslContext = std::make_shared<boost::asio::ssl::context>(
       boost::asio::ssl::context::tlsv12);
+  serverState = std::make_shared<ServerState>();
 }
 
-ServerImpl::~ServerImpl() {}
+ServerImpl::~ServerImpl() {
+  for (auto &thread : threadList) {
+    thread.join();
+  }
+}
 
 int ServerImpl::setSettingsDoc(std::shared_ptr<rapidjson::Value> settingsDoc_) {
   settingsDoc = settingsDoc_;
@@ -31,42 +36,29 @@ int ServerImpl::setSettingsDoc(std::shared_ptr<rapidjson::Value> settingsDoc_) {
 
 int ServerImpl::run() {
   extractSettings();
+  std::stringstream ss;
+  auto hardwareThreadsNum = std::thread::hardware_concurrency();
+  ss << "threadsNum: " << serverState->threadsNum
+     << "\nHardware Threads: " << hardwareThreadsNum;
+  serverState->threadsNum = hardwareThreadsNum;
+  logStatus("::ServerImpl::runAsync", ss.str());
   // hint how much concurrency is used for the io context
-  ioContext = std::make_shared<boost::asio::io_context>(threadsNum);
+  ioContext =
+      std::make_shared<boost::asio::io_context>(serverState->threadsNum);
   // Create and launch a listening port
-  listener = std::make_shared<Listener>(*ioContext, *sslContext,
-                                        tcp::endpoint{address, port}, docRoot);
-  listener->setRouteSignal(routeSignal);
-  listener->run();
+  net::spawn(
+      *ioContext,
+      std::bind(&Listener::run,
+                std::make_shared<Listener>(
+                    std::ref(*ioContext), std::ref(*sslContext),
+                    tcp::endpoint{serverState->address, serverState->port},
+                    serverState, routePtr),
+                std::placeholders::_1));
 
   // Run the I/O service on the requested number of threads
-  std::vector<std::thread> v;
-  v.reserve(threadsNum - 1);
-  for (auto i = threadsNum - 1; i > 0; --i) {
-    v.emplace_back(&ServerImpl::runIoContext, this);
-    v.back().detach();
-  }
-  ioContext->run();
-
-  return 0;
-}
-
-int ServerImpl::runAsync() {
-  extractSettings();
-  // hint how much concurrency is used for the io context
-  ioContext = std::make_shared<boost::asio::io_context>(threadsNum);
-  // Create and launch a listening port
-  listener = std::make_shared<Listener>(*ioContext, *sslContext,
-                                        tcp::endpoint{address, port}, docRoot);
-  listener->setRouteSignal(routeSignal);
-  listener->run();
-
-  // Run the I/O service on the requested number of threads
-  std::vector<std::thread> v;
-  v.reserve(threadsNum);
-  for (auto i = threadsNum; i > 0; --i) {
-    v.emplace_back(&ServerImpl::runIoContext, this);
-    v.back().detach();
+  threadList.reserve(serverState->threadsNum);
+  for (auto i = serverState->threadsNum; i > 0; --i) {
+    threadList.emplace_back(&ServerImpl::runIoContext, this);
   }
 
   return 0;
@@ -75,58 +67,48 @@ int ServerImpl::runAsync() {
 void ServerImpl::runIoContext() { ioContext->run(); }
 
 int ServerImpl::extractSettings() {
-  std::string addressStr, docRootStr;
-  int portInt = 0;
-
   /* Get settings from JSON document */
   if (!settingsDoc->IsObject()) {
-    std::cout << moduleCode
-              << "::ServerImpl::run ERROR:\nSettings document invalid"
-              << std::endl;
+    logStatus("::ServerImpl::extractSettings",
+              "ERROR: Settings document not an object.");
     return -1;
   }
   if (!settingsDoc->HasMember("server")) {
-    std::cout << moduleCode
-              << "::ServerImpl::run ERROR:\nSettings document has no server "
-                 "definition."
-              << std::endl;
+    logStatus("::ServerImpl::extractSettings",
+              "ERROR: Settings document has no server definition.");
     return -1;
   }
-  const rapidjson::Value &serverSettingsJson = (*settingsDoc)["server"];
+  const rapidjson::Value &ServerStateJson = (*settingsDoc)["server"];
 
-  if (!serverSettingsJson.IsObject()) {
-    std::cout << moduleCode
-              << "::ServerImpl::run ERROR:\nSettings document server "
-                 "definition incorrect type."
-              << std::endl;
+  if (!ServerStateJson.IsObject()) {
+    logStatus("::ServerImpl::extractSettings",
+              "ERROR: Settings document server member is not an object.");
     return -1;
   }
 
-  char memberName01[] = "address";
-  if (serverSettingsJson.HasMember(memberName01) &&
-      serverSettingsJson[memberName01].IsString()) {
-    addressStr = serverSettingsJson[memberName01].GetString();
+  auto addressStrOpt =
+      bookfiler::JSON::getMemberString(ServerStateJson, "address");
+  if (addressStrOpt) {
+    serverState->addressStr = *addressStrOpt;
   }
-  char memberName02[] = "port";
-  if (serverSettingsJson.HasMember(memberName02) &&
-      serverSettingsJson[memberName02].IsInt()) {
-    portInt = serverSettingsJson[memberName02].GetInt();
+  auto docRootStrOpt =
+      bookfiler::JSON::getMemberString(ServerStateJson, "docRoot");
+  if (docRootStrOpt) {
+    serverState->docRootStr = *docRootStrOpt;
   }
-  char memberName03[] = "docRoot";
-  if (serverSettingsJson.HasMember(memberName03) &&
-      serverSettingsJson[memberName03].IsString()) {
-    docRootStr = serverSettingsJson[memberName03].GetString();
+  auto portIntOpt = bookfiler::JSON::getMemberInt(ServerStateJson, "port");
+  if (portIntOpt) {
+    serverState->portInt = *portIntOpt;
   }
-  char memberName04[] = "threadNum";
-  if (serverSettingsJson.HasMember(memberName04) &&
-      serverSettingsJson[memberName04].IsInt()) {
-    threadsNum = serverSettingsJson[memberName04].GetInt();
+  auto threadsNumOpt =
+      bookfiler::JSON::getMemberInt(ServerStateJson, "threadNum");
+  if (threadsNumOpt) {
+    serverState->threadsNum = *threadsNumOpt;
   }
 
-  address = boost::asio::ip::make_address(addressStr);
-  port = static_cast<unsigned short>(portInt);
-  docRoot = std::make_shared<std::string>(docRootStr);
-  threadsNum = std::max<int>(1, threadsNum);
+  serverState->address = boost::asio::ip::make_address(serverState->addressStr);
+  serverState->port = static_cast<unsigned short>(serverState->portInt);
+  serverState->threadsNum = std::max<int>(1, serverState->threadsNum);
   return 0;
 }
 
@@ -182,12 +164,18 @@ int ServerImpl::useCertificate(
 }
 
 int ServerImpl::route(
-    std::unordered_map<std::string, routeVariantType_Beast> map) {
-  std::cout << "routeVariantType_Beast" << std::endl;
-  std::shared_ptr<routeFunctionExpressType> routeFunctionExpress;
+    std::unordered_map<std::string, routeVariantTypeExternal> map_) {
+  logStatus("::ServerImpl::route", "START");
+  std::shared_ptr<routeFunctionTypeExternal> routeFunction;
   std::string method, path;
-  for (auto val : map) {
+  int priority = 10;
+  method = "GET";
+  path = "*";
+  for (auto val : map_) {
     if (int *val_ = std::get_if<int>(&val.second)) {
+      if (val.first == "priority") {
+        priority = *val_;
+      }
     } else if (double *val_ = std::get_if<double>(&val.second)) {
     } else if (std::string *val_ = std::get_if<std::string>(&val.second)) {
       if (val.first == "method") {
@@ -195,83 +183,21 @@ int ServerImpl::route(
       } else if (val.first == "path") {
         path = *val_;
       }
-    } else if (routeFunctionExpressType *val_ =
-                   std::get_if<routeFunctionExpressType>(&val.second)) {
-      routeFunctionExpress =
-          std::make_shared<routeFunctionExpressType>(std::move(*val_));
-    } else if (routeFunctionBeastTypeInternal *val_ =
-                   std::get_if<routeFunctionBeastTypeInternal>(&val.second)) {
-      routeFunctionBeastTypeInternal callback = std::move(*val_);
-      std::cout << "routeFunctionBeastType added" << std::endl;
-      routeSignal->connect(callback);
+    } else if (routeFunctionTypeExternal *val_ =
+                   std::get_if<routeFunctionTypeExternal>(&val.second)) {
+      routeFunction =
+          std::make_shared<routeFunctionTypeExternal>(std::move(*val_));
     }
   }
-
-  /* converts from an Express-like callback to the native Beast callback */
-  routeSignalAdd(routeFunctionExpress, method, path);
-
-  return 0;
-}
-
-int ServerImpl::route(
-    std::unordered_map<std::string, routeVariantType_NoBeast> map) {
-  std::cout << "routeVariantType_NoBeast" << std::endl;
-  std::shared_ptr<routeFunctionExpressType> routeFunctionExpress;
-  std::string method, path;
-  for (auto val : map) {
-    if (int *val_ = std::get_if<int>(&val.second)) {
-    } else if (double *val_ = std::get_if<double>(&val.second)) {
-    } else if (std::string *val_ = std::get_if<std::string>(&val.second)) {
-      if (val.first == "method") {
-        method = *val_;
-      } else if (val.first == "path") {
-        path = *val_;
-      }
-    } else if (routeFunctionExpressType *val_ =
-                   std::get_if<routeFunctionExpressType>(&val.second)) {
-      routeFunctionExpress =
-          std::make_shared<routeFunctionExpressType>(std::move(*val_));
-    }
+  if (method == "GET") {
+    routePtr->getAdd(path, priority, *routeFunction);
+  } else if (method == "POST") {
+    routePtr->postAdd(path, priority, *routeFunction);
+  } else if (method == "*") {
+    routePtr->allAdd(path, priority, *routeFunction);
   }
 
-  /* converts from an Express-like callback to the native Beast callback */
-  routeSignalAdd(routeFunctionExpress, method, path);
-
   return 0;
-}
-
-int ServerImpl::routeSignalAdd(
-    std::shared_ptr<routeFunctionExpressType> routeFunctionExpress,
-    std::string method, std::string path) {
-  routeSignal->connect([routeFunctionExpress, method,
-                        path](std::shared_ptr<Session> session,
-                              requestBeastInternal reqBeast,
-                              responseBeastInternal resBeast) -> int {
-    std::cout << "routeSignal->connect" << std::endl;
-    std::shared_ptr<Request> req = session->parseRequest(reqBeast);
-    if (session->routeValidate(req, method, path) < 0) {
-      return -1;
-    }
-    std::shared_ptr<ResponseImpl> resImpl = std::make_shared<ResponseImpl>();
-    resImpl->setResponse(resBeast);
-    response res = std::dynamic_pointer_cast<Response>(resImpl);
-    std::string returnStr = (*routeFunctionExpress)(req, res);
-    resBeast->result(boost::beast::http::status::ok);
-    resBeast->version(reqBeast->version());
-    resBeast->set(boost::beast::http::field::server,
-                  BOOST_BEAST_VERSION_STRING);
-    resBeast->set(boost::beast::http::field::content_type, "text/html");
-    resBeast->keep_alive(reqBeast->keep_alive());
-    resBeast->body() = returnStr;
-    resBeast->content_length(resBeast->body().length());
-    resBeast->prepare_payload();
-    return 0;
-  });
-  return 0;
-}
-
-std::shared_ptr<routeSignalTypeInternal> ServerImpl::getRouteSignal() {
-  return routeSignal;
 }
 
 } // namespace HTTP

@@ -7,15 +7,12 @@
  */
 
 // Bookfiler Modules
-#define BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE 1
 #include <BookFilerModuleHttpLoader.hpp>
 
-int routeAll(std::shared_ptr<bookfiler::HTTP::Session> session,
-             bookfiler::HTTP::requestBeast req,
-             bookfiler::HTTP::responseBeast res);
 std::string routeAbout(bookfiler::HTTP::request req,
                        bookfiler::HTTP::response res);
 int allModulesLoaded();
+void signal_handler(int signal);
 
 std::string testName = "HTTP Server Example";
 std::shared_ptr<bookfiler::HTTP::ModuleInterface> httpModule;
@@ -24,13 +21,10 @@ std::shared_ptr<bookfiler::HTTP::Server> httpServer;
 int main() {
   std::cout << testName << " BEGIN" << std::endl;
 
-  bookfiler::curl::Init initObj;
   bookfiler::HTTP::loadModule("modules", std::bind(&allModulesLoaded),
                               httpModule);
 
   std::cout << testName << " END" << std::endl;
-
-  system("pause");
   return 0;
 }
 
@@ -46,19 +40,20 @@ int allModulesLoaded() {
   httpServer = httpModule->newServer({{"port", 3000}, {"host", "localhost"}});
   httpServer->useCertificate(certRootPtr);
 
-  // Route using signals and slots
-  std::cout << "httpServer->getRouteSignal()->connect" << std::endl;
-  httpServer->getRouteSignal()->connect(&routeAll);
-
   std::cout << "httpServer->route" << std::endl;
   // Route by using a lambda expression
-  httpServer->route({{"method", "GET"},
-                     {"path", "/"},
-                     {"handler",
-                      [](bookfiler::HTTP::request req,
-                         bookfiler::HTTP::response res) -> std::string {
-                        return "Hello World!";
-                      }}});
+  httpServer->route(
+      {{"method", "GET"},
+       {"path", "/"},
+       {"handler",
+        [](bookfiler::HTTP::request req,
+           bookfiler::HTTP::response res) -> std::string {
+          res->end("<ul><li><a href=\"/\">Home</a></li><li><a "
+                   "href=\"/about?code=test code\">About</a></li><li><a "
+                   "href=\"news\">News</a></li><li><a "
+                   "href=\"notexist\">Does Not Exist</a></li></ul>");
+          return "";
+        }}});
 
   // Route by binding a callback function
   httpServer->route({{"method", "GET"},
@@ -66,42 +61,31 @@ int allModulesLoaded() {
                      {"handler", std::bind(&routeAbout, std::placeholders::_1,
                                            std::placeholders::_2)}});
 
+  std::cout << "httpServer->route" << std::endl;
+  // Route by using a lambda expression
+  httpServer->route({{"method", "GET"},
+                     {"path", "/news"},
+                     {"handler",
+                      [](bookfiler::HTTP::request req,
+                         bookfiler::HTTP::response res) -> std::string {
+                        return "Hello World!";
+                      }}});
+
   // Start server
-  httpServer->runAsync();
+  httpServer->run();
 
-  return 0;
-}
+  httpModule->wait("exit");
 
-int routeAll(std::shared_ptr<bookfiler::HTTP::Session> session,
-             bookfiler::HTTP::requestBeast reqBeast,
-             bookfiler::HTTP::responseBeast res) {
-  std::shared_ptr<bookfiler::HTTP::Request> req =
-      session->parseRequest(reqBeast);
-  std::string bodyStr = "<h1>URL Data</h1><br>";
-  bodyStr.append(req->getEncodedQuery());
-  auto codeQuery = req->getQuery("code");
-  if (codeQuery) {
-    bodyStr.append("<br>").append(codeQuery.value());
-  }
-
-  res->result(boost::beast::http::status::ok);
-  res->version(reqBeast->version());
-  res->set(boost::beast::http::field::server, BOOST_BEAST_VERSION_STRING);
-  res->set(boost::beast::http::field::content_type, "text/html");
-  res->keep_alive(reqBeast->keep_alive());
-  res->body() = bodyStr;
-  res->content_length(res->body().length());
-  res->prepare_payload();
   return 0;
 }
 
 std::string routeAbout(bookfiler::HTTP::request req,
                        bookfiler::HTTP::response res) {
-  std::string bodyStr = "<h1>About</h1><br><h1>URL Data</h1><br>";
+  std::string bodyStr = "<h1>About</h1><h2>URL Data</h2><br>Query: ";
   bodyStr.append(req->getEncodedQuery());
   auto codeQuery = req->getQuery("code");
   if (codeQuery) {
-    bodyStr.append("<br>").append(codeQuery.value());
+    bodyStr.append("<br>Code: ").append(codeQuery.value());
   }
   return bodyStr;
 }

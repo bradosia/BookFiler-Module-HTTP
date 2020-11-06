@@ -10,6 +10,7 @@
 #define BOOKFILER_MODULE_LOADER_H
 
 // c++17
+#include <condition_variable>
 #include <functional>
 #include <iostream>
 #include <memory>

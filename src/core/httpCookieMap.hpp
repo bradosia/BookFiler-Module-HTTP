@@ -45,6 +45,8 @@ public:
   CookieMapImpl();
   CookieMapImpl(std::string);
   ~CookieMapImpl();
+
+  int setHeader(std::unordered_map<std::string, std::string>);
 };
 
 } // namespace HTTP

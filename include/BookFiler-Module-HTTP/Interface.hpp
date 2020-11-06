@@ -37,21 +37,6 @@
 #include <rapidjson/stringbuffer.h>
 
 /*
- * bookfiler - Curl
- */
-namespace bookfiler {
-namespace curl {
-
-class Init {
-public:
-  Init(){};
-  ~Init(){};
-};
-
-} // namespace curl
-} // namespace bookfiler
-
-/*
  * bookfiler - certificate
  */
 namespace bookfiler {
@@ -108,13 +93,19 @@ public:
   boost::signals2::signal<int(std::shared_ptr<rapidjson::Document>)>
       jsonReceivedSignal;
   boost::signals2::signal<int(std::string)> dataReceivedSignal;
+  // url methods
   virtual std::string_view url() = 0;
   virtual int setURL(std::string) = 0;
   virtual int setQuery(std::unordered_map<std::string, std::string>) = 0;
-  virtual int setHeaders(
-      std::shared_ptr<std::unordered_map<std::string, std::string>>) = 0;
+  virtual int setHeader(std::unordered_map<std::string, std::string>) = 0;
   virtual int setMethod(std::string) = 0;
+  // client methods
+  virtual std::optional<std::string_view> getResponseStr() = 0;
+  virtual std::optional<std::shared_ptr<rapidjson::Document>>
+  getResponseJson() = 0;
   virtual int end() = 0;
+  virtual int endAsync() = 0;
+  virtual int wait() = 0;
 };
 
 #if BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE
@@ -130,8 +121,11 @@ public:
   virtual std::string_view method() = 0;
   virtual std::string_view host() = 0;
   virtual std::string path() = 0;
+  // header methods
+  virtual int setHeader(std::unordered_map<std::string, std::string>) = 0;
   virtual std::string getEncodedQuery() = 0;
   virtual std::optional<std::string> getQuery(std::string) = 0;
+  virtual int parseRequest() = 0;
 #if BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE
   virtual requestBeast getRequest() = 0;
 #endif
@@ -141,7 +135,9 @@ class Response {
 public:
   /* Sends the HTTP response.
    */
-  virtual int send(std::string) = 0;
+  virtual int end(std::string) = 0;
+  virtual std::shared_ptr<std::string> body() = 0;
+  virtual void nothing() = 0;
 #if BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE
   virtual responseBeast getResponse() = 0;
 #endif
@@ -165,32 +161,26 @@ using routeSignalType = boost::signals2::signal<int(
 using routeFunctionBeastType =
     std::function<int(std::shared_ptr<Session>, requestBeast, responseBeast)>;
 #endif
-using routeFunctionExpressType = std::function<std::string(request, response)>;
 
 // makes the arguments look like JSON
-#if BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE
-using routeVariantType =
-    std::variant<int, double, std::string, routeFunctionExpressType,
-                 routeFunctionBeastType>;
-#else
-using routeVariantType =
-    std::variant<int, double, std::string, routeFunctionExpressType>;
-#endif
-using routeObjectType = std::unordered_map<std::string, routeVariantType>;
-using routeArrayType = std::vector<routeVariantType>;
+using routeFunctionTypeExternal = std::function<std::string(
+    std::shared_ptr<Request>, std::shared_ptr<Response>)>;
+using routeVariantTypeExternal =
+    std::variant<int, double, std::string, routeFunctionTypeExternal>;
+
+using routeObjectType =
+    std::unordered_map<std::string, routeFunctionTypeExternal>;
+using routeArrayType = std::vector<routeFunctionTypeExternal>;
 
 using newServerVariantType = std::variant<int, double, std::string>;
 
 class Server {
 public:
-  // virtual int run() = 0;
-  virtual int runAsync() = 0;
+  virtual int run() = 0;
   virtual int
       useCertificate(std::shared_ptr<bookfiler::certificate::Certificate>) = 0;
-  virtual int route(std::unordered_map<std::string, routeVariantType> map) = 0;
-#if BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE
-  virtual std::shared_ptr<routeSignalType> getRouteSignal() = 0;
-#endif
+  virtual int
+  route(std::unordered_map<std::string, routeVariantTypeExternal> map) = 0;
 };
 
 class ModuleInterface {
@@ -217,6 +207,8 @@ public:
       newServer(std::unordered_map<std::string, newServerVariantType>) = 0;
   virtual std::shared_ptr<bookfiler::certificate::Manager>
   newCertificateManager() = 0;
+  virtual void wait(const std::string handle_) = 0;
+  virtual void notify(const std::string handle_) = 0;
 };
 
 } // namespace HTTP

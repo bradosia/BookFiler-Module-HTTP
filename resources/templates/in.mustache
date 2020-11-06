@@ -1,0 +1,14 @@
+<h1>Website</h1><br>
+{{!show as list}}
+<ul>
+{{*.}}
+<li>* {{key}}: {{value}}</li>
+{{/.}}
+</ul>
+
+<br>answer.everything = {{answer.everything}}
+<br>list = {{#list}}({{.}}){{/list}}
+
+{{#object}}
+<br>{{value}} {{currency}}
+{{/object}}

@@ -7,22 +7,18 @@
  */
 
 // C++
-#include <condition_variable>
+#include <sstream>
+#include <thread>
 
 // Bookfiler Modules
-#define BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE 1
 #include <BookFilerModuleHttpLoader.hpp>
 
 std::mutex globalMutex;
-bool authFlag, userIdFlag, applicationFlag;
-std::condition_variable authCondition, userIdCondition, applicationCondition;
 std::string authCode, userId, accessToken, refreshToken;
 
 std::string routeAll(bookfiler::HTTP::request req,
                      bookfiler::HTTP::response res);
 int allModulesLoaded();
-int jsonReceived(std::shared_ptr<rapidjson::Document>);
-int apiJsonReceived(std::shared_ptr<rapidjson::Document>);
 
 std::string testName = "Oauth2 Example";
 std::shared_ptr<bookfiler::HTTP::ModuleInterface> httpModule;
@@ -31,18 +27,15 @@ std::shared_ptr<bookfiler::HTTP::Server> httpServer;
 int main() {
   std::cout << testName << " BEGIN" << std::endl;
 
-  bookfiler::curl::Init initObj;
   bookfiler::HTTP::loadModule("modules", std::bind(&allModulesLoaded),
                               httpModule);
 
   std::cout << testName << " END" << std::endl;
-  system("pause");
   return 0;
 }
 
 int allModulesLoaded() {
   int rc = 0;
-  authFlag = userIdFlag = false;
 
   // SSL Certificate manager
   std::shared_ptr<bookfiler::certificate::Manager> certificateManager =
@@ -68,7 +61,7 @@ int allModulesLoaded() {
   std::shared_ptr<bookfiler::HTTP::Server> httpServer =
       httpModule->newServer({});
   httpServer->useCertificate(certRootPtr);
-  httpServer->runAsync();
+  httpServer->run();
   httpServer->route({{"method", "GET"},
                      {"path", "/"},
                      {"handler", std::bind(&routeAll, std::placeholders::_1,
@@ -97,10 +90,13 @@ int allModulesLoaded() {
 
   std::cout << "\n===MAIN THREAD===\nPlease login to your google account in "
                "the new window.";
+
+  httpModule->wait("auth");
+  /*
   {
     std::unique_lock<std::mutex> mutexLock(globalMutex);
     authCondition.wait(mutexLock, [] { return authFlag; });
-  }
+  }*/
   std::cout << "\n===MAIN THREAD===\nAuthorization Code: " << authCode << "\n";
 
   /* Start an HTTP post request to get the access token
@@ -116,8 +112,6 @@ int allModulesLoaded() {
             << "\n\n";
 
   // token url
-  httpClient->jsonReceivedSignal.connect(
-      std::bind(&jsonReceived, std::placeholders::_1));
   httpClient->setQuery(
       {{"client_id", "854776203850-r64s69l8jmh71ugiio16impqfcp80j1m.apps."
                      "googleusercontent.com"},
@@ -125,31 +119,47 @@ int allModulesLoaded() {
        {"grant_type", "authorization_code"},
        {"redirect_uri", "https://localhost:8081"},
        {"code", authCode}});
+  httpClient->setHeader({{"Content-Length", "0"}});
 
-  std::cout << "allModulesLoaded httpClient->url() = " << httpClient->url()
-            << "\n\n";
+  std::cout << "\n=== THREAD " << std::this_thread::get_id() << " ===\n"
+            << testName << " allModulesLoaded httpClient->url():\n"
+            << httpClient->url() << std::endl;
 
   rc = httpClient->end();
-
-  std::cout << "allModulesLoaded httpClient->url() = " << httpClient->url()
-            << "\n\n";
   if (rc < 0) {
-    std::cout << "Could not access webpage by HTTP\n";
+    std::cout << "\n=== THREAD " << std::this_thread::get_id() << " ===\n"
+              << testName << " allModulesLoaded ERROR:\n"
+              << "Could not access webpage by HTTP" << std::endl;
+    return -1;
+  }
+
+  std::optional<std::shared_ptr<rapidjson::Document>> jsonDocOpt =
+      httpClient->getResponseJson();
+
+  if (!jsonDocOpt) {
+    std::cout << "\n=== THREAD " << std::this_thread::get_id() << " ===\n"
+              << testName << " allModulesLoaded ERROR:\n"
+              << "Response is not JSON" << std::endl;
     return 0;
   }
 
-  return 0;
-}
+  // get the JSON Document
+  std::shared_ptr<rapidjson::Document> &jsonDoc = *jsonDocOpt;
 
-int jsonReceived(std::shared_ptr<rapidjson::Document> jsonDoc) {
+  // Pretty write the JSON
   rapidjson::StringBuffer buffer;
   rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
   jsonDoc->Accept(writer);
-  std::cout << "jsonReceived:\n" << buffer.GetString() << std::endl;
+
+  std::cout << "\n=== THREAD " << std::this_thread::get_id() << " ===\n"
+            << testName << " allModulesLoaded jsonDoc PrettyWriter:\n"
+            << buffer.GetString() << std::endl;
 
   /* parse the response */
   if (!jsonDoc->IsObject()) {
-    std::cout << "jsonReceived ERROR:\nJSON document invalid" << std::endl;
+    std::cout << "\n=== THREAD " << std::this_thread::get_id() << " ===\n"
+              << testName << " allModulesLoaded ERROR:\n"
+              << "JSON document not an object." << std::endl;
     return -1;
   }
   char memberName01[] = "access_token";
@@ -164,28 +174,12 @@ int jsonReceived(std::shared_ptr<rapidjson::Document> jsonDoc) {
   /* Get the user's ID */
   std::cout << "\n===MAIN THREAD===\nPlease enter your google user ID "
                "into the form on the new window.";
-  {
-    std::unique_lock<std::mutex> mutexLock(globalMutex);
-    userIdCondition.wait(mutexLock, [] { return userIdFlag; });
-  }
+  httpModule->wait("userId");
   std::cout << "\n===MAIN THREAD===\nUser ID: " << userId << "\n";
 
   std::cout << "\n===MAIN THREAD===\nApplication waiting until shut down.";
-  {
-    std::unique_lock<std::mutex> mutexLock(globalMutex);
-    userIdCondition.wait(mutexLock, [] { return applicationFlag; });
-  }
+  httpModule->wait("exit");
   std::cout << "\n===MAIN THREAD===\nApplication Shutting Done\n";
-
-  return 0;
-}
-
-int apiJsonReceived(std::shared_ptr<rapidjson::Document> jsonDoc) {
-  /* Print the response */
-  rapidjson::StringBuffer buffer;
-  rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
-  jsonDoc->Accept(writer);
-  std::cout << "apiJsonReceived:\n" << buffer.GetString() << std::endl;
 
   return 0;
 }
@@ -198,8 +192,7 @@ std::string routeAll(bookfiler::HTTP::request req,
   auto messagesPageQuery = req->getQuery("messagesPage");
   if (userIdQuery) {
     userId = userIdQuery.value();
-    userIdFlag = true;
-    userIdCondition.notify_one();
+    httpModule->notify("userId");
     bodyStr.append("<br>userId=")
         .append(userId)
         .append("<form action=\"/\" method=\"GET\"><label for=\"resultNum"
@@ -228,27 +221,47 @@ std::string routeAll(bookfiler::HTTP::request req,
           httpModule->newClient();
       httpClient->setURL(baseUrl);
       httpClient->setQuery({{"maxResults", resultsNum}});
-
-      std::shared_ptr<std::unordered_map<std::string, std::string>> headerMap =
-          std::make_shared<std::unordered_map<std::string, std::string>>();
-      headerMap->insert({"Authorization: Bearer ", accessToken});
-      headerMap->insert({"Accept: ", "application/json"});
-      httpClient->setHeaders(headerMap);
-
+      httpClient->setHeader(
+          {{"Authorization", std::string("Bearer ").append(accessToken)},
+           {"Accept", "application/json"}});
       httpClient->setMethod("GET");
-      httpClient->jsonReceivedSignal.connect(
-          std::bind(&apiJsonReceived, std::placeholders::_1));
       rc = httpClient->end();
       if (rc < 0) {
         bodyStr.append("Could not access webpage by HTTP\n");
         std::cout << "Could not access webpage by HTTP\n";
         return bodyStr;
       }
+
+      std::optional<std::shared_ptr<rapidjson::Document>> jsonDocOpt =
+          httpClient->getResponseJson();
+
+      if (!jsonDocOpt) {
+        bodyStr.append("JSON response not valid");
+        std::cout << "JSON response not valid\n";
+        return bodyStr;
+      }
+
+      std::shared_ptr<rapidjson::Document> &jsonDoc = *jsonDocOpt;
+
+      rapidjson::StringBuffer buffer;
+      rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+      jsonDoc->Accept(writer);
+
+      std::thread::id threadId = std::this_thread::get_id();
+      std::stringstream ss;
+      ss << threadId;
+
+      bodyStr.append("<br>THREAD ")
+          .append(ss.str())
+          .append("<br><br>allModulesLoaded jsonDoc PrettyWriter:<br><pre>")
+          .append(buffer.GetString())
+          .append("</pre>");
+
+      return bodyStr;
     }
   } else if (codeQuery) {
     authCode = codeQuery.value();
-    authFlag = true;
-    authCondition.notify_one();
+    httpModule->notify("auth");
     bodyStr.append("<br>code=")
         .append(authCode)
         .append("<form action=\"/\" method=\"GET\"><label for=\"userId"

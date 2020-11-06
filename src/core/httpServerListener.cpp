@@ -16,68 +16,65 @@ namespace bookfiler {
 namespace HTTP {
 
 Listener::Listener(net::io_context &ioContext_, ssl::context &sslContext_,
-                   tcp::endpoint endpoint,
-                   std::shared_ptr<std::string const> const &docRoot_)
-    : ioContext(ioContext_), sslContext(sslContext_), acceptor(ioContext_),
-      docRoot(docRoot_) {
+                   tcp::endpoint endpoint_,
+                   std::shared_ptr<ServerState> serverState_,
+                   std::shared_ptr<RouteImpl> routePtr_)
+    : ioContext(ioContext_), sslContext(sslContext_), endpoint(endpoint_),
+      serverState(serverState_), routePtr(routePtr_) {}
+
+int Listener::run(net::yield_context yieldContext) {
+  logStatus("::Listener::run", "START");
   beast::error_code ec;
 
   // Open the acceptor
+  tcp::acceptor acceptor(ioContext);
   acceptor.open(endpoint.protocol(), ec);
   if (ec) {
-    fail(ec, "open");
-    return;
+    logStatus("::Listener::run", "acceptor.open", ec);
+    return -1;
   }
 
   // Allow address reuse
   acceptor.set_option(net::socket_base::reuse_address(true), ec);
   if (ec) {
-    fail(ec, "set_option");
-    return;
+    logStatus("::Listener::run", "acceptor.set_option", ec);
+    return -1;
   }
 
   // Bind to the server address
   acceptor.bind(endpoint, ec);
   if (ec) {
-    fail(ec, "bind");
-    return;
+    logStatus("::Listener::run", "acceptor.bind", ec);
+    return -1;
   }
 
   // Start listening for connections
   acceptor.listen(net::socket_base::max_listen_connections, ec);
   if (ec) {
-    fail(ec, "listen");
-    return;
-  }
-}
-
-void Listener::run() { do_accept(); }
-
-void Listener::do_accept() {
-  // The new connection gets its own strand
-  acceptor.async_accept(
-      net::make_strand(ioContext),
-      beast::bind_front_handler(&Listener::on_accept, shared_from_this()));
-}
-
-void Listener::on_accept(beast::error_code ec, tcp::socket socket) {
-  if (ec) {
-    fail(ec, "accept");
-  } else {
-    // Create the session and run it
-    acceptPtr =
-        std::make_shared<Accept>(std::move(socket), sslContext, docRoot);
-    acceptPtr->setRouteSignal(routeSignal);
-    acceptPtr->run();
+    logStatus("::Listener::run", "acceptor.listen", ec);
+    return -1;
   }
 
-  // Accept another connection
-  do_accept();
-}
+  for (;;) {
+    tcp::socket socket(ioContext);
+    acceptor.async_accept(socket, yieldContext[ec]);
+    logStatus("::Listener::run", "acceptor.async_accept");
+    if (ec) {
+      logStatus("::Listener::run", "acceptor.async_accept", ec);
+      continue;
+    }
 
-int Listener::setRouteSignal(
-    std::shared_ptr<routeSignalTypeInternal> routeSignal_) {
-  routeSignal = routeSignal_;
+    std::shared_ptr<Connection> conn;
+    {
+      const std::lock_guard<std::mutex> lock(globalMutex);
+      serverState->connectionList.emplace_back(std::make_shared<Connection>(
+          std::move(socket), sslContext, serverState, routePtr));
+      conn = serverState->connectionList.back();
+    }
+    net::spawn(acceptor.get_executor(),
+               std::bind(&Connection::run, conn, std::placeholders::_1));
+    logStatus("::Listener::run", "net::spawn");
+  }
   return 0;
 }
 

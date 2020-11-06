@@ -67,6 +67,8 @@ public:
   std::optional<std::string> getQuery(std::string);
   // Url Methods
   std::string_view url();
+  std::string_view getEncodedHost();
+  std::string target();
 };
 
 } // namespace HTTP

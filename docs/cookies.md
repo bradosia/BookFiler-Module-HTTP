@@ -46,3 +46,10 @@ httpServer->route({{"method", "GET"},
                         return "Get Cookie";
                       }}});
 ```
+
+# Implementation
+
+```cpp
+bookfiler::HTTP::Cookie = req.getCookie("name");
+```
+Cookie interface is defined in [/include/BookFiler-Module-HTTP/Interface.hpp](/include/BookFiler-Module-HTTP/Interface.hpp) and implemented in [/src/core/httpCookie.hpp](/src/core/httpCookie.hpp).

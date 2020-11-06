@@ -41,7 +41,7 @@ Boost::Beast does not do cookie parsing, Forms/File Uploads, or User Agent parsi
 Install MSYS2<BR>
 Install Dependencies:
 ```shell
-pacman -S mingw-w64-x86_64-fmt mingw-w64-x86_64-boost
+pacman -S mingw-w64-x86_64-fmt mingw-w64-x86_64-boost mingw-w64-x86_64-re2
 ```
 Build:
 ```shell

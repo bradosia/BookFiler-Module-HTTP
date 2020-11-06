@@ -30,6 +30,7 @@ Boost::Beast does not do cookie parsing, Forms/File Uploads, or User Agent parsi
       * [HTTP Routing](#http-routing)
          * [node.js + hapi.js](#nodejs--hapijs-1)
          * [C++](#c-1)
+      * [Cookies](/docs/cookies.md)
    * [Dependency](#dependency)
    * [License](#license)
 <!--te-->

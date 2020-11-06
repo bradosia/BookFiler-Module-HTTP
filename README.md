@@ -18,13 +18,11 @@ A hand-picked HTTP and WebSocket toolkit for C++. This criteria for the selectio
 
 Boost::Beast does simple HTTP header parsing of each field with name/value pairs. <BR>
 Boost::Beast does not do cookie parsing, Forms/File Uploads, or User Agent parsing. <BR>
-Unfortunately, there is not a mysql connector that can accompany this list. The official MySQL connector does not compile on mingw.
 
 # Table of Contents
 
 <!--ts-->
    * [Build Instructions](#build-instructions)
-   * [Supported](#supported)
    * [Usage Instructions](#usage-instructions)
       * [Creating a server](#creating-a-server)
          * [node.js + hapi.js](#nodejs--hapijs)
@@ -32,6 +30,7 @@ Unfortunately, there is not a mysql connector that can accompany this list. The 
       * [HTTP Routing](#http-routing)
          * [node.js + hapi.js](#nodejs--hapijs-1)
          * [C++](#c-1)
+      * [Cookies](/docs/cookies.md)
    * [Dependency](#dependency)
    * [License](#license)
 <!--te-->
@@ -40,9 +39,15 @@ Unfortunately, there is not a mysql connector that can accompany this list. The 
 
 ## Windows - MinGW-w64
 Install MSYS2<BR>
-  
+Install Dependencies:
 ```shell
 pacman -S mingw-w64-x86_64-fmt mingw-w64-x86_64-boost
+```
+Build:
+```shell
+mkdir build
+cd build
+cmake -G "MSYS Makefiles" ../
 ```
 
 ## Windows - MSVC
@@ -78,25 +83,6 @@ You can manually edit the makefile or make with iphone sdk path like so:
 ```sh
 make HOST_OS=OSX TARGET_OS=IOS TARGET_ARCH=x86_64 IPHONE_SDK_PATH=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk
 ```
-
-## Supported
-| Host OS | Target OS | Architecture | Support |  Command |
-| :---    | :---      | :---         | :---    | :---     |
-| Windows | Windows   | x86          | X    | ``` make HOST_OS=WIN TARGET_ARCH=x86 ``` |
-| Windows | Windows   | x86_64       | X    | ``` make HOST_OS=WIN TARGET_ARCH=x86_64 ``` |
-| Windows | Android   | armeabi      | O    | ``` make HOST_OS=WIN TARGET_OS=android TARGET_ARCH=armeabi ``` |
-| Windows | Android   | armeabi-v7a  | O    | ``` make HOST_OS=WIN TARGET_OS=android TARGET_ARCH=armeabi-v7a ``` |
-| Windows | Android   | arm64-v8a    | O    | ``` make HOST_OS=WIN TARGET_OS=android TARGET_ARCH=arm64-v8a ``` |
-| Windows | Android   | x86          | O    | ``` make HOST_OS=WIN TARGET_OS=android TARGET_ARCH=x86 ``` |
-| Windows | Android   | x86_64       | O    | ``` make HOST_OS=WIN TARGET_OS=android TARGET_ARCH=x86_64 ``` |
-| macOS   | macOS     | x86          | O    | ``` make HOST_OS=OSX TARGET_ARCH=x86 ``` |
-| macOS   | macOS     | x86_64       | X    | ``` make HOST_OS=OSX TARGET_ARCH=x86_64 ``` |
-| macOS   | iOS       | armv7        | O    | ``` make HOST_OS=OSX TARGET_OS=IOS TARGET_ARCH=armv7 ``` |
-| macOS   | iOS       | armv7s       | O    | ``` make HOST_OS=OSX TARGET_OS=IOS TARGET_ARCH=armv7s ``` |
-| macOS   | iOS       | arm64        | O    | ``` make HOST_OS=OSX TARGET_OS=IOS TARGET_ARCH=arm64 ``` |
-| macOS   | iOS       | x86_64       | O    | ``` make HOST_OS=OSX TARGET_OS=IOS TARGET_ARCH=x86_64 ``` |
-| linux ubuntu | linux ubuntu | x86     | O    | ``` make HOST_OS=LINUX TARGET_ARCH=x86 ``` |
-| linux ubuntu | linux ubuntu | x86_64  | X    | ``` make HOST_OS=LINUX TARGET_ARCH=x86_64 ``` |
  
 # Usage Instructions
 ## Creating a server
@@ -229,7 +215,6 @@ int allModulesLoaded() {
 | rapidJSON				| MIT							| https://github.com/Tencent/rapidjson						|
 | bustache				| Boost Software License 1.0	| https://github.com/jamboree/bustache						|
 | openssl				| attribute						| https://github.com/openssl/openssl						|
-| curl/lib/cookie.c		| MIT-style						| https://github.com/curl/curl/blob/master/lib/cookie.c		|
 | ua-parser/uap-cpp		| MIT							| https://github.com/ua-parser/uap-cpp						|
 
 # License

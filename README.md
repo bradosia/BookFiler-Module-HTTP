@@ -215,7 +215,6 @@ int allModulesLoaded() {
 | rapidJSON				| MIT							| https://github.com/Tencent/rapidjson						|
 | bustache				| Boost Software License 1.0	| https://github.com/jamboree/bustache						|
 | openssl				| attribute						| https://github.com/openssl/openssl						|
-| curl/lib/cookie.c		| MIT-style						| https://github.com/curl/curl/blob/master/lib/cookie.c		|
 | ua-parser/uap-cpp		| MIT							| https://github.com/ua-parser/uap-cpp						|
 
 # License

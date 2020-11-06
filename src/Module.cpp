@@ -77,7 +77,7 @@ std::shared_ptr<Client> ModuleExport::newClient() {
 }
 
 std::shared_ptr<Client> ModuleExport::newClient(
-    std::unordered_map<std::string, newClientVariantType> map) {
+    std::map<std::string, newClientVariantType> map) {
   std::shared_ptr<ClientImpl> connectionPtr = std::make_shared<ClientImpl>(map);
   connectionPtr->setSettingsDoc(settingsDoc);
   // connectionPtr->setAccountsDoc(accountsDoc);
@@ -85,13 +85,13 @@ std::shared_ptr<Client> ModuleExport::newClient(
 }
 
 std::shared_ptr<Url>
-ModuleExport::newUrl(std::unordered_map<std::string, newUrlVariantType> map) {
-  std::shared_ptr<UrlImpl> urlPtr = std::make_shared<UrlImpl>(map);
+ModuleExport::newUrl(std::map<std::string, newUrlVariantType> map_) {
+  std::shared_ptr<UrlImpl> urlPtr = std::make_shared<UrlImpl>(map_);
   return std::dynamic_pointer_cast<Url>(urlPtr);
 }
 
 std::shared_ptr<Server> ModuleExport::newServer(
-    std::unordered_map<std::string, newServerVariantType> map) {
+    std::map<std::string, newServerVariantType> map) {
   std::shared_ptr<ServerImpl> serverPtr = std::make_shared<ServerImpl>();
   serverPtr->setSettingsDoc(settingsDoc);
   return std::dynamic_pointer_cast<Server>(serverPtr);

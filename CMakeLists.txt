@@ -15,8 +15,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.10")
-set(CMAKE_CXX_FLAGS "-g -Og -m64 -Wa,-mbig-obj")
-#set(CMAKE_CXX_FLAGS "-O3")
+#set(CMAKE_CXX_FLAGS "-g -Og -m64 -Wa,-mbig-obj")
+set(CMAKE_CXX_FLAGS "-O3")
 #set(CMAKE_SHARED_LINKER_FLAGS "-static -static-libgcc -static-libstdc++ -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive")
 set(CMAKE_BUILD_TYPE "Release")
 
@@ -29,6 +29,8 @@ include_directories(
   third_party/boost-url/include
   third_party/certify/include
   third_party/bustache/include
+  third_party/uap-cpp/
+  third_party/uap-cpp/yaml-cpp/include
 )
 
 link_directories(
@@ -37,47 +39,50 @@ link_directories(
 # Set up source files
 set(SOURCES
   src/Module.cpp
-  src/core/httpUrl.cpp
-  src/core/httpUtil.cpp
-  src/core/httpCookieMap.cpp
-  src/core/httpCookie.cpp
-  src/core/httpQuery.cpp
-  src/core/httpClient.cpp
-  src/core/httpServer.cpp
-  src/core/httpServerRequest.cpp
-  src/core/httpServerResponse.cpp
-  src/core/httpServerListener.cpp
-  src/core/httpServerConnection.cpp
-  src/core/httpServerSession.cpp
-  src/core/httpServerState.cpp
-  src/core/httpServerUtil.cpp
-  src/core/httpServerRoute.cpp
+  src/core/Util.cpp
+  src/core/Client.cpp
+  src/core/Server.cpp
+  src/core/ServerListener.cpp
+  src/core/ServerConnection.cpp
+  src/core/ServerSession.cpp
+  src/core/ServerState.cpp
+  src/core/ServerUtil.cpp
+  src/core/ServerRoute.cpp
+  src/core/Request.cpp
+  src/core/RequestCookieMap.cpp
+  src/core/RequestCookie.cpp
+  src/core/RequestUserAgent.cpp
+  src/core/Response.cpp
+  src/core/Url.cpp
+  src/core/UrlQuery.cpp
+  src/core/certificateManager.cpp
+  src/core/certificate.cpp
   src/core/json.cpp
-  src/core/certificateManager.hpp
-  src/core/certificate.hpp
 )
 
 set(HEADERS
-  src/Module.hpp
   src/core/config.hpp
-  src/core/httpUrl.hpp
-  src/core/httpUtil.hpp
-  src/core/httpCookieMap.hpp
-  src/core/httpCookie.hpp
-  src/core/httpQuery.hpp
-  src/core/httpClient.hpp
-  src/core/httpServer.hpp
-  src/core/httpServerRequest.hpp
-  src/core/httpServerResponse.hpp
-  src/core/httpServerListener.hpp
-  src/core/httpServerConnection.hpp
-  src/core/httpServerSession.hpp
-  src/core/httpServerState.hpp
-  src/core/httpServerUtil.hpp
-  src/core/httpServerRoute.hpp
+
+  src/Module.hpp
+  src/core/Util.hpp
+  src/core/Client.hpp
+  src/core/Server.hpp
+  src/core/ServerListener.hpp
+  src/core/ServerConnection.hpp
+  src/core/ServerSession.hpp
+  src/core/ServerState.hpp
+  src/core/ServerUtil.hpp
+  src/core/ServerRoute.hpp
+  src/core/Request.hpp
+  src/core/RequestCookieMap.hpp
+  src/core/RequestCookie.hpp
+  src/core/RequestUserAgent.hpp
+  src/core/Response.hpp
+  src/core/Url.hpp
+  src/core/UrlQuery.hpp
+  src/core/certificateManager.hpp
+  src/core/certificate.hpp
   src/core/json.hpp
-  src/core/certificateManager.cpp
-  src/core/certificate.cpp
 
   include/BookFiler-Module-HTTP/Interface.hpp
   include/BookFilerModuleHttpLoader.hpp
@@ -99,6 +104,11 @@ set(LIBRARIES ${LIBRARIES}
 
     # Bustache
     bustache
+
+    # uap-cpp
+    uap-cpp
+    yaml-cpp
+    re2
 
     # ssl
     ssl
@@ -163,10 +173,12 @@ endif()
 
 # THIRD PARTY
 add_subdirectory(third_party/bustache)
+add_subdirectory(third_party/uap-cpp)
 
 # EXAMPLES
 add_subdirectory(src_example/http-client-json)
 add_subdirectory(src_example/http-server)
+add_subdirectory(src_example/http-server-cookie)
 add_subdirectory(src_example/http-server-minimal)
 add_subdirectory(src_example/http-server-beast)
 add_subdirectory(src_example/http-server-template)

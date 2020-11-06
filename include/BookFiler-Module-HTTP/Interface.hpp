@@ -12,9 +12,9 @@
 // c++17
 #include <functional>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <variant>
 
 /* boost 1.72.0
@@ -75,11 +75,16 @@ public:
 namespace bookfiler {
 namespace HTTP {
 
+class Cookie {
+public:
+  virtual std::string_view value() = 0;
+};
+
 using newUrlVariantType = std::variant<int, double, std::string>;
 
 class Url {
 public:
-  virtual int setQuery(std::unordered_map<std::string, std::string>) = 0;
+  virtual int setQuery(std::map<std::string, std::string>) = 0;
   virtual int setQuery(std::shared_ptr<rapidjson::Document>) = 0;
   virtual std::string getEncodedQuery() = 0;
   virtual std::optional<std::string> getQuery(std::string) = 0;
@@ -96,8 +101,8 @@ public:
   // url methods
   virtual std::string_view url() = 0;
   virtual int setURL(std::string) = 0;
-  virtual int setQuery(std::unordered_map<std::string, std::string>) = 0;
-  virtual int setHeader(std::unordered_map<std::string, std::string>) = 0;
+  virtual int setQuery(std::map<std::string, std::string>) = 0;
+  virtual int setHeader(std::map<std::string, std::string>) = 0;
   virtual int setMethod(std::string) = 0;
   // client methods
   virtual std::optional<std::string_view> getResponseStr() = 0;
@@ -122,14 +127,20 @@ public:
   virtual std::string_view host() = 0;
   virtual std::string path() = 0;
   // header methods
-  virtual int setHeader(std::unordered_map<std::string, std::string>) = 0;
+  virtual int setHeader(std::map<std::string, std::string>) = 0;
   virtual std::string getEncodedQuery() = 0;
   virtual std::optional<std::string> getQuery(std::string) = 0;
   virtual int parseRequest() = 0;
+  // cookie methods
+  virtual std::shared_ptr<Cookie> getCookie(const std::string) = 0;
+  // user agent methods
+  virtual std::string getUserAgentBrowser() = 0;
 #if BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE
   virtual requestBeast getRequest() = 0;
 #endif
 };
+
+using newCookieVariantType = std::variant<int, double, std::string>;
 
 class Response {
 public:
@@ -138,6 +149,8 @@ public:
   virtual int end(std::string) = 0;
   virtual std::shared_ptr<std::string> body() = 0;
   virtual void nothing() = 0;
+  virtual int setCookie(std::string, std::string,
+                        std::map<std::string, newCookieVariantType>) = 0;
 #if BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE
   virtual responseBeast getResponse() = 0;
 #endif
@@ -168,8 +181,7 @@ using routeFunctionTypeExternal = std::function<std::string(
 using routeVariantTypeExternal =
     std::variant<int, double, std::string, routeFunctionTypeExternal>;
 
-using routeObjectType =
-    std::unordered_map<std::string, routeFunctionTypeExternal>;
+using routeObjectType = std::map<std::string, routeFunctionTypeExternal>;
 using routeArrayType = std::vector<routeFunctionTypeExternal>;
 
 using newServerVariantType = std::variant<int, double, std::string>;
@@ -179,8 +191,7 @@ public:
   virtual int run() = 0;
   virtual int
       useCertificate(std::shared_ptr<bookfiler::certificate::Certificate>) = 0;
-  virtual int
-  route(std::unordered_map<std::string, routeVariantTypeExternal> map) = 0;
+  virtual int route(std::map<std::string, routeVariantTypeExternal> map) = 0;
 };
 
 class ModuleInterface {
@@ -200,11 +211,11 @@ public:
           std::function<void(std::shared_ptr<rapidjson::Document>)>>>) = 0;
   virtual std::shared_ptr<Client> newClient() = 0;
   virtual std::shared_ptr<Client>
-      newClient(std::unordered_map<std::string, newClientVariantType>) = 0;
+      newClient(std::map<std::string, newClientVariantType>) = 0;
   virtual std::shared_ptr<Url>
-      newUrl(std::unordered_map<std::string, newUrlVariantType>) = 0;
+      newUrl(std::map<std::string, newUrlVariantType>) = 0;
   virtual std::shared_ptr<Server>
-      newServer(std::unordered_map<std::string, newServerVariantType>) = 0;
+      newServer(std::map<std::string, newServerVariantType>) = 0;
   virtual std::shared_ptr<bookfiler::certificate::Manager>
   newCertificateManager() = 0;
   virtual void wait(const std::string handle_) = 0;

@@ -24,7 +24,6 @@ Unfortunately, there is not a mysql connector that can accompany this list. The 
 
 <!--ts-->
    * [Build Instructions](#build-instructions)
-   * [Supported](#supported)
    * [Usage Instructions](#usage-instructions)
       * [Creating a server](#creating-a-server)
          * [node.js + hapi.js](#nodejs--hapijs)
@@ -40,9 +39,15 @@ Unfortunately, there is not a mysql connector that can accompany this list. The 
 
 ## Windows - MinGW-w64
 Install MSYS2<BR>
-  
+Install Dependencies:
 ```shell
 pacman -S mingw-w64-x86_64-fmt mingw-w64-x86_64-boost
+```
+Build:
+```shell
+mkdir build
+cd build
+cmake -G "MSYS Makefiles" ../
 ```
 
 ## Windows - MSVC
@@ -78,25 +83,6 @@ You can manually edit the makefile or make with iphone sdk path like so:
 ```sh
 make HOST_OS=OSX TARGET_OS=IOS TARGET_ARCH=x86_64 IPHONE_SDK_PATH=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk
 ```
-
-## Supported
-| Host OS | Target OS | Architecture | Support |  Command |
-| :---    | :---      | :---         | :---    | :---     |
-| Windows | Windows   | x86          | X    | ``` make HOST_OS=WIN TARGET_ARCH=x86 ``` |
-| Windows | Windows   | x86_64       | X    | ``` make HOST_OS=WIN TARGET_ARCH=x86_64 ``` |
-| Windows | Android   | armeabi      | O    | ``` make HOST_OS=WIN TARGET_OS=android TARGET_ARCH=armeabi ``` |
-| Windows | Android   | armeabi-v7a  | O    | ``` make HOST_OS=WIN TARGET_OS=android TARGET_ARCH=armeabi-v7a ``` |
-| Windows | Android   | arm64-v8a    | O    | ``` make HOST_OS=WIN TARGET_OS=android TARGET_ARCH=arm64-v8a ``` |
-| Windows | Android   | x86          | O    | ``` make HOST_OS=WIN TARGET_OS=android TARGET_ARCH=x86 ``` |
-| Windows | Android   | x86_64       | O    | ``` make HOST_OS=WIN TARGET_OS=android TARGET_ARCH=x86_64 ``` |
-| macOS   | macOS     | x86          | O    | ``` make HOST_OS=OSX TARGET_ARCH=x86 ``` |
-| macOS   | macOS     | x86_64       | X    | ``` make HOST_OS=OSX TARGET_ARCH=x86_64 ``` |
-| macOS   | iOS       | armv7        | O    | ``` make HOST_OS=OSX TARGET_OS=IOS TARGET_ARCH=armv7 ``` |
-| macOS   | iOS       | armv7s       | O    | ``` make HOST_OS=OSX TARGET_OS=IOS TARGET_ARCH=armv7s ``` |
-| macOS   | iOS       | arm64        | O    | ``` make HOST_OS=OSX TARGET_OS=IOS TARGET_ARCH=arm64 ``` |
-| macOS   | iOS       | x86_64       | O    | ``` make HOST_OS=OSX TARGET_OS=IOS TARGET_ARCH=x86_64 ``` |
-| linux ubuntu | linux ubuntu | x86     | O    | ``` make HOST_OS=LINUX TARGET_ARCH=x86 ``` |
-| linux ubuntu | linux ubuntu | x86_64  | X    | ``` make HOST_OS=LINUX TARGET_ARCH=x86_64 ``` |
  
 # Usage Instructions
 ## Creating a server

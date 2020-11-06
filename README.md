@@ -102,16 +102,8 @@ server.start((err) => {
 
 ### c++
 ```cpp
-#include <ExpressWeb.h>
-
-auto server = ExpressWeb::Server;
-server.connection({ "port", 3000 });
-server.start((err) => {
-    if (err) {
-        throw err;
-    }
-    console.log(`Server running at: ${server.info.uri}`);
-});
+httpServer = httpModule->newServer({{"port", 3000}, {"host", "localhost"}});
+httpServer->run();
 ```
 
 ## HTTP Routing
@@ -197,7 +189,7 @@ int allModulesLoaded() {
                       }}});
 
   // Start server
-  httpServer->runAsync();
+  httpServer->run();
 
   return 0;
 }

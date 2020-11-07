@@ -136,6 +136,8 @@ if(WIN32)
 elseif(UNIX)
     set(LIBRARIES ${LIBRARIES}
         # Unix Libraries
+        stdc++
+        pthread
     )
 endif()
 

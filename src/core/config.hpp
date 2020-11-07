@@ -16,6 +16,9 @@
 #define RSA_KEY_LENGTH 2048
 #define BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE 1
 
+// boost
+#define BOOST_ALLOW_DEPRECATED_HEADERS
+
 #include <string>
 
 namespace bookfiler {

@@ -11,7 +11,7 @@ option(BUILD_SHARED_LIBS "Build shared library" ON)
 option(BUILD_STATIC_LIBS "Build static library" OFF)
 option(BUILD_EXAMPLES "Build example executables" ON)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.10")
@@ -28,7 +28,7 @@ include_directories(
   third_party/rapidjson/include
   third_party/boost-url/include
   third_party/certify/include
-  third_party/bustache/include
+  #third_party/bustache/include
   third_party/uap-cpp/uap-cpp/
   third_party/uap-cpp/uap-cpp/yaml-cpp/include
 )
@@ -111,7 +111,7 @@ set(LIBRARIES ${LIBRARIES}
     Boost::coroutine
 
     # Bustache
-    bustache
+    #bustache
 
     # uap-cpp
     uap-cpp
@@ -183,7 +183,7 @@ if(BUILD_STATIC_LIBS)
 endif()
 
 # THIRD PARTY
-add_subdirectory(third_party/bustache)
+#add_subdirectory(third_party/bustache)
 add_subdirectory(third_party/uap-cpp)
 
 # EXAMPLES
@@ -192,7 +192,7 @@ add_subdirectory(src_example/http-server)
 add_subdirectory(src_example/http-server-cookie)
 add_subdirectory(src_example/http-server-userAgent)
 add_subdirectory(src_example/http-server-minimal)
-add_subdirectory(src_example/http-server-template)
+#add_subdirectory(src_example/http-server-template)
 add_subdirectory(src_example/http-server-complex)
 add_subdirectory(src_example/oauth2-google)
 

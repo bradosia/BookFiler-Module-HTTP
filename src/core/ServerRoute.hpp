@@ -53,44 +53,6 @@
 namespace bookfiler {
 namespace HTTP {
 
-class RouteCombiner {
-private:
-  std::shared_ptr<RequestImpl> req;
-  std::shared_ptr<ResponseImpl> res;
-
-public:
-  typedef std::string result_type;
-
-  template <typename InputIterator>
-  std::string operator()(InputIterator first, InputIterator last) const {
-    // If there are no slots to call, just return the
-    // default-constructed value
-    if (first == last) {
-      return {};
-    }
-    std::string valueLast{};
-    while (first != last) {
-      valueLast = *first;
-      if (res->writableEnded()) {
-        logStatus("::RouteCombiner::operator()", "writableEnded()");
-        return *(res->body());
-      }
-      ++first;
-    }
-
-    return valueLast;
-  }
-
-  int setRequest(std::shared_ptr<RequestImpl> req_) {
-    req = req_;
-    return 0;
-  }
-  int setResponse(std::shared_ptr<ResponseImpl> res_) {
-    res = res_;
-    return 0;
-  }
-};
-
 class RouteImpl {
 private:
   /* Routes are stored in a map so that on average there is a log n search

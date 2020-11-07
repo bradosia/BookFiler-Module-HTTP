@@ -19,10 +19,10 @@
 #include <fstream>
 #include <functional>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
 #include <thread>
-#include <map>
 #include <utility>
 #include <vector>
 
@@ -47,6 +47,7 @@
 // #include <boost/beast/ssl.hpp>
 #include <boost/beast/version.hpp>
 #include <boost/config.hpp>
+#include <boost/signals2.hpp>
 
 // Local Project
 #include "Request.hpp"
@@ -64,29 +65,52 @@ using tcp = boost::asio::ip::tcp; // from <boost/asio/ip/tcp.hpp>
 namespace bookfiler {
 namespace HTTP {
 
-/*
-using routeSignalTypeInternal2 = boost::signals2::signal<int(
-    std::shared_ptr<Session>, requestBeastInternal, responseBeastInternal)>;
-using routeFunctionBeastTypeInternal = std::function<int(
-    std::shared_ptr<Session>, requestBeastInternal, responseBeastInternal)>;
-*/
+class RouteCombiner {
+private:
+  std::shared_ptr<RequestImpl> req;
+  std::shared_ptr<ResponseImpl> res;
 
+public:
+  typedef std::string result_type;
 
-class RouteCombiner;
-using routeFunctionTypeExternal =
-    std::function<std::string(std::shared_ptr<Request>, std::shared_ptr<Response>)>;
-using routeSignalTypeInternal = boost::signals2::signal<std::string(
-    std::shared_ptr<Request>, std::shared_ptr<Response>), RouteCombiner>;
+  template <typename InputIterator>
+  std::string operator()(InputIterator first, InputIterator last) const {
+    // If there are no slots to call, just return the
+    // default-constructed value
+    if (first == last) {
+      return {};
+    }
+    std::string valueLast{};
+    while (first != last) {
+      valueLast = *first;
+      if (res->writableEnded()) {
+        logStatus("::RouteCombiner::operator()", "writableEnded()");
+        return *(res->body());
+      }
+      ++first;
+    }
+
+    return valueLast;
+  }
+
+  int setRequest(std::shared_ptr<RequestImpl> req_) {
+    req = req_;
+    return 0;
+  }
+  int setResponse(std::shared_ptr<ResponseImpl> res_) {
+    res = res_;
+    return 0;
+  }
+};
+
+using routeFunctionTypeExternal = std::function<std::string(
+    std::shared_ptr<Request>, std::shared_ptr<Response>)>;
+using routeSignalTypeInternal =
+    boost::signals2::signal<std::string(std::shared_ptr<Request>,
+                                        std::shared_ptr<Response>),
+                            RouteCombiner>;
 using routeFunctionTypeInternal = std::function<std::string(
     std::shared_ptr<Request>, std::shared_ptr<Response>)>;
-
-/*
-using routeVariantType_Beast =
-    std::variant<int, double, std::string, routeFunctionExpressType,
-                 routeFunctionBeastTypeInternal>;
-using routeVariantType_NoBeast =
-    std::variant<int, double, std::string, routeFunctionExpressType>;
-*/
 
 // Return a reasonable mime type based on the extension of a file.
 beast::string_view mime_type(beast::string_view path);

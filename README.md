@@ -85,6 +85,8 @@ make HOST_OS=OSX TARGET_OS=IOS TARGET_ARCH=x86_64 IPHONE_SDK_PATH=/Applications/
 ```
  
 # Usage Instructions
+
+This module uses an API similar to that of node.js and select parts taken from hapi.js and express.js. The node.js code will be compared to the equivalent BookFiler-Module-HTTP C++ Code to see how the two API compare.
 ## Creating a server
 
 ### node.js + hapi.js

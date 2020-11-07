@@ -60,8 +60,8 @@ private:
    * path
    * "*" is the last priority.
    */
-  std::map<std::string, std::shared_ptr<routeSignalTypeInternal>> routePostMap,
-      routeGetMap, routeAllMap;
+  /*std::map<std::string, std::shared_ptr<routeSignalTypeInternal>> routePostMap,
+      routeGetMap, routeAllMap;*/
 
 public:
   RouteImpl();
@@ -72,15 +72,15 @@ public:
               routeFunctionTypeInternal routeFunction);
   int allAdd(std::string path, int priority,
              routeFunctionTypeInternal routeFunction);
-  int add(std::string path, int priority,
+ /* int add(std::string path, int priority,
           routeFunctionTypeInternal routeFunction,
-          std::map<std::string, std::shared_ptr<routeSignalTypeInternal>> &);
+          std::map<std::string, std::shared_ptr<routeSignalTypeInternal>> &);*/
   int doGetSignal(std::string path, std::shared_ptr<RequestImpl> req,
                   std::shared_ptr<ResponseImpl> res);
-  int doSignal(
+  /*int doSignal(
       std::string path, std::shared_ptr<RequestImpl> req,
       std::shared_ptr<ResponseImpl> res,
-      std::map<std::string, std::shared_ptr<routeSignalTypeInternal>> &);
+      std::map<std::string, std::shared_ptr<routeSignalTypeInternal>> &);*/
 };
 
 } // namespace HTTP

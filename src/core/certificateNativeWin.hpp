@@ -6,10 +6,10 @@
  * @brief HTTP module for BookFiler™ applications.
  */
 
+#if defined(_WIN32)
+
 #ifndef BOOKFILER_MODULE_HTTP_CERTIFICATE_NATIVE_H
 #define BOOKFILER_MODULE_HTTP_CERTIFICATE_NATIVE_H
-
-#if defined(_WIN32)
 
 // config
 #include "config.hpp"
@@ -83,6 +83,6 @@ public:
 } // namespace bookfiler
 
 #endif
+// end BOOKFILER_MODULE_HTTP_CERTIFICATE_NATIVE_H
 
 #endif
-// end BOOKFILER_MODULE_HTTP_CERTIFICATE_NATIVE_H

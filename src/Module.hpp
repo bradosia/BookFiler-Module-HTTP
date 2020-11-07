@@ -44,7 +44,6 @@
 #include <rapidjson/writer.h>
 
 // Local Project
-//#include "core/certificateManager.hpp"
 #include "core/Client.hpp"
 #include "core/Server.hpp"
 #include "core/json.hpp"

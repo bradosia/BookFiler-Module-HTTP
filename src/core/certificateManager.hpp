@@ -6,8 +6,8 @@
  * @brief HTTP module for BookFiler™ applications.
  */
 
-#ifndef BOOKFILER_MODULE_CERTIFICATE_MANAGER_H
-#define BOOKFILER_MODULE_CERTIFICATE_MANAGER_H
+#ifndef BOOKFILER_MODULE_HTTP_CERTIFICATE_MANAGER_H
+#define BOOKFILER_MODULE_HTTP_CERTIFICATE_MANAGER_H
 
 // config
 #include "config.hpp"
@@ -53,18 +53,18 @@ namespace certificate {
 
 class ManagerImpl : public Manager {
 private:
-  HCERTSTORE hCertStore;
   std::shared_ptr<X509_STORE> storePtr;
-  std::vector<std::shared_ptr<CertificateNativeImpl>> certList;
   std::shared_ptr<CertificateNativeImpl> certRootLocalhostPtr,
       certServerLocalhostPtr;
   std::shared_ptr<rapidjson::Value> settingsDoc;
+
+protected:
+  std::vector<std::shared_ptr<CertificateNativeImpl>> certList;
 
 public:
   ManagerImpl();
   ~ManagerImpl();
   int setSettingsDoc(std::shared_ptr<rapidjson::Value> settingsDoc_);
-  int createX509Store();
 
   /* Creates a new certificate using the settings specified in the json
    * document.
@@ -82,13 +82,23 @@ public:
    * certificate */
   int newCertServerLocalhost(std::shared_ptr<Certificate> &,
                              std::shared_ptr<rapidjson::Document>);
-  int addCertificate(std::shared_ptr<Certificate>);
   int saveCertificate(std::shared_ptr<Certificate>, std::string);
   int loadCertificate(std::shared_ptr<Certificate> &);
+
+  // Requires some native implementation
+  virtual int createX509Store() = 0;
+  virtual int addCertificate(std::shared_ptr<Certificate>) = 0;
 };
 
 } // namespace certificate
 } // namespace bookfiler
 
+// Local Project
+#if defined(_WIN32)
+#include "certificateManagerNativeWin.hpp"
+#elif defined(__linux__)
+#include "certificateManagerNativeLinux.hpp"
 #endif
-// end BOOKFILER_MODULE_MYSQL_HTTP_H
+
+#endif
+// end BOOKFILER_MODULE_HTTP_CERTIFICATE_MANAGER_H

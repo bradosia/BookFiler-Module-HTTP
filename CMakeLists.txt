@@ -56,6 +56,8 @@ set(SOURCES
   src/core/Url.cpp
   src/core/UrlQuery.cpp
   src/core/certificateManager.cpp
+  src/core/certificateManagerNativeWin.cpp
+  src/core/certificateManagerNativeLinux.cpp
   src/core/certificate.cpp
   src/core/certificateNativeWin.cpp
   src/core/certificateNativeUnix.cpp
@@ -83,6 +85,8 @@ set(HEADERS
   src/core/Url.hpp
   src/core/UrlQuery.hpp
   src/core/certificateManager.hpp
+  src/core/certificateManagerNativeWin.hpp
+  src/core/certificateManagerNativeLinux.hpp
   src/core/certificate.hpp
   src/core/certificateNativeWin.hpp
   src/core/certificateNativeUnix.hpp

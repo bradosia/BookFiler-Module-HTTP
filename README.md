@@ -13,7 +13,6 @@ A hand-picked HTTP and WebSocket toolkit for C++. This criteria for the selectio
 | rapidJSON				| JSON parser				|
 | bustache				| templating and views		|
 | openssl				| SSL						|
-| curl/lib/cookie.c		| HTTP cookie parser		|
 | ua-parser/uap-cpp		| HTTP User agent parser	|
 
 Boost::Beast does simple HTTP header parsing of each field with name/value pairs. <BR>

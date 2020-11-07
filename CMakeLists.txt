@@ -29,8 +29,8 @@ include_directories(
   third_party/boost-url/include
   third_party/certify/include
   third_party/bustache/include
-  third_party/uap-cpp/
-  third_party/uap-cpp/yaml-cpp/include
+  third_party/uap-cpp/uap-cpp/
+  third_party/uap-cpp/uap-cpp/yaml-cpp/include
 )
 
 link_directories(

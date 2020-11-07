@@ -42,7 +42,6 @@
  * License: Boost Software License (similar to BSD and MIT)
  */
 #include <boost/config.hpp>
-#include <boost/signals2.hpp>
 
 // Local Project
 #include "certificateManager.hpp"

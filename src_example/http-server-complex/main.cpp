@@ -10,9 +10,6 @@
 #define BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE 1
 #include <BookFilerModuleHttpLoader.hpp>
 
-int routeAll(std::shared_ptr<bookfiler::HTTP::Session> session,
-             bookfiler::HTTP::requestBeast req,
-             bookfiler::HTTP::responseBeast res);
 std::string routeAbout(bookfiler::HTTP::request req,
                        bookfiler::HTTP::response res);
 int allModulesLoaded();
@@ -45,10 +42,6 @@ int allModulesLoaded() {
   httpServer = httpModule->newServer({{"port", 3000}, {"host", "localhost"}});
   httpServer->useCertificate(certRootPtr);
 
-  // Route using signals and slots
-  std::cout << "httpServer->getRouteSignal()->connect" << std::endl;
-  //httpServer->getRouteSignal()->connect(&routeAll);
-
   std::cout << "httpServer->route" << std::endl;
   // Route by using a lambda expression
   httpServer->route({{"method", "GET"},
@@ -68,29 +61,6 @@ int allModulesLoaded() {
   // Start server
   httpServer->run();
 
-  return 0;
-}
-
-int routeAll(std::shared_ptr<bookfiler::HTTP::Session> session,
-             bookfiler::HTTP::requestBeast reqBeast,
-             bookfiler::HTTP::responseBeast res) {
-  std::shared_ptr<bookfiler::HTTP::Request> req =
-      session->parseRequest(reqBeast);
-  std::string bodyStr = "<h1>URL Data</h1><br>";
-  bodyStr.append(req->getEncodedQuery());
-  auto codeQuery = req->getQuery("code");
-  if (codeQuery) {
-    bodyStr.append("<br>").append(codeQuery.value());
-  }
-
-  res->result(boost::beast::http::status::ok);
-  res->version(reqBeast->version());
-  res->set(boost::beast::http::field::server, BOOST_BEAST_VERSION_STRING);
-  res->set(boost::beast::http::field::content_type, "text/html");
-  res->keep_alive(reqBeast->keep_alive());
-  res->body() = bodyStr;
-  res->content_length(res->body().length());
-  res->prepare_payload();
   return 0;
 }
 

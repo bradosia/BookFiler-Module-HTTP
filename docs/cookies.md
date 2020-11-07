@@ -31,7 +31,7 @@ httpServer->route(
 ### node.js + express.js
 ```node
 app.get('/get', function (req, res) {
-  return "Get cookie name=" + req.cookies["name"].value
+  return "Get cookie name=" + req.cookies["name"].value;
 })
 ```
 

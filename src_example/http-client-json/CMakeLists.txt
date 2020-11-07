@@ -25,11 +25,25 @@ link_directories(
 
 add_executable(${EXENAME} ${SOURCES_SUB})
 
-target_link_libraries(${EXENAME} PRIVATE
-  # Boost
-  Boost::system
-  Boost::filesystem
+set(LIBRARIES_SUB
+    # Boost
+    Boost::system
+    Boost::filesystem
 
-  ModuleManager
-  SettingsManager
+    ModuleManager
+    SettingsManager
 )
+
+if(WIN32)
+    set(LIBRARIES_SUB ${LIBRARIES_SUB}
+        # Windows Libraries
+    )
+elseif(UNIX)
+    set(LIBRARIES_SUB ${LIBRARIES_SUB}
+        # Unix Libraries
+        stdc++
+        pthread
+    )
+endif()
+
+target_link_libraries(${EXENAME} ${LIBRARIES_SUB})

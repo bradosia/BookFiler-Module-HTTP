@@ -19,9 +19,9 @@
 #include <fstream>
 #include <functional>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
-#include <map>
 #include <utility>
 #include <vector>
 
@@ -35,6 +35,12 @@
 #include <rapidjson/reader.h> // rapidjson::ParseResult
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
+
+/* boost 1.72.0
+ * License: Boost Software License (similar to BSD and MIT)
+ */
+#include <boost/config.hpp>
+#include <boost/signals2.hpp>
 
 // Local Project
 #include "Request.hpp"

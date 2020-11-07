@@ -48,7 +48,6 @@
 #include <boost/beast/ssl.hpp>
 #include <boost/beast/version.hpp>
 #include <boost/config.hpp>
-#include <boost/signals2.hpp>
 
 // Local Project
 #include "Request.hpp"
@@ -66,9 +65,6 @@ namespace HTTP {
 class SessionImpl : public Session {
 private:
 public:
-  int routeValidate(std::shared_ptr<Request> req, std::string_view method,
-                    std::string_view path);
-  std::shared_ptr<Request> parseRequest(requestBeast reqBeast);
 };
 
 } // namespace HTTP

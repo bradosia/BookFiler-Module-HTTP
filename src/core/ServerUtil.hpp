@@ -47,7 +47,6 @@
 // #include <boost/beast/ssl.hpp>
 #include <boost/beast/version.hpp>
 #include <boost/config.hpp>
-#include <boost/signals2.hpp>
 
 // Local Project
 #include "Request.hpp"

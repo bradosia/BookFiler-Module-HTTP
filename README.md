@@ -54,6 +54,9 @@ Install GCC and dependencies
 ```shell
 sudo apt-get update
 sudo apt install build-essential gcc-multilib cmake git g++-10 gcc-10 g++-10-multilib
+// Use g++ 10
+sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 20
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 20
 sudo apt install libboost-all-dev openssl libcplcore26 zlib1g libfmt-dev
 ```
 Build:

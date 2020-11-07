@@ -54,3 +54,7 @@ httpServer->route({{"method", "GET"},
 bookfiler::HTTP::Cookie = req.getCookie("name");
 ```
 Cookie public interface is defined in [/include/BookFiler-Module-HTTP/Interface.hpp](/include/BookFiler-Module-HTTP/Interface.hpp) and the private header is in [/src/core/RequestCookie.hpp](/src/core/RequestCookie.hpp). The definition is in [/src/core/RequestCookie.cpp](/src/core/RequestCookie.cpp)
+
+# Example
+
+[/src_example/http-server-cookie/main.cpp](/src_example/http-server-cookie/main.cpp)

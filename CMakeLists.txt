@@ -57,6 +57,8 @@ set(SOURCES
   src/core/UrlQuery.cpp
   src/core/certificateManager.cpp
   src/core/certificate.cpp
+  src/core/certificateNativeWin.cpp
+  src/core/certificateNativeUnix.cpp
   src/core/json.cpp
 )
 
@@ -82,6 +84,8 @@ set(HEADERS
   src/core/UrlQuery.hpp
   src/core/certificateManager.hpp
   src/core/certificate.hpp
+  src/core/certificateNativeWin.hpp
+  src/core/certificateNativeUnix.hpp
   src/core/json.hpp
 
   include/BookFiler-Module-HTTP/Interface.hpp

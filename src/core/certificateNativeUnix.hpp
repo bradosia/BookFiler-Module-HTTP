@@ -6,14 +6,15 @@
  * @brief HTTP module for BookFiler™ applications.
  */
 
-#ifndef BOOKFILER_MODULE_CERTIFICATE_H
-#define BOOKFILER_MODULE_CERTIFICATE_H
+#ifndef BOOKFILER_MODULE_HTTP_CERTIFICATE_NATIVE_H
+#define BOOKFILER_MODULE_HTTP_CERTIFICATE_NATIVE_H
+
+#if defined(__linux__)
 
 // config
 #include "config.hpp"
 
 // C++17
-//#include <filesystem>
 #include <algorithm>
 #include <cstdlib>
 #include <fstream>
@@ -46,7 +47,7 @@
 #include <openssl/x509v3.h>
 
 // Local Project
-#include <BookFiler-Module-HTTP/Interface.hpp>
+#include "certificate.hpp"
 
 /*
  * bookfiler - certificate
@@ -54,33 +55,19 @@
 namespace bookfiler {
 namespace certificate {
 
-class CertificateImpl : public Certificate {
+class CertificateNativeImpl : public CertificateImpl {
 public:
-  X509 *certX509 = nullptr;
-  X509_REQ *certReqX509 = nullptr;
-  EVP_PKEY *privateKey = nullptr;
-  DH *dhKey = nullptr;
-  CertificateImpl();
-  ~CertificateImpl();
-  std::string getInfo();
-  std::shared_ptr<std::string> getCertStr();
-  std::shared_ptr<std::string> getPrivateKeyStr();
-  std::shared_ptr<std::string> getDhStr();
-  int addExt(int, const char *);
-  virtual int toNative() = 0;
-  virtual int toX509() = 0;
-  virtual std::string getNativeName() = 0;
+  CertificateNativeImpl();
+  ~CertificateNativeImpl();
+  int toNative();
+  int toX509();
+  std::string getNativeName();
 };
 
 } // namespace certificate
 } // namespace bookfiler
 
-// Local Project
-#if defined(_WIN32)
-#include "certificateNativeWin.hpp"
-#elif defined(__linux__)
-#include "certificateNativeUnix.hpp"
 #endif
 
 #endif
-// end BOOKFILER_MODULE_MYSQL_HTTP_H
+// end BOOKFILER_MODULE_HTTP_CERTIFICATE_NATIVE_H

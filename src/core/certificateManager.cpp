@@ -144,7 +144,7 @@ int ManagerImpl::newCertificate(
 
   // Create certificate
   std::shared_ptr<CertificateImpl> certImplPtr =
-      std::make_shared<CertificateImpl>();
+      std::make_shared<CertificateNativeImpl>();
   certImplPtr->certX509 = X509_new();
   certImplPtr->privateKey = EVP_PKEY_new();
   certImplPtr->dhKey = DH_new();
@@ -252,7 +252,7 @@ int ManagerImpl::newRequest(std::shared_ptr<Certificate> &certPtr,
 
   // Create certificate
   std::shared_ptr<CertificateImpl> certImplPtr =
-      std::make_shared<CertificateImpl>();
+      std::make_shared<CertificateNativeImpl>();
   certImplPtr->certReqX509 = X509_REQ_new();
   certImplPtr->privateKey = EVP_PKEY_new();
   certImplPtr->dhKey = DH_new();
@@ -600,7 +600,7 @@ int ManagerImpl::loadCertificate(std::shared_ptr<Certificate> &certPtr) {
       BIO_new_file(dhKeyPath.c_str(), "r"), BIO_free_all};
 
   std::shared_ptr<CertificateImpl> certImplPtr =
-      std::make_shared<CertificateImpl>();
+      std::make_shared<CertificateNativeImpl>();
 
   certImplPtr->certX509 =
       PEM_read_bio_X509(certFile.get(), nullptr, nullptr, nullptr);

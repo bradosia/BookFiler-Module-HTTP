@@ -206,7 +206,7 @@ if(BUILD_SHARED_LIBS)
     COMMAND ${CMAKE_COMMAND} -E make_directory "${RELEASE_DIR}modules/"
     COMMAND ${CMAKE_COMMAND} -E make_directory "${RELEASE_DIR}resources/"
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${lib_shared_name}> "${RELEASE_DIR}modules/"
-    COMMAND ${CMAKE_COMMAND} -E remove $<TARGET_FILE:${lib_shared_name}>
+    #COMMAND ${CMAKE_COMMAND} -E remove $<TARGET_FILE:${lib_shared_name}>
     COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_SOURCE_DIR}/resources/" "${RELEASE_DIR}resources"
     COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/settings/settings.json" "${RELEASE_DIR}settings.json"
   )

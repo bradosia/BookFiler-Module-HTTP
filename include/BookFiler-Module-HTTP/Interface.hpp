@@ -24,10 +24,10 @@
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
 #endif
-#include <boost/signals2.hpp>
-#define BOOST_URL_HEADER_ONLY 1
-#include <boost/url.hpp>
-#include <boost/url/url.hpp>
+//#include <boost/signals2.hpp>
+//#define BOOST_URL_HEADER_ONLY 1
+//#include <boost/url.hpp>
+//#include <boost/url/url.hpp>
 
 /* rapidjson v1.1 (2016-8-25)
  * Developed by Tencent

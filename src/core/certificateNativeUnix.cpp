@@ -20,7 +20,6 @@ namespace certificate {
 CertificateNativeImpl::CertificateNativeImpl() {}
 
 CertificateNativeImpl::~CertificateNativeImpl() {
-  CertFreeCertificateContext(pCertContext);
 }
 
 int CertificateNativeImpl::toNative() {

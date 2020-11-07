@@ -35,7 +35,7 @@ set(LIBRARIES_SUB ${LIBRARIES_SUB}
 set(STATIC_LINK_LIBRARIES ${LIBRARIES_SUB})
 
 # THIRD PARTY
-add_subdirectory(yaml-cpp)
+add_subdirectory(uap-cpp/yaml-cpp)
 
 set(uap-cpp-lib-name uap-cpp)
 message( STATUS "-- Building ${lib_name}" )

@@ -35,7 +35,7 @@ set(LIBRARIES_SUB ${LIBRARIES_SUB}
 set(STATIC_LINK_LIBRARIES ${LIBRARIES_SUB})
 
 # THIRD PARTY
-set(YAML_CPP_BUILD_TOOLS OFF)
+set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "enable X functionality" FORCE)
 add_subdirectory(uap-cpp/yaml-cpp)
 
 set(uap-cpp-lib-name uap-cpp)

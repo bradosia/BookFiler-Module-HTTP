@@ -48,6 +48,23 @@ mkdir build
 cd build
 cmake -G "MSYS Makefiles" ../
 ```
+  
+## Linux Ubuntu
+Install GCC and dependencies
+```shell
+sudo apt-get update
+sudo apt install build-essential gcc-multilib cmake git g++-10 gcc-10 g++-10-multilib
+// Use g++ 10
+sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 20
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 20
+sudo apt install libboost-all-dev openssl libcplcore26 zlib1g libfmt-dev
+```
+Build:
+```shell
+mkdir build
+cd build
+cmake ../
+```
 
 ## Windows - MSVC
 
@@ -58,12 +75,6 @@ cmake -G "MSYS Makefiles" ../
 ## Mac OSX
 Only Mac OSX host<BR>
 Install clang
-
-## Linux Ubuntu
-Install GCC
-```shell
-sudo apt-get install gcc-multilib
-```
 
 ## Android
 Using Windows x86_64 host for this example:<BR>

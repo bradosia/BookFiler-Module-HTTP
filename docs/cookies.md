@@ -1,4 +1,5 @@
 # Usage Instructions
+This module uses an API similar to that of node.js and select parts taken from hapi.js and express.js. The node.js code will be compared to the equivalent BookFiler-Module-HTTP C++ Code to see how the two API compare.
 ## Sending Cookies
 
 ### node.js + express.js

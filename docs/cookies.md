@@ -59,3 +59,8 @@ Cookie public interface is defined in [/include/BookFiler-Module-HTTP/Interface.
 # Example
 
 [/src_example/http-server-cookie/main.cpp](/src_example/http-server-cookie/main.cpp)
+
+# Credits
+
+The cookie parser was heavily inspired by POCO C++ Libraries: 
+https://pocoproject.org/docs/Poco.Net.HTTPCookie.html

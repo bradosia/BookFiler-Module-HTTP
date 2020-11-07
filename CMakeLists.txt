@@ -162,7 +162,7 @@ if(BUILD_SHARED_LIBS)
   # Libraries to link
   target_link_libraries(${lib_shared_name} PUBLIC ${SHARED_LINK_LIBRARIES})
     if(UNIX)
-        set_target_properties(${LIBRARY_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+        set_target_properties(${lib_shared_name} PROPERTIES POSITION_INDEPENDENT_CODE ON)
     endif()
 endif()
 

@@ -1,4 +1,4 @@
-set(EXENAME http-server-beast)
+set(EXENAME http-server-userAgent)
 
 set(SOURCES_SUB ${SOURCES_SUB}
   main.cpp

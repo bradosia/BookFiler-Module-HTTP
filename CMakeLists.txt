@@ -161,6 +161,9 @@ if(BUILD_SHARED_LIBS)
   target_compile_definitions(${lib_shared_name} PUBLIC ${SHARED_COMPILE_DEFINITIONS})
   # Libraries to link
   target_link_libraries(${lib_shared_name} PUBLIC ${SHARED_LINK_LIBRARIES})
+    if(UNIX)
+        set_target_properties(${LIBRARY_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    endif()
 endif()
 
 if(BUILD_STATIC_LIBS)

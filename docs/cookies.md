@@ -4,47 +4,50 @@ This module uses an API similar to that of node.js and select parts taken from h
 
 ### node.js + express.js
 ```node
- res.cookie('userId', userId,  
+app.get('/get', function (req, res) {
+ res.cookie('name', 'value',  
  { maxAge: 1000,
-   path : '/',
-   // You can't access these tokens in the client's javascript
-   httpOnly: true,
-   // Forces to use https in production
-   secure: process.env.NODE_ENV === 'production'? true: false
+   path : '/'
  });
+})
 ```
 
 ### c++
 ```cpp
-httpServer->route({{"method", "GET"},
-                     {"path", "/"},
-                     {"handler",
-                      [](bookfiler::HTTP::request req,
-                         bookfiler::HTTP::response res) -> std::string {
-                         res.setCookie("name", "value",  
-                          { {"maxAge", 1000},
-                            {"path", "/"},
-                          });
-                         return "Set Cookie";
-                      }}});
+httpServer->route(
+      {{"method", "GET"},
+       {"path", "*"},
+       {"handler",
+        [](bookfiler::HTTP::request req,
+           bookfiler::HTTP::response res) -> std::string {
+          // Set cookie
+          res->setCookie("name", "value", {});
+          return "<h1>Set cookie</h1><br><a href=\"/get\">Get Cookie</a>";
+        }}});
 ```
 
 ## Getting Cookies
 
 ### node.js + express.js
 ```node
-req.cookies['name'];
+app.get('/get', function (req, res) {
+  return "Get cookie name=" + req.cookies["name"].value
+})
 ```
 
 ### c++
 ```cpp
 httpServer->route({{"method", "GET"},
-                     {"path", "/"},
+                     {"path", "/get"},
                      {"handler",
                       [](bookfiler::HTTP::request req,
                          bookfiler::HTTP::response res) -> std::string {
-                        req.getCookie("name").value();
-                        return "Get Cookie";
+                        // Get cookie
+                        std::string_view value =
+                            req->getCookie("name")->value();
+                        std::string bodyStr;
+                        bodyStr.append("Get cookie name=").append(value);
+                        return bodyStr;
                       }}});
 ```
 

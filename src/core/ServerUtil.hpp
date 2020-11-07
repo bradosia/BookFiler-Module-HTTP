@@ -105,12 +105,13 @@ public:
 
 using routeFunctionTypeExternal = std::function<std::string(
     std::shared_ptr<Request>, std::shared_ptr<Response>)>;
-using routeSignalTypeInternal =
+using routeFunctionTypeInternal = std::function<std::string(
+    std::shared_ptr<Request>, std::shared_ptr<Response>)>;
+/*using routeSignalTypeInternal =
     boost::signals2::signal<std::string(std::shared_ptr<Request>,
                                         std::shared_ptr<Response>),
                             RouteCombiner>;
-using routeFunctionTypeInternal = std::function<std::string(
-    std::shared_ptr<Request>, std::shared_ptr<Response>)>;
+    */
 
 // Return a reasonable mime type based on the extension of a file.
 beast::string_view mime_type(beast::string_view path);

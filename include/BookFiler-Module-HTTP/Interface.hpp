@@ -95,9 +95,6 @@ using newClientVariantType = std::variant<int, double, std::string>;
 
 class Client {
 public:
-  boost::signals2::signal<int(std::shared_ptr<rapidjson::Document>)>
-      jsonReceivedSignal;
-  boost::signals2::signal<int(std::string)> dataReceivedSignal;
   // url methods
   virtual std::string_view url() = 0;
   virtual int setURL(std::string) = 0;
@@ -158,22 +155,10 @@ public:
 
 class Session {
 public:
-  virtual int routeValidate(std::shared_ptr<Request> req,
-                            std::string_view method, std::string_view path) = 0;
-#if BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE
-  virtual std::shared_ptr<Request> parseRequest(requestBeast reqBeast) = 0;
-#endif
 };
 
 using request = std::shared_ptr<Request>;
 using response = std::shared_ptr<Response>;
-
-#if BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE
-using routeSignalType = boost::signals2::signal<int(
-    std::shared_ptr<Session>, requestBeast, responseBeast)>;
-using routeFunctionBeastType =
-    std::function<int(std::shared_ptr<Session>, requestBeast, responseBeast)>;
-#endif
 
 // makes the arguments look like JSON
 using routeFunctionTypeExternal = std::function<std::string(

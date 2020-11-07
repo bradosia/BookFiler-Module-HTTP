@@ -22,26 +22,23 @@ int RouteImpl::getAdd(std::string path, int priority,
   std::stringstream ss;
   ss << "START\npath=" << path << " priority=" << priority;
   logStatus("::RouteImpl::getAdd", ss.str());
-  //return add(path, priority, routeFunction, routeGetMap);
-  return 0;
+  return add(path, priority, routeFunction, routeGetMap);
 }
 int RouteImpl::postAdd(std::string path, int priority,
                        routeFunctionTypeInternal routeFunction) {
   std::stringstream ss;
   ss << "START\npath=" << path << " priority=" << priority;
   logStatus("::RouteImpl::postAdd", ss.str());
-  //return add(path, priority, routeFunction, routePostMap);
-  return 0;
+  return add(path, priority, routeFunction, routePostMap);
 }
 int RouteImpl::allAdd(std::string path, int priority,
                       routeFunctionTypeInternal routeFunction) {
   std::stringstream ss;
   ss << "START\npath=" << path << " priority=" << priority;
   logStatus("::RouteImpl::allAdd", ss.str());
-  //return add(path, priority, routeFunction, routeAllMap);
-  return 0;
+  return add(path, priority, routeFunction, routeAllMap);
 }
-/*int RouteImpl::add(
+int RouteImpl::add(
     std::string path, int priority, routeFunctionTypeInternal routeFunction,
     std::map<std::string, std::shared_ptr<routeSignalTypeInternal>> &routeMap) {
   // First see if the path already exists so the signal can be reused.
@@ -55,18 +52,17 @@ int RouteImpl::allAdd(std::string path, int priority,
   }
   pathSignal->connect(priority, routeFunction);
   return 0;
-}*/
+}
 
 int RouteImpl::doGetSignal(std::string path, std::shared_ptr<RequestImpl> req,
                            std::shared_ptr<ResponseImpl> res) {
   std::stringstream ss;
   ss << "START\npath=" << path;
   logStatus("::RouteImpl::doGetSignal", ss.str());
-  //return doSignal(path, req, res, routeGetMap);
-  return 0;
+  return doSignal(path, req, res, routeGetMap);
 }
 
-/*int RouteImpl::doSignal(
+int RouteImpl::doSignal(
     std::string path, std::shared_ptr<RequestImpl> reqImpl,
     std::shared_ptr<ResponseImpl> resImpl,
     std::map<std::string, std::shared_ptr<routeSignalTypeInternal>> &routeMap) {
@@ -117,7 +113,7 @@ success:
   resBeast->content_length(resBeast->body().length());
   resBeast->prepare_payload();
   return 0;
-}*/
+}
 
 } // namespace HTTP
 } // namespace bookfiler

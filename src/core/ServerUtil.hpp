@@ -47,7 +47,7 @@
 // #include <boost/beast/ssl.hpp>
 #include <boost/beast/version.hpp>
 #include <boost/config.hpp>
-//#include <boost/signals2.hpp>
+#include <boost/signals2.hpp>
 
 // Local Project
 #include "Request.hpp"
@@ -107,11 +107,10 @@ using routeFunctionTypeExternal = std::function<std::string(
     std::shared_ptr<Request>, std::shared_ptr<Response>)>;
 using routeFunctionTypeInternal = std::function<std::string(
     std::shared_ptr<Request>, std::shared_ptr<Response>)>;
-/*using routeSignalTypeInternal =
+using routeSignalTypeInternal =
     boost::signals2::signal<std::string(std::shared_ptr<Request>,
                                         std::shared_ptr<Response>),
                             RouteCombiner>;
-    */
 
 // Return a reasonable mime type based on the extension of a file.
 beast::string_view mime_type(beast::string_view path);

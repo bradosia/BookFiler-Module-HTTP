@@ -29,7 +29,6 @@ set(HEADERS
 
 set(LIBRARIES_SUB ${LIBRARIES_SUB}
     yaml-cpp
-    #pthread
 )
 
 set(STATIC_LINK_LIBRARIES ${LIBRARIES_SUB})

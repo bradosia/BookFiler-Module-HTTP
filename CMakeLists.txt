@@ -121,7 +121,6 @@ set(LIBRARIES ${LIBRARIES}
     # ssl
     ssl
     crypto
-    crypt32
 
     # zlib
     z
@@ -132,6 +131,7 @@ if(WIN32)
         # Windows Libraries
         ws2_32
         wsock32
+        crypt32
     )
 elseif(UNIX)
     set(LIBRARIES ${LIBRARIES}

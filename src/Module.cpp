@@ -76,8 +76,8 @@ std::shared_ptr<Client> ModuleExport::newClient() {
   return std::dynamic_pointer_cast<Client>(connectionPtr);
 }
 
-std::shared_ptr<Client> ModuleExport::newClient(
-    std::map<std::string, newClientVariantType> map) {
+std::shared_ptr<Client>
+ModuleExport::newClient(std::map<std::string, newClientVariantType> map) {
   std::shared_ptr<ClientImpl> connectionPtr = std::make_shared<ClientImpl>(map);
   connectionPtr->setSettingsDoc(settingsDoc);
   // connectionPtr->setAccountsDoc(accountsDoc);
@@ -90,8 +90,8 @@ ModuleExport::newUrl(std::map<std::string, newUrlVariantType> map_) {
   return std::dynamic_pointer_cast<Url>(urlPtr);
 }
 
-std::shared_ptr<Server> ModuleExport::newServer(
-    std::map<std::string, newServerVariantType> map) {
+std::shared_ptr<Server>
+ModuleExport::newServer(std::map<std::string, newServerVariantType> map) {
   std::shared_ptr<ServerImpl> serverPtr = std::make_shared<ServerImpl>();
   serverPtr->setSettingsDoc(settingsDoc);
   return std::dynamic_pointer_cast<Server>(serverPtr);
@@ -99,7 +99,7 @@ std::shared_ptr<Server> ModuleExport::newServer(
 
 std::shared_ptr<bookfiler::certificate::Manager>
 ModuleExport::newCertificateManager() {
-  std::shared_ptr<bookfiler::certificate::ManagerImpl> managerPtr =
+  std::shared_ptr<bookfiler::certificate::ManagerNativeImpl> managerPtr =
       std::make_shared<bookfiler::certificate::ManagerNativeImpl>();
   managerPtr->setSettingsDoc(settingsDoc);
   return std::dynamic_pointer_cast<bookfiler::certificate::Manager>(managerPtr);

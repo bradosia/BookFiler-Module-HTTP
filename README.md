@@ -57,7 +57,7 @@ sudo apt install build-essential gcc-multilib cmake git g++-10 gcc-10 g++-10-mul
 // Use g++ 10
 sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 20
 sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 20
-sudo apt install libboost-dev libssl-dev libre2-dev zlib1g libfmt-dev
+sudo apt install libboost-all-dev libssl-dev libre2-dev zlib1g libfmt-dev
 ```
 Build:
 ```shell

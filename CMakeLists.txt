@@ -18,7 +18,6 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "10.10")
 #set(CMAKE_CXX_FLAGS "-g -Og -m64 -Wa,-mbig-obj")
 set(CMAKE_CXX_FLAGS "-O3")
 #set(CMAKE_SHARED_LINKER_FLAGS "-static -static-libgcc -static-libstdc++ -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive")
-#set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
 set(CMAKE_BUILD_TYPE "Release")
 
 find_package(Boost REQUIRED COMPONENTS
@@ -139,6 +138,7 @@ elseif(UNIX)
         # Unix Libraries
         stdc++
         pthread
+        dl
     )
 endif()
 

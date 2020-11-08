@@ -2,11 +2,11 @@ set(EXENAME http-client-json)
 
 set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
 
-set(SOURCES_SUB ${SOURCES_SUB}
+set(SOURCES
     main.cpp
 )
 
-set(HEADERS_SUB
+set(HEADERS
     src/Module.hpp
     src/core/config.hpp
 
@@ -25,9 +25,9 @@ link_directories(
     ../../third_party/Settings-Manager/lib
 )
 
-add_executable(${EXENAME} ${SOURCES_SUB})
+add_executable(${EXENAME} ${SOURCES})
 
-set(LIBRARIES_SUB
+set(LIBRARIES
     # Boost
     Boost::system
     Boost::filesystem
@@ -37,14 +37,17 @@ set(LIBRARIES_SUB
 )
 
 if(WIN32)
-    set(LIBRARIES_SUB ${LIBRARIES_SUB}
+    set(LIBRARIES ${LIBRARIES}
         # Windows Libraries
 
     )
 elseif(UNIX)
-    set(LIBRARIES_SUB ${LIBRARIES_SUB}
+    set(CMAKE_EXE_LINKER_FLAGS "-Wl,--no-as-needed")
+    set(LIBRARIES ${LIBRARIES}
         # Unix Libraries
+        stdc++
+        dl
     )
 endif()
 
-target_link_libraries(${EXENAME} ${LIBRARIES_SUB})
+target_link_libraries(${EXENAME} ${LIBRARIES})

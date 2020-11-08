@@ -21,26 +21,28 @@
 #include <rapidjson/writer.h>
 
 // Local Project
-#define BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE 1
 #include <BookFiler-Module-HTTP/Interface.hpp>
 
 /*
  * bookfiler - MySQL
  */
 namespace bookfiler {
-namespace JSON {
 
-std::optional<std::string> getMemberString(const rapidjson::Value &val,
-                                           const char *key);
-std::optional<int> getMemberInt(const rapidjson::Value &val, const char *key);
+class JsonImpl : public Json {
+public:
+  JsonImpl();
+  ~JsonImpl();
+  std::optional<std::string> getMemberString(const rapidjson::Value &val,
+                                             const char *key);
+  std::optional<int> getMemberInt(const rapidjson::Value &val, const char *key);
+  /* Unused JSON utilities that demonstrate how to traverse JSON documents
+   */
+  void printJSON_value(const rapidjson::Value &a, unsigned int depth);
+  void printJSON_iterator(rapidjson::Value::ConstMemberIterator &itr,
+                          unsigned int depth);
+  std::optional<rapidjson::Document> readFile(std::string);
+};
 
-/* Unused JSON utilities that demonstrate how to traverse JSON documents
- */
-void printJSON_value(const rapidjson::Value &a, unsigned int depth);
-void printJSON_iterator(rapidjson::Value::ConstMemberIterator &itr,
-                        unsigned int depth);
-
-} // namespace JSON
 } // namespace bookfiler
 
 #endif

@@ -51,6 +51,7 @@ public:
 void logStatus(std::string functionStr, std::string msg);
 void logStatus(std::string functionStr, std::string msg, boost::beast::error_code ec);
 std::string read_file(char const *path);
+std::string readFile(std::string path);
 
 } // namespace HTTP
 } // namespace bookfiler

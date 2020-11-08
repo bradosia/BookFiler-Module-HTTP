@@ -113,5 +113,16 @@ std::string read_file(char const *path) {
   return ret;
 }
 
+std::string readFile(std::string path) {
+  std::string ret;
+  if (auto const fd = std::fopen(path.c_str(), "rb")) {
+    auto const bytes = std::filesystem::file_size(path);
+    ret.resize(bytes);
+    std::fread(ret.data(), 1, bytes, fd);
+    std::fclose(fd);
+  }
+  return ret;
+}
+
 } // namespace HTTP
 } // namespace bookfiler

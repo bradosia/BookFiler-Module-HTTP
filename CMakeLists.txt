@@ -28,7 +28,7 @@ include_directories(
   third_party/rapidjson/include
   third_party/boost-url/include
   third_party/certify/include
-  #third_party/bustache/include
+  third_party/Mustache-4.1/include
   third_party/uap-cpp/uap-cpp/
   third_party/uap-cpp/uap-cpp/yaml-cpp/include
 )
@@ -53,6 +53,7 @@ set(SOURCES
   src/core/RequestCookie.cpp
   src/core/RequestUserAgent.cpp
   src/core/Response.cpp
+  src/core/Template.cpp
   src/core/Url.cpp
   src/core/UrlQuery.cpp
   src/core/certificateManager.cpp
@@ -82,6 +83,7 @@ set(HEADERS
   src/core/RequestCookie.hpp
   src/core/RequestUserAgent.hpp
   src/core/Response.hpp
+  src/core/Template.hpp
   src/core/Url.hpp
   src/core/UrlQuery.hpp
   src/core/certificateManager.hpp
@@ -197,7 +199,7 @@ add_subdirectory(src_example/http-server)
 add_subdirectory(src_example/http-server-cookie)
 add_subdirectory(src_example/http-server-userAgent)
 add_subdirectory(src_example/http-server-minimal)
-#add_subdirectory(src_example/http-server-template)
+add_subdirectory(src_example/http-server-template)
 add_subdirectory(src_example/http-server-complex)
 add_subdirectory(src_example/oauth2-google)
 

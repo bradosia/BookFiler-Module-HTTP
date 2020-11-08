@@ -21,6 +21,14 @@
 namespace bookfiler {
 namespace HTTP {
 
+ModuleExport::ModuleExport() {
+  std::shared_ptr<bookfiler::JsonImpl> jsonImpl =
+      std::make_shared<bookfiler::JsonImpl>();
+  jsonPtr = std::dynamic_pointer_cast<bookfiler::Json>(jsonImpl);
+};
+
+ModuleExport::~ModuleExport(){};
+
 int ModuleExport::init() {
   std::cout << moduleName << ": init()" << std::endl;
   return 0;
@@ -104,6 +112,15 @@ ModuleExport::newCertificateManager() {
   managerPtr->setSettingsDoc(settingsDoc);
   return std::dynamic_pointer_cast<bookfiler::certificate::Manager>(managerPtr);
 }
+
+std::shared_ptr<bookfiler::Template> ModuleExport::newTemplate(){
+    std::shared_ptr<bookfiler::TemplateImpl> templatePtr =
+        std::make_shared<bookfiler::TemplateImpl>();
+    templatePtr->setSettingsDoc(settingsDoc);
+    return std::dynamic_pointer_cast<bookfiler::Template>(templatePtr);
+}
+
+std::shared_ptr<bookfiler::Json> ModuleExport::Json() { return jsonPtr; }
 
 void ModuleExport::wait(const std::string handle_) {
   std::unique_lock<std::mutex> mutexLock(globalMutex);

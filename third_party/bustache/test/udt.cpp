@@ -1,12 +1,12 @@
 /*//////////////////////////////////////////////////////////////////////////////
-    Copyright (c) 2018-2020 Jamboree
+    Copyright (c) 2018 Jamboree
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //////////////////////////////////////////////////////////////////////////////*/
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
-#include <bustache/render/string.hpp>
+#include <bustache/model.hpp>
 
 struct Inner
 {
@@ -31,133 +31,85 @@ struct RangeRange : Range
     RangeRange(int a, int b) noexcept : Range{a, b} {}
 };
 
-template<>
-struct bustache::impl_model<Inner>
+namespace bustache
 {
-    static constexpr model kind = model::object;
-};
-
-template<>
-struct bustache::impl_object<Inner>
-{
-    static void get(Inner const& self, std::string const& key, value_handler visit)
+    template<>
+    struct object_trait<Inner>
     {
-        if (key == "i32")
-            return visit(&self.i32);
-        if (key == "str")
-            return visit(&self.str);
-        return visit(nullptr);
-    }
-};
-
-template<>
-struct bustache::impl_model<Phantom>
-{
-    static constexpr model kind = model::object;
-};
-
-template<>
-struct bustache::impl_object<Phantom>
-{
-    static void get(Phantom const&, std::string const& key, value_handler visit)
-    {
-        if (key == "age")
+        static value_ptr get(Inner const& self, std::string const& key, value_holder&)
         {
-            int age = 10;
-            return visit(&age);
+            if (key == "i32")
+                return value_view(self.i32).get_pointer();
+            if (key == "str")
+                return value_view(self.str).get_pointer();
+            return nullptr;
         }
-        if (key == "name")
+    };
+
+    template<>
+    struct object_trait<Phantom>
+    {
+        static value_ptr get(Phantom const&, std::string const& key, value_holder& hold)
         {
-            std::string_view name("Alice");
-            return visit(&name);
+            if (key == "age")
+                return hold(10);
+            if (key == "name")
+                return hold("Alice");
+            return nullptr;
         }
-        return visit(nullptr);
-    }
-};
+    };
 
-template<>
-struct bustache::impl_model<Outer>
-{
-    static constexpr model kind = model::object;
-};
-
-template<>
-struct bustache::impl_object<Outer>
-{
-    static void get(Outer const& self, std::string const& key, value_handler visit)
+    template<>
+    struct object_trait<Outer>
     {
-        if (key == "inner")
-            return visit(&self.inner);
-        if (key == "phantom")
+        static value_ptr get(Outer const& self, std::string const& key, value_holder& hold)
         {
-            Phantom phantom;
-            return visit(&phantom);
+            if (key == "inner")
+                return hold(object_view(self.inner));
+            if (key == "phantom")
+                return hold.object(Phantom{});
+            return nullptr;
         }
-        return visit(nullptr);
-    }
-};
+    };
 
-template<>
-struct bustache::impl_model<Range>
-{
-    static constexpr model kind = model::list;
-};
-
-template<>
-struct bustache::impl_list<Range>
-{
-    static bool empty(Range const& self)
+    template<>
+    struct list_trait<Range>
     {
-        return self.a == self.b;
-    }
-
-    static void iterate(Range const& self, value_handler visit)
-    {
-        for (int i = self.a; i != self.b; ++i)
-            visit(&i);
-    }
-};
-
-template<>
-struct bustache::impl_print<Range>
-{
-    static void print(Range const& self, output_handler os, char const*)
-    {
-        if (int i = self.a; i != self.b)
+        static bool empty(Range const& self)
         {
-            impl_print<int>::print(i, os, nullptr);
-            while (++i != self.b)
-            {
-                os(",", 1);
-                impl_print<int>::print(i, os, nullptr);
-            }
+            return self.a == self.b;
         }
-    }
-};
 
-template<>
-struct bustache::impl_model<RangeRange>
-{
-    static constexpr model kind = model::list;
-};
-
-template<>
-struct bustache::impl_list<RangeRange>
-{
-    static bool empty(RangeRange const& self)
-    {
-        return self.a == self.b;
-    }
-
-    static void iterate(RangeRange const& self, value_handler visit)
-    {
-        for (int i = self.a; i != self.b; ++i)
+        static std::uintptr_t begin_cursor(Range const&)
         {
-            Range sub{1, i + 1};
-            visit(&sub);
+            return 0;
         }
-    }
-};
+
+        static value_ptr next(Range const& self, std::uintptr_t& state, value_holder& hold)
+        {
+            auto i = self.a + int(state);
+            if (i == self.b)
+                return nullptr;
+            ++state;
+            return hold(i);
+        }
+
+        static void end_cursor(Range const&, std::uintptr_t) noexcept {}
+    };
+
+    template<>
+    struct list_trait<RangeRange> : list_trait<Range>
+    {
+        static value_ptr next(RangeRange const& self, std::uintptr_t& state, value_holder& hold)
+        {
+            auto i = self.a + int(state);
+            if (i == self.b)
+                return nullptr;
+            ++state;
+            return hold.list(Range{1, i + 1});
+        }
+    };
+}
 
 using namespace bustache;
 
@@ -167,13 +119,13 @@ TEST_CASE("custom_object")
 
     CHECK(to_string(
         "inner:{{#inner}}(i32:{{i32}}, str:{{str}}){{/inner}}\n"
-        "phantom:{{#phantom}}(name:{{name}}, age:{{age}}){{/phantom}}\n"_fmt(outer))
+        "phantom:{{#phantom}}(name:{{name}}, age:{{age}}){{/phantom}}\n"_fmt(object_view(outer)))
         ==
         "inner:(i32:42, str:Ah-ha)\n"
         "phantom:(name:Alice, age:10)\n");
 
     CHECK(to_string(
-        "{{inner.i32}};{{inner.str}};{{phantom.name}};{{phantom.age}};"_fmt(outer))
+        "{{inner.i32}};{{inner.str}};{{phantom.name}};{{phantom.age}};"_fmt(object_view(outer)))
         ==
         "42;Ah-ha;Alice;10;");
 }
@@ -183,28 +135,28 @@ TEST_CASE("custom_list")
     Range range{1, 11};
 
     CHECK(to_string(
-        "{{#.}}{{.}};{{/.}}"_fmt(range))
+        "{{#.}}{{.}};{{/.}}"_fmt(list_view(range)))
         ==
         "1;2;3;4;5;6;7;8;9;10;");
 
     CHECK(to_string(
-        "{{.}}"_fmt(range))
+        "{{.}}"_fmt(list_view(range)))
         ==
         "1,2,3,4,5,6,7,8,9,10");
 
     CHECK(to_string(
-        "{{^.}}nothing{{/.}}"_fmt(range))
+        "{{^.}}nothing{{/.}}"_fmt(list_view(range)))
         ==
         "");
 
     CHECK(to_string(
-        "{{^.}}something{{/.}}"_fmt(Range{}))
+        "{{^.}}something{{/.}}"_fmt(list_view(Range{})))
         ==
         "something");
 
 
     CHECK(to_string(
-        "{{#.}}{{.}}\n{{/.}}"_fmt(RangeRange{1, 4}))
+        "{{#.}}{{.}}\n{{/.}}"_fmt(list_view(RangeRange{1, 4})))
         ==
         "1\n"
         "1,2\n"

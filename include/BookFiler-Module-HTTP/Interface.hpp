@@ -37,6 +37,31 @@
 #include <rapidjson/stringbuffer.h>
 
 /*
+ * bookfiler - Json, Template
+ */
+namespace bookfiler {
+class Json {
+public:
+  virtual std::optional<rapidjson::Document> readFile(std::string) = 0;
+};
+
+using templateVariantType = std::variant<int, double, std::string>;
+using array = std::vector<templateVariantType>;
+using object = std::unordered_map<std::string, templateVariantType>;
+
+class Template {
+public:
+  virtual int readFile(std::string) = 0;
+  virtual int mergeData(object) = 0;
+  virtual int mergeData(rapidjson::Document &) = 0;
+  virtual int parse() = 0;
+  virtual int addContext(std::string, std::string) = 0;
+  virtual std::string toString() = 0;
+};
+
+} // namespace bookfiler
+
+/*
  * bookfiler - certificate
  */
 namespace bookfiler {
@@ -203,6 +228,13 @@ public:
       newServer(std::map<std::string, newServerVariantType>) = 0;
   virtual std::shared_ptr<bookfiler::certificate::Manager>
   newCertificateManager() = 0;
+  virtual std::shared_ptr<bookfiler::Template> newTemplate() = 0;
+  /* Json class has a bunch of "static" helper utilities for JSON
+   * We could export the object and make it accessible to the user, but
+   * It's too annoying for the module user to load in yet another module.
+   * Instead we just return the object from the primary module.
+   */
+  virtual std::shared_ptr<bookfiler::Json> Json() = 0;
   virtual void wait(const std::string handle_) = 0;
   virtual void notify(const std::string handle_) = 0;
 };

@@ -86,22 +86,20 @@ int ServerImpl::extractSettings() {
     return -1;
   }
 
-  auto addressStrOpt =
-      bookfiler::JSON::getMemberString(ServerStateJson, "address");
+  JsonImpl json;
+  auto addressStrOpt = json.getMemberString(ServerStateJson, "address");
   if (addressStrOpt) {
     serverState->addressStr = *addressStrOpt;
   }
-  auto docRootStrOpt =
-      bookfiler::JSON::getMemberString(ServerStateJson, "docRoot");
+  auto docRootStrOpt = json.getMemberString(ServerStateJson, "docRoot");
   if (docRootStrOpt) {
     serverState->docRootStr = *docRootStrOpt;
   }
-  auto portIntOpt = bookfiler::JSON::getMemberInt(ServerStateJson, "port");
+  auto portIntOpt = json.getMemberInt(ServerStateJson, "port");
   if (portIntOpt) {
     serverState->portInt = *portIntOpt;
   }
-  auto threadsNumOpt =
-      bookfiler::JSON::getMemberInt(ServerStateJson, "threadNum");
+  auto threadsNumOpt = json.getMemberInt(ServerStateJson, "threadNum");
   if (threadsNumOpt) {
     serverState->threadsNum = *threadsNumOpt;
   }
@@ -163,8 +161,7 @@ int ServerImpl::useCertificate(
   return 0;
 }
 
-int ServerImpl::route(
-    std::map<std::string, routeVariantTypeExternal> map_) {
+int ServerImpl::route(std::map<std::string, routeVariantTypeExternal> map_) {
   logStatus("::ServerImpl::route", "START");
   std::shared_ptr<routeFunctionTypeExternal> routeFunction;
   std::string method, path;

@@ -9,14 +9,6 @@
 // C++17
 #include <filesystem>
 
-/* bustache 0.1.0
- * License: Boost Software License (similar to BSD and MIT)
- */
-#include <bustache/model.hpp>
-#include <bustache/render/string.hpp>
-
-#include <nlohmann/json.hpp>
-
 // Bookfiler Modules
 #include <BookFilerModuleHttpLoader.hpp>
 
@@ -90,38 +82,6 @@ int allModulesLoaded() {
   return 0;
 }
 
-// Typically, you don't need to explicitly delete the impl_model, but
-// nlohmann::json is basically a amoeba that prentends to be any model, and that
-// will cause hard errors in concept checking due to recursion.
-template <> struct bustache::impl_model<nlohmann::json> {
-  impl_model() = delete;
-};
-
-template <> struct bustache::impl_compatible<nlohmann::json> {
-  static value_ptr get_value_ptr(nlohmann::json const &self) {
-    nlohmann::json::value_t const kind(self);
-    switch (kind) {
-    case nlohmann::json::value_t::boolean:
-      return value_ptr(self.get_ptr<nlohmann::json::boolean_t const *>());
-    case nlohmann::json::value_t::number_integer:
-      return value_ptr(
-          self.get_ptr<nlohmann::json::number_integer_t const *>());
-    case nlohmann::json::value_t::number_unsigned:
-      return value_ptr(
-          self.get_ptr<nlohmann::json::number_unsigned_t const *>());
-    case nlohmann::json::value_t::number_float:
-      return value_ptr(self.get_ptr<nlohmann::json::number_float_t const *>());
-    case nlohmann::json::value_t::string:
-      return value_ptr(self.get_ptr<nlohmann::json::string_t const *>());
-    case nlohmann::json::value_t::array:
-      return value_ptr(self.get_ptr<nlohmann::json::array_t const *>());
-    case nlohmann::json::value_t::object:
-      return value_ptr(self.get_ptr<nlohmann::json::object_t const *>());
-    }
-    return value_ptr();
-  }
-};
-
 std::string read_file(char const *path) {
   std::string ret;
   if (auto const fd = std::fopen(path, "rb")) {
@@ -133,42 +93,19 @@ std::string read_file(char const *path) {
   return ret;
 }
 
-struct file_context {
-  struct partail {
-    std::string text;
-    bustache::format format;
-
-    void init(std::string const &filename) {
-      text = read_file(filename.c_str());
-      format = bustache::format(text);
-    }
-  };
-  mutable std::unordered_map<std::string, partail> cache;
-
-  bustache::format const *operator()(std::string const &key) const {
-    auto [pos, inserted] = cache.try_emplace(key);
-    if (inserted)
-      pos->second.init(key + ".mustache");
-    return pos->second.text.empty() ? nullptr : &pos->second.format;
-  }
-};
-
 std::string routeHome(bookfiler::HTTP::request req,
                       bookfiler::HTTP::response res) {
-  std::string bodyStr = "";
-  try {
-    std::string jsonStr = read_file("resources/templates/in.json");
-    auto const json = nlohmann::json::parse(jsonStr);
-    std::string file = read_file("resources/www/index.html");
-    std::cout << file << std::endl;
-    bustache::format fmt(file);
-    file_context ctx;
-    bodyStr = bustache::to_string(fmt(json).context(ctx));
-  } catch (const std::exception &e) {
-    std::cerr << e.what();
+  std::optional<rapidjson::Document> jsonDocOpt =
+      httpModule->Json()->readFile("resources/templates/in.json");
+  if (!jsonDocOpt) {
+    return "";
   }
-
-  return bodyStr;
+  std::shared_ptr<bookfiler::Template> tmpl = httpModule->newTemplate();
+  tmpl->readFile("resources/www/index.html");
+  tmpl->mergeData(*jsonDocOpt);
+  tmpl->addContext("href", "href=\"{{url}}\"");
+  tmpl->parse();
+  return tmpl->toString();
 }
 
 std::string routeAbout(bookfiler::HTTP::request req,
@@ -184,36 +121,30 @@ std::string routeAbout(bookfiler::HTTP::request req,
 
 std::string routeCSS(bookfiler::HTTP::request req,
                      bookfiler::HTTP::response res) {
-  std::string bodyStr = "";
-  try {
-    std::string jsonStr = read_file("resources/templates/in.json");
-    auto const json = nlohmann::json::parse(jsonStr);
-    std::string file = read_file("resources/www/static/nicepage.css");
-    std::cout << file << std::endl;
-    bustache::format fmt(file);
-    file_context ctx;
-    bodyStr = bustache::to_string(fmt(json).context(ctx));
-  } catch (const std::exception &e) {
-    std::cerr << e.what();
+  std::optional<rapidjson::Document> jsonDocOpt =
+      httpModule->Json()->readFile("resources/templates/in.json");
+  if (!jsonDocOpt) {
+    return "";
   }
-
-  return bodyStr;
+  std::shared_ptr<bookfiler::Template> tmpl = httpModule->newTemplate();
+  tmpl->readFile("resources/www/static/nicepage.css");
+  tmpl->mergeData(*jsonDocOpt);
+  tmpl->addContext("href", "href=\"{{url}}\"");
+  tmpl->parse();
+  return tmpl->toString();
 }
 
 std::string route404(bookfiler::HTTP::request req,
                      bookfiler::HTTP::response res) {
-  std::string bodyStr = "";
-  try {
-    std::string jsonStr = read_file("resources/templates/in.json");
-    auto const json = nlohmann::json::parse(jsonStr);
-    std::string file = read_file("resources/www/index.html");
-    std::cout << file << std::endl;
-    bustache::format fmt(file);
-    file_context ctx;
-    bodyStr = bustache::to_string(fmt(json).context(ctx));
-  } catch (const std::exception &e) {
-    std::cerr << e.what();
+  std::optional<rapidjson::Document> jsonDocOpt =
+      httpModule->Json()->readFile("resources/templates/in.json");
+  if (!jsonDocOpt) {
+    return "";
   }
-
-  return bodyStr;
+  std::shared_ptr<bookfiler::Template> tmpl = httpModule->newTemplate();
+  tmpl->readFile("resources/www/index.html");
+  tmpl->mergeData(*jsonDocOpt);
+  tmpl->addContext("href", "href=\"{{url}}\"");
+  tmpl->parse();
+  return tmpl->toString();
 }

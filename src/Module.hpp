@@ -22,11 +22,6 @@
 #include <thread>
 #include <map>
 
-/* bustache 0.1.0
- * License: Boost Software License (similar to BSD and MIT)
- */
-//#include <bustache/model.hpp>
-
 /* boost 1.72.0
  * License: Boost Software License (similar to BSD and MIT)
  */
@@ -44,9 +39,10 @@
 #include <rapidjson/writer.h>
 
 // Local Project
+#include "core/json.hpp"
+#include "core/Template.hpp"
 #include "core/Client.hpp"
 #include "core/Server.hpp"
-#include "core/json.hpp"
 
 /*
  * bookfiler - MySQL
@@ -64,10 +60,11 @@ private:
   std::shared_ptr<rapidjson::Value> settingsDoc;
   std::shared_ptr<rapidjson::Value> accountsDoc;
   std::map<std::string, std::condition_variable> conditionVariableMap;
+  std::shared_ptr<bookfiler::Json> jsonPtr;
 
 public:
-  ModuleExport(){};
-  ~ModuleExport(){};
+  ModuleExport();
+  ~ModuleExport();
 
   /* module typical methods
    * init, registerSettings
@@ -92,6 +89,8 @@ public:
   std::shared_ptr<Server>
       newServer(std::map<std::string, newServerVariantType>);
   std::shared_ptr<bookfiler::certificate::Manager> newCertificateManager();
+  std::shared_ptr<bookfiler::Template> newTemplate();
+  std::shared_ptr<bookfiler::Json> Json();
   // Not very related, but good for the examples
   void wait(const std::string handle_);
   void notify(const std::string handle_);

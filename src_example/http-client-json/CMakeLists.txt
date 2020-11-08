@@ -34,8 +34,6 @@ set(LIBRARIES_SUB
 
     ModuleManager
     SettingsManager
-
-    stdc++
 )
 
 if(WIN32)
@@ -46,8 +44,6 @@ if(WIN32)
 elseif(UNIX)
     set(LIBRARIES_SUB ${LIBRARIES_SUB}
         # Unix Libraries
-        #stdc++
-        #pthread
     )
 endif()
 

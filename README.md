@@ -68,6 +68,8 @@ sudo apt install libboost-all-dev libssl-dev libre2-dev zlib1g libfmt-dev
 ```
 Build:
 ```shell
+got clone https://github.com/bradosia/BookFiler-Module-HTTP
+cd BookFiler-Module-HTTP
 mkdir build
 cd build
 cmake ../

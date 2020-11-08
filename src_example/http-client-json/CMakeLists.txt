@@ -42,7 +42,6 @@ if(WIN32)
 
     )
 elseif(UNIX)
-    set(CMAKE_EXE_LINKER_FLAGS "-Wl,--no-as-needed")
     set(LIBRARIES ${LIBRARIES}
         # Unix Libraries
         dl

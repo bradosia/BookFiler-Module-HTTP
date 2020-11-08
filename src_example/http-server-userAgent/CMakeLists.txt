@@ -25,24 +25,25 @@ link_directories(
 
 add_executable(${EXENAME} ${SOURCES_SUB})
 
-if(WIN32)
-    set(LIBRARIES ${LIBRARIES}
-        # Windows Libraries
-        ws2_32
-    )
-elseif(UNIX)
-    set(LIBRARIES ${LIBRARIES}
-        # Unix Libraries
-    )
-endif()
-
-target_link_libraries(${EXENAME} PRIVATE
+set(LIBRARIES
     # Boost
     Boost::system
     Boost::filesystem
 
-  ModuleManager
-  SettingsManager
-
-  ${LIBRARIES}
+    ModuleManager
+    SettingsManager
 )
+
+if(WIN32)
+    set(LIBRARIES ${LIBRARIES}
+        # Windows Libraries
+
+    )
+elseif(UNIX)
+    set(LIBRARIES ${LIBRARIES}
+        # Unix Libraries
+        dl
+    )
+endif()
+
+target_link_libraries(${EXENAME} ${LIBRARIES})

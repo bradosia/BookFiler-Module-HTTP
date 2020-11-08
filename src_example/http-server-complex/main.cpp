@@ -7,7 +7,6 @@
  */
 
 // Bookfiler Modules
-#define BOOKFILER_MODULE_HTTP_BOOST_BEAST_EXPOSE 1
 #include <BookFilerModuleHttpLoader.hpp>
 
 std::string routeAbout(bookfiler::HTTP::request req,

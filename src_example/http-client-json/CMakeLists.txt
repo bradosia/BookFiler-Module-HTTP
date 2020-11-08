@@ -34,6 +34,8 @@ set(LIBRARIES
 
     ModuleManager
     SettingsManager
+    stdc++
+    dl
 )
 
 if(WIN32)

@@ -25,7 +25,7 @@ link_directories(
 
 add_executable(${EXENAME} ${SOURCES_SUB})
 
-target_link_libraries(${EXENAME} PRIVATE
+set(LIBRARIES
     # Boost
     Boost::system
     Boost::filesystem
@@ -33,3 +33,18 @@ target_link_libraries(${EXENAME} PRIVATE
     ModuleManager
     SettingsManager
 )
+
+if(WIN32)
+    set(LIBRARIES ${LIBRARIES}
+        # Windows Libraries
+
+    )
+elseif(UNIX)
+    set(CMAKE_EXE_LINKER_FLAGS "-Wl,--no-as-needed")
+    set(LIBRARIES ${LIBRARIES}
+        # Unix Libraries
+        dl
+    )
+endif()
+
+target_link_libraries(${EXENAME} ${LIBRARIES})

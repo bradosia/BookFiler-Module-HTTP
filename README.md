@@ -49,8 +49,12 @@ cd build
 cmake -G "MSYS Makefiles" ../
 ```
   
+## Windows - MSVC
+```shell
+```
+
 ## Linux Ubuntu
-Install GCC and dependencies
+Install GCC-10, cmake, git and dependencies. Confirmed working with Ubuntu 20.04.
 ```shell
 sudo apt-get update
 sudo apt install build-essential gcc-multilib cmake git g++-10 gcc-10 g++-10-multilib
@@ -64,12 +68,7 @@ Build:
 mkdir build
 cd build
 cmake ../
-```
-
-## Windows - MSVC
-
-```shell
-
+make
 ```
 
 ## Mac OSX
@@ -82,16 +81,14 @@ Install the android NDK<BR>
 Add ```<NDK_PATH>\toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\bin``` to PATH<BR>
 Add ```<NDK_PATH>\toolchains\aarch64-linux-android-4.9\prebuilt\windows-x86_64\bin``` to PATH<BR>
 You can manually edit the makefile or make with android ndk path like so:
-```sh
-make HOST_OS=WIN TARGET_OS=android TARGET_ARCH=x86_64 NDK_PATH=C:\android-ndk-r16b-windows-x86_64\android-ndk-r16b
+```shell
 ```
 
 ## IOS
 Only Mac OSX host<BR>
 Install clang<BR>
 You can manually edit the makefile or make with iphone sdk path like so:
-```sh
-make HOST_OS=OSX TARGET_OS=IOS TARGET_ARCH=x86_64 IPHONE_SDK_PATH=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk
+```shell
 ```
  
 # Usage Instructions

@@ -27,8 +27,8 @@ add_executable(${EXENAME} ${SOURCES_SUB})
 
 set(LIBRARIES_SUB
     # Boost
-    Boost::system
-    Boost::filesystem
+    #Boost::system
+    #Boost::filesystem
 
     ModuleManager
     SettingsManager

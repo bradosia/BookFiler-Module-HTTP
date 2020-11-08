@@ -54,7 +54,7 @@ cmake -G "MSYS Makefiles" ../
 ```
 
 ## Linux Ubuntu
-Install GCC-10, cmake, git and dependencies. Confirmed working with Ubuntu 20.04.
+Install GCC, cmake, git and dependencies. Confirmed working with Ubuntu 20.04 as of 11/8/2020.
 ```shell
 sudo apt-get update
 sudo apt install build-essential gcc-multilib cmake git g++-multilib

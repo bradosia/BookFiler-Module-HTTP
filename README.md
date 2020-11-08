@@ -38,15 +38,19 @@ Boost::Beast does not do cookie parsing, Forms/File Uploads, or User Agent parsi
 
 ## Windows - MinGW-w64
 Install MSYS2<BR>
-Install Dependencies:
+Then, install GCC, cmake, git and dependencies. Confirmed working with Windows 10 as of 11/8/2020.
 ```shell
-pacman -S mingw-w64-x86_64-fmt mingw-w64-x86_64-boost mingw-w64-x86_64-re2
+pacman -S mingw-w64-x86_64-gcc cmake git
+pacman -S mingw-w64-x86_64-boost mingw-w64-x86_64-openssl mingw-w64-x86_64-re2 mingw-w64-x86_64-zlib mingw-w64-x86_64-fmt
 ```
 Build:
 ```shell
+git clone https://github.com/bradosia/BookFiler-Module-HTTP
+cd BookFiler-Module-HTTP
 mkdir build
 cd build
 cmake -G "MSYS Makefiles" ../
+make
 ```
   
 ## Windows - MSVC
@@ -57,7 +61,7 @@ cmake -G "MSYS Makefiles" ../
 Install GCC, cmake, git and dependencies. Confirmed working with Ubuntu 20.04 as of 11/8/2020.
 ```shell
 sudo apt-get update
-sudo apt install build-essential gcc-multilib cmake git g++-multilib
+sudo apt install build-essential gcc-multilib g++-multilib cmake git
 sudo apt install libboost-all-dev libssl-dev libre2-dev zlib1g libfmt-dev
 ```
 Build:

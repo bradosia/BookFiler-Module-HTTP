@@ -41,20 +41,7 @@ int allModulesLoaded() {
   httpServer->useCertificate(certRootPtr);
 
   httpServer->route({{"method", "GET"},
-                     {"path", "/get"},
-                     {"handler",
-                      [](bookfiler::HTTP::request req,
-                         bookfiler::HTTP::response res) -> std::string {
-                        // Get cookie
-                        std::string_view value =
-                            req->getCookie("name")->value();
-                        std::string bodyStr;
-                        bodyStr.append("Get cookie name=").append(value);
-                        return bodyStr;
-                      }}});
-
-  httpServer->route({{"method", "GET"},
-                     {"path", "/user"},
+                     {"path", "*"},
                      {"handler",
                       [](bookfiler::HTTP::request req,
                          bookfiler::HTTP::response res) -> std::string {
@@ -65,21 +52,12 @@ int allModulesLoaded() {
                         return bodyStr;
                       }}});
 
-  httpServer->route(
-      {{"method", "GET"},
-       {"path", "*"},
-       {"handler",
-        [](bookfiler::HTTP::request req,
-           bookfiler::HTTP::response res) -> std::string {
-          // Set cookie
-          res->setCookie("name", "value", {});
-          return "<h1>Set cookie</h1><br><a href=\"/get\">Get Cookie</a>";
-        }}});
-
   // Start server
   httpServer->run();
 
+  std::cout << "\n===MAIN THREAD===\nApplication waiting until shut down.";
   httpModule->wait("exit");
+  std::cout << "\n===MAIN THREAD===\nApplication Shutting Done\n";
 
   return 0;
 }

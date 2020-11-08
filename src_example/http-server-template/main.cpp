@@ -33,8 +33,6 @@ int main() {
                               httpModule);
 
   std::cout << testName << " END" << std::endl;
-
-  system("pause");
   return 0;
 }
 
@@ -78,6 +76,10 @@ int allModulesLoaded() {
 
   // Start server
   httpServer->run();
+
+  std::cout << "\n===MAIN THREAD===\nApplication waiting until shut down.";
+  httpModule->wait("exit");
+  std::cout << "\n===MAIN THREAD===\nApplication Shutting Done\n";
 
   return 0;
 }

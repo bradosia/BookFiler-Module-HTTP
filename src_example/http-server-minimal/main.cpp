@@ -17,8 +17,6 @@ std::shared_ptr<bookfiler::HTTP::Server> httpServer;
 int main() {
   bookfiler::HTTP::loadModule("modules", std::bind(&allModulesLoaded),
                               httpModule);
-
-  system("pause");
   return 0;
 }
 
@@ -45,6 +43,8 @@ int allModulesLoaded() {
 
   // Start server
   httpServer->run();
+
+  httpModule->wait("exit");
 
   return 0;
 }

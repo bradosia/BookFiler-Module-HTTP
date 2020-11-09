@@ -1,5 +1,7 @@
 # BookFiler HTTP Module
-A hand-picked HTTP and WebSocket toolkit for C++. This criteria for the selection was compatibility with MSVC, mingw, GCC, and clang and free use for commercial applications. This module is a glue between established libraries. This module tries to integrate other projects rather than reinventing the wheel.
+A hand-picked HTTP and WebSocket toolkit for C++. This criteria for the selection was compatibility with mingw, GCC, and clang and free use for commercial applications. This module is a glue between established libraries. This module tries to integrate other projects rather than reinventing the wheel.
+
+This module is meant to be used with the module system for BookFiler software suite of programs. The module system is designed to separately compile modules, so that the end application doesnt require a large compilation and linking step. The modules are similar to dynamic linked libraries, except that they don't need to be linked to the main application. This way if a module is missing, the main application can give a more detailed and graphically friendly message indicating missing modules rather than an ugly operating system error window.
 
 ## Dependencies
 
@@ -11,12 +13,14 @@ A hand-picked HTTP and WebSocket toolkit for C++. This criteria for the selectio
 | Boost::url		| URL				|
 | Boost::nowide			| utf8 support				|
 | rapidJSON				| JSON parser				|
-| bustache				| templating and views		|
+| kainjow::mustache				| templating and views		|
 | openssl				| SSL						|
 | ua-parser/uap-cpp		| HTTP User agent parser	|
+| yaml-cpp | A dependency of ua-parser/uap-cpp |
 
-Boost::Beast does simple HTTP header parsing of each field with name/value pairs. <BR>
-Boost::Beast does not do cookie parsing, Forms/File Uploads, or User Agent parsing. <BR>
+Boost::Beast does simple HTTP header parsing of each field with name/value pairs.<BR>
+Boost::Beast does not do cookie parsing, Forms/File Uploads, or User Agent parsing.<BR>
+This module extends Boost::Beast by adding in cookie parsing, Forms/File Uploads, and User Agent parsing.
 
 # Table of Contents
 
@@ -52,10 +56,6 @@ cd build
 cmake -G "MSYS Makefiles" ../
 make
 ```
-  
-## Windows - MSVC
-```shell
-```
 
 ## Linux Ubuntu
 Install GCC, cmake, git and dependencies. Confirmed working with Ubuntu 20.04 as of 11/8/2020.
@@ -72,26 +72,6 @@ mkdir build
 cd build
 cmake ../
 make
-```
-
-## Mac OSX
-Only Mac OSX host<BR>
-Install clang
-
-## Android
-Using Windows x86_64 host for this example:<BR>
-Install the android NDK<BR>
-Add ```<NDK_PATH>\toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\bin``` to PATH<BR>
-Add ```<NDK_PATH>\toolchains\aarch64-linux-android-4.9\prebuilt\windows-x86_64\bin``` to PATH<BR>
-You can manually edit the makefile or make with android ndk path like so:
-```shell
-```
-
-## IOS
-Only Mac OSX host<BR>
-Install clang<BR>
-You can manually edit the makefile or make with iphone sdk path like so:
-```shell
 ```
  
 # Usage Instructions

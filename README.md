@@ -42,9 +42,12 @@ This module extends Boost::Beast by adding in cookie parsing, Forms/File Uploads
 
 ## Windows - MinGW-w64
 Install MSYS2<BR>
-Then, install GCC, cmake, git and dependencies. Confirmed working with Windows 10 as of 11/8/2020.
+Then, install GCC, cmake, git and dependencies. Confirmed working with Windows 10 as of 11/19/2020.
 ```shell
-pacman -S mingw-w64-x86_64-gcc cmake git
+pacman -Syu
+pacman -S mingw-w64-x86_64-gcc git make mingw-w64-x86_64-cmake
+pacman -Rns cmake
+# restart MSYS2 so that we use the mingw cmake
 pacman -S mingw-w64-x86_64-boost mingw-w64-x86_64-openssl mingw-w64-x86_64-re2 mingw-w64-x86_64-zlib mingw-w64-x86_64-fmt
 ```
 Build:
@@ -200,6 +203,15 @@ int allModulesLoaded() {
 | bustache				| Boost Software License 1.0	| https://github.com/jamboree/bustache						|
 | openssl				| attribute						| https://github.com/openssl/openssl						|
 | ua-parser/uap-cpp		| MIT							| https://github.com/ua-parser/uap-cpp						|
+
+# Future Features
+
+  * Will there be a database connector?
+    * No, use SOCI http://soci.sourceforge.net/
+  * Will there be a send email function?
+    * No, use Curl SMTP interface
+  * Will there be an ssh tunnel?
+    * No, use SSH2
 
 # License
 The library is licensed under the MIT License: <BR>

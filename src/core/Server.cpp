@@ -1,7 +1,7 @@
 /*
- * @name BookFiler Module - HTTP w/ Curl
+ * @name BookFiler Module - HTTP
  * @author Branden Lee
- * @version 1.00
+ * @version 1.02
  * @license MIT
  * @brief HTTP module for BookFiler™ applications.
  */

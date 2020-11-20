@@ -43,6 +43,7 @@
 #include "core/Template.hpp"
 #include "core/Client.hpp"
 #include "core/Server.hpp"
+#include "core/PortForwarding.hpp"
 
 /*
  * bookfiler - MySQL
@@ -88,6 +89,8 @@ public:
       newUrl(std::map<std::string, newUrlVariantType>);
   std::shared_ptr<Server>
       newServer(std::map<std::string, newServerVariantType>);
+  std::shared_ptr<bookfiler::port::ForwardingServer> newPortForwarding(
+      std::map<std::string, bookfiler::port::newForwardingServerType>);
   std::shared_ptr<bookfiler::certificate::Manager> newCertificateManager();
   std::shared_ptr<bookfiler::Template> newTemplate();
   std::shared_ptr<bookfiler::Json> Json();

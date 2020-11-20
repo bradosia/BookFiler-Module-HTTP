@@ -95,6 +95,20 @@ public:
 } // namespace bookfiler
 
 /*
+ * bookfiler - certificate
+ */
+namespace bookfiler {
+namespace port {
+using newForwardingServerType = std::variant<int, double, std::string>;
+
+class ForwardingServer {
+public:
+  virtual int run() = 0;
+};
+} // namespace port
+} // namespace bookfiler
+
+/*
  * bookfiler - MySQL
  */
 namespace bookfiler {
@@ -226,6 +240,8 @@ public:
       newUrl(std::map<std::string, newUrlVariantType>) = 0;
   virtual std::shared_ptr<Server>
       newServer(std::map<std::string, newServerVariantType>) = 0;
+  virtual std::shared_ptr<bookfiler::port::ForwardingServer> newPortForwarding(
+      std::map<std::string, bookfiler::port::newForwardingServerType>) = 0;
   virtual std::shared_ptr<bookfiler::certificate::Manager>
   newCertificateManager() = 0;
   virtual std::shared_ptr<bookfiler::Template> newTemplate() = 0;

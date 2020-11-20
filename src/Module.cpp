@@ -105,6 +105,16 @@ ModuleExport::newServer(std::map<std::string, newServerVariantType> map) {
   return std::dynamic_pointer_cast<Server>(serverPtr);
 }
 
+std::shared_ptr<bookfiler::port::ForwardingServer>
+ModuleExport::newPortForwarding(
+    std::map<std::string, bookfiler::port::newForwardingServerType> map_) {
+  std::shared_ptr<bookfiler::port::ForwardingServerImpl> serverPtr =
+      std::make_shared<bookfiler::port::ForwardingServerImpl>(map_);
+  serverPtr->setSettingsDoc(settingsDoc);
+  return std::dynamic_pointer_cast<bookfiler::port::ForwardingServer>(
+      serverPtr);
+}
+
 std::shared_ptr<bookfiler::certificate::Manager>
 ModuleExport::newCertificateManager() {
   std::shared_ptr<bookfiler::certificate::ManagerNativeImpl> managerPtr =
@@ -113,11 +123,11 @@ ModuleExport::newCertificateManager() {
   return std::dynamic_pointer_cast<bookfiler::certificate::Manager>(managerPtr);
 }
 
-std::shared_ptr<bookfiler::Template> ModuleExport::newTemplate(){
-    std::shared_ptr<bookfiler::TemplateImpl> templatePtr =
-        std::make_shared<bookfiler::TemplateImpl>();
-    templatePtr->setSettingsDoc(settingsDoc);
-    return std::dynamic_pointer_cast<bookfiler::Template>(templatePtr);
+std::shared_ptr<bookfiler::Template> ModuleExport::newTemplate() {
+  std::shared_ptr<bookfiler::TemplateImpl> templatePtr =
+      std::make_shared<bookfiler::TemplateImpl>();
+  templatePtr->setSettingsDoc(settingsDoc);
+  return std::dynamic_pointer_cast<bookfiler::Template>(templatePtr);
 }
 
 std::shared_ptr<bookfiler::Json> ModuleExport::Json() { return jsonPtr; }

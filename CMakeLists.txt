@@ -38,64 +38,74 @@ link_directories(
 
 # Set up source files
 set(SOURCES
-  src/Module.cpp
-  src/core/Util.cpp
-  src/core/Client.cpp
-  src/core/Server.cpp
-  src/core/ServerListener.cpp
-  src/core/ServerConnection.cpp
-  src/core/ServerSession.cpp
-  src/core/ServerState.cpp
-  src/core/ServerUtil.cpp
-  src/core/ServerRoute.cpp
-  src/core/Request.cpp
-  src/core/RequestCookieMap.cpp
-  src/core/RequestCookie.cpp
-  src/core/RequestUserAgent.cpp
-  src/core/Response.cpp
-  src/core/Template.cpp
-  src/core/Url.cpp
-  src/core/UrlQuery.cpp
-  src/core/certificateManager.cpp
-  src/core/certificateManagerNativeWin.cpp
-  src/core/certificateManagerNativeLinux.cpp
-  src/core/certificate.cpp
-  src/core/certificateNativeWin.cpp
-  src/core/certificateNativeUnix.cpp
-  src/core/json.cpp
+    src/Module.cpp
+    src/core/Util.cpp
+    src/core/Client.cpp
+    src/core/Server.cpp
+    src/core/ServerListener.cpp
+    src/core/ServerConnection.cpp
+    src/core/ServerSession.cpp
+    src/core/ServerState.cpp
+    src/core/ServerUtil.cpp
+    src/core/ServerRoute.cpp
+    src/core/PortForwardingServer.cpp
+    src/core/PortForwardingServerConnection.cpp
+    src/core/PortForwardingServerListener.cpp
+    src/core/PortForwardingServerState.cpp
+    src/core/PortForwardingUtil.cpp
+    src/core/Request.cpp
+    src/core/RequestCookieMap.cpp
+    src/core/RequestCookie.cpp
+    src/core/RequestUserAgent.cpp
+    src/core/Response.cpp
+    src/core/Template.cpp
+    src/core/Url.cpp
+    src/core/UrlQuery.cpp
+    src/core/certificateManager.cpp
+    src/core/certificateManagerNativeWin.cpp
+    src/core/certificateManagerNativeLinux.cpp
+    src/core/certificate.cpp
+    src/core/certificateNativeWin.cpp
+    src/core/certificateNativeUnix.cpp
+    src/core/json.cpp
 )
 
 set(HEADERS
-  src/core/config.hpp
+    src/core/config.hpp
 
-  src/Module.hpp
-  src/core/Util.hpp
-  src/core/Client.hpp
-  src/core/Server.hpp
-  src/core/ServerListener.hpp
-  src/core/ServerConnection.hpp
-  src/core/ServerSession.hpp
-  src/core/ServerState.hpp
-  src/core/ServerUtil.hpp
-  src/core/ServerRoute.hpp
-  src/core/Request.hpp
-  src/core/RequestCookieMap.hpp
-  src/core/RequestCookie.hpp
-  src/core/RequestUserAgent.hpp
-  src/core/Response.hpp
-  src/core/Template.hpp
-  src/core/Url.hpp
-  src/core/UrlQuery.hpp
-  src/core/certificateManager.hpp
-  src/core/certificateManagerNativeWin.hpp
-  src/core/certificateManagerNativeLinux.hpp
-  src/core/certificate.hpp
-  src/core/certificateNativeWin.hpp
-  src/core/certificateNativeUnix.hpp
-  src/core/json.hpp
+    src/Module.hpp
+    src/core/Util.hpp
+    src/core/Client.hpp
+    src/core/Server.hpp
+    src/core/ServerListener.hpp
+    src/core/ServerConnection.hpp
+    src/core/ServerSession.hpp
+    src/core/ServerState.hpp
+    src/core/ServerUtil.hpp
+    src/core/ServerRoute.hpp
+    src/core/PortForwardingServer.hpp
+    src/core/PortForwardingServerConnection.hpp
+    src/core/PortForwardingServerListener.hpp
+    src/core/PortForwardingServerState.hpp
+    src/core/PortForwardingUtil.hpp
+    src/core/Request.hpp
+    src/core/RequestCookieMap.hpp
+    src/core/RequestCookie.hpp
+    src/core/RequestUserAgent.hpp
+    src/core/Response.hpp
+    src/core/Template.hpp
+    src/core/Url.hpp
+    src/core/UrlQuery.hpp
+    src/core/certificateManager.hpp
+    src/core/certificateManagerNativeWin.hpp
+    src/core/certificateManagerNativeLinux.hpp
+    src/core/certificate.hpp
+    src/core/certificateNativeWin.hpp
+    src/core/certificateNativeUnix.hpp
+    src/core/json.hpp
 
-  include/BookFiler-Module-HTTP/Interface.hpp
-  include/BookFilerModuleHttpLoader.hpp
+    include/BookFiler-Module-HTTP/Interface.hpp
+    include/BookFilerModuleHttpLoader.hpp
 )
 
 set(SHARED_COMPILE_DEFINITIONS

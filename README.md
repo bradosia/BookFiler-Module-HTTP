@@ -48,7 +48,7 @@ pacman -Syu
 pacman -S mingw-w64-x86_64-gcc git make mingw-w64-x86_64-cmake
 pacman -Rns cmake
 # restart MSYS2 so that we use the mingw cmake
-pacman -S mingw-w64-x86_64-boost mingw-w64-x86_64-openssl mingw-w64-x86_64-re2 mingw-w64-x86_64-zlib mingw-w64-x86_64-fmt
+pacman -S mingw-w64-x86_64-boost mingw-w64-x86_64-openssl mingw-w64-x86_64-libssh2 mingw-w64-x86_64-re2 mingw-w64-x86_64-zlib mingw-w64-x86_64-fmt
 ```
 Build:
 ```shell

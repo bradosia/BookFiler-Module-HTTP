@@ -39,7 +39,7 @@ link_directories(
 # Set up source files
 set(SOURCES
     src/Module.cpp
-    src/SshModule.cpp
+
     src/core/Util.cpp
     src/core/Client.cpp
     src/core/Server.cpp
@@ -65,19 +65,6 @@ set(SOURCES
     src/core/certificateNativeUnix.cpp
     src/core/json.cpp
 
-    src/ssh/PortForwardingServer.cpp
-    src/ssh/PortForwardingServerConnection.cpp
-    src/ssh/PortForwardingServerListener.cpp
-    src/ssh/PortForwardingServerState.cpp
-    src/ssh/PortForwardingUtil.cpp
-    src/ssh/TunnelServer.cpp
-    src/ssh/TunnelServerConnection.cpp
-    src/ssh/TunnelServerListener.cpp
-    src/ssh/TunnelServerState.cpp
-    src/ssh/Client.cpp
-    src/ssh/ClientState.cpp
-    src/ssh/Util.cpp
-
     src/bookfiler/Util.cpp
 )
 
@@ -85,7 +72,7 @@ set(HEADERS
     src/core/config.hpp
 
     src/Module.hpp
-    src/SshModule.hpp
+
     src/core/Util.hpp
     src/core/Client.hpp
     src/core/Server.hpp
@@ -111,27 +98,10 @@ set(HEADERS
     src/core/certificateNativeUnix.hpp
     src/core/json.hpp
 
-    src/ssh/config.hpp
-
-    src/ssh/PortForwardingServer.hpp
-    src/ssh/PortForwardingServerConnection.hpp
-    src/ssh/PortForwardingServerListener.hpp
-    src/ssh/PortForwardingServerState.hpp
-    src/ssh/PortForwardingUtil.hpp
-    src/ssh/TunnelServer.hpp
-    src/ssh/TunnelServerConnection.hpp
-    src/ssh/TunnelServerListener.hpp
-    src/ssh/TunnelServerState.hpp
-    src/ssh/Client.hpp
-    src/ssh/ClientState.hpp
-    src/ssh/Util.hpp
-
     src/bookfiler/Util.hpp
 
     include/BookFiler-Module-HTTP/Interface.hpp
-    include/BookFiler-Module-ssh/Interface.hpp
     include/BookFilerModuleHttpLoader.hpp
-    include/BookFilerModuleSshLoader.hpp
 )
 
 set(SHARED_COMPILE_DEFINITIONS
@@ -159,9 +129,6 @@ set(LIBRARIES ${LIBRARIES}
     # ssl
     ssl
     crypto
-
-    # ssh
-    ssh2
 
     # zlib
     z
@@ -241,8 +208,6 @@ add_subdirectory(src_example/http-server-minimal)
 add_subdirectory(src_example/http-server-template)
 add_subdirectory(src_example/http-server-complex)
 add_subdirectory(src_example/oauth2-google)
-add_subdirectory(src_example/port-forwarding)
-add_subdirectory(src_example/ssh-tunnel)
 
 # Post build
 if(BUILD_SHARED_LIBS)

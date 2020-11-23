@@ -1,13 +1,13 @@
 /*
- * @name BookFiler Module Loader
+ * @name BookFiler Module - SSH
  * @author Branden Lee
  * @version 1.00
  * @license MIT
- * @brief simple module loader for BookFiler™ applications.
+ * @brief SSH module for BookFiler™ applications.
  */
 
-#ifndef BOOKFILER_MODULE_HTTP_LOADER_H
-#define BOOKFILER_MODULE_HTTP_LOADER_H
+#ifndef BOOKFILER_MODULE_SSH_LOADER_H
+#define BOOKFILER_MODULE_SSH_LOADER_H
 
 // c++17
 #include <condition_variable>
@@ -27,7 +27,7 @@
 #include <SettingsManager/SettingsManager.hpp>
 
 // Modules
-#include <BookFiler-Module-HTTP/Interface.hpp>
+#include <BookFiler-Module-ssh/Interface.hpp>
 
 std::shared_ptr<bradosia::ModuleManager> moduleManagerPtr;
 std::shared_ptr<bradosia::SettingsManager> settingsManagerPtr;
@@ -36,10 +36,10 @@ std::shared_ptr<bradosia::SettingsManager> settingsManagerPtr;
  * bookfiler - Curl
  */
 namespace bookfiler {
-namespace HTTP {
+namespace ssh {
 
 int loadModule(std::string moduleDirPath, std::function<void()> callback,
-               std::shared_ptr<bookfiler::HTTP::ModuleInterface> &module) {
+               std::shared_ptr<bookfiler::ssh::ModuleInterface> &sshModule) {
 #if loadModules_DEBUG
   std::cout << "loadModules() BEGIN\n";
 #endif
@@ -47,17 +47,18 @@ int loadModule(std::string moduleDirPath, std::function<void()> callback,
   /* Module Load
    */
   moduleManagerPtr = std::make_shared<bradosia::ModuleManager>();
-  moduleManagerPtr->addModule<bookfiler::HTTP::ModuleInterface>(
-      "bookfilerHttpModule");
-  moduleManagerPtr->getCallbackLoadSignal<bookfiler::HTTP::ModuleInterface>(
-      "bookfilerHttpModule")
-      ->connect([&module](
-                    std::shared_ptr<bookfiler::HTTP::ModuleInterface> module_)
+  moduleManagerPtr->addModule<bookfiler::ssh::ModuleInterface>(
+      "bookfilerSshModule");
+  moduleManagerPtr
+      ->getCallbackLoadSignal<bookfiler::ssh::ModuleInterface>(
+          "bookfilerSshModule")
+      ->connect([&sshModule](
+                    std::shared_ptr<bookfiler::ssh::ModuleInterface> module_)
                     -> int {
-        module = module_;
+        sshModule = module_;
         /* register widgets
          */
-        module->init();
+        sshModule->init();
         /* register setting deploy
          */
         std::shared_ptr<rapidjson::Document> moduleRequest =
@@ -68,7 +69,7 @@ int loadModule(std::string moduleDirPath, std::function<void()> callback,
             moduleCallbackMap = std::make_shared<std::unordered_map<
                 std::string,
                 std::function<void(std::shared_ptr<rapidjson::Document>)>>>();
-        module->registerSettings(moduleRequest, moduleCallbackMap);
+        sshModule->registerSettings(moduleRequest, moduleCallbackMap);
         settingsManagerPtr->merge(moduleRequest, moduleCallbackMap);
         return 0;
       });
@@ -86,8 +87,8 @@ int loadModule(std::string moduleDirPath, std::function<void()> callback,
   return 0;
 }
 
-} // namespace HTTP
+} // namespace ssh
 } // namespace bookfiler
 
 #endif
-// end BOOKFILER_MODULE_MYSQL_INTERFACE_H
+// end BOOKFILER_MODULE_SSH_LOADER_H

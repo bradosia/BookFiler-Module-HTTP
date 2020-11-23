@@ -35,13 +35,6 @@ static std::string moduleName = "BookFiler Module Certificate";
 static std::string moduleCode = "bookfiler::certificate";
 
 } // namespace certificate
-
-namespace port {
-
-static std::string moduleName = "BookFiler Module Port";
-static std::string moduleCode = "bookfiler::port";
-
-} // namespace port
 } // namespace bookfiler
 
 #endif // BOOKFILER_MODULE_HTTP_CONFIG_H

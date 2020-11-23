@@ -1,13 +1,13 @@
 /*
- * @name BookFiler Module - HTTP w/ Curl
+ * @name BookFiler Module - SSH
  * @author Branden Lee
  * @version 1.00
  * @license MIT
- * @brief HTTP module for BookFiler™ applications.
+ * @brief SSH module for BookFiler™ applications.
  */
 
-#ifndef BOOKFILER_MODULE_HTTP_UTIL_H
-#define BOOKFILER_MODULE_HTTP_UTIL_H
+#ifndef BOOKFILER_MODULE_SSH_UTIL_H
+#define BOOKFILER_MODULE_SSH_UTIL_H
 
 // config
 #include "config.hpp"
@@ -20,6 +20,11 @@
 #include <string>
 #include <thread>
 
+/* libssh2 1.9.0
+ * License: BSD
+ */
+#include <libssh2.h>
+
 /* boost 1.72.0
  * License: Boost Software License (similar to BSD and MIT)
  */
@@ -27,24 +32,19 @@
 
 // Local Project
 #include "../bookfiler/Util.hpp"
-#include <BookFiler-Module-HTTP/Interface.hpp>
+#include <BookFiler-Module-ssh/Interface.hpp>
 
 /*
- * bookfiler - HTTP
+ * bookfiler - ssh
+ * ssh utilities. The main feature is the ssh tunnel for mysql
  */
 namespace bookfiler {
-namespace HTTP {
+namespace ssh {
 
-class Util {
-private:
-  const std::string illegalCharStr = "%<>{}|\\\"^`";
-
+class GlobalImpl : public Global {
 public:
-  Util();
-  ~Util();
-  int uriEncode(const std::string &str, const std::string &reserved,
-                std::string &encodedStr);
-  int uriDecode(const std::string &str, std::string &decodedStr);
+  GlobalImpl();
+  ~GlobalImpl();
 };
 
 void logStatus(std::string functionStr, std::string msg);
@@ -56,8 +56,8 @@ void logConnectionStatus(unsigned int, std::string functionStr, std::string msg,
                          boost::system::error_code ec);
 std::string readFile(std::string path);
 
-} // namespace HTTP
+} // namespace ssh
 } // namespace bookfiler
 
 #endif
-// end BOOKFILER_MODULE_HTTP_UTIL_H
+// end BOOKFILER_MODULE_SSH_UTIL_H

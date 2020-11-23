@@ -34,6 +34,7 @@
 #include <Mustache/mustache.hpp>
 
 // Local Project
+#include "Util.hpp"
 #include "json.hpp"
 #include <BookFiler-Module-HTTP/Interface.hpp>
 

@@ -13,18 +13,17 @@
 #include <rapidjson/prettywriter.h>
 
 // Local Project
-#include "Module.hpp"
+#include "SshModule.hpp"
 
 /*
- * bookfiler - HTTP
+ * bookfiler - ssh
+ * ssh utilities. The main feature is the ssh tunnel for mysql
  */
 namespace bookfiler {
-namespace HTTP {
+namespace ssh {
 
-ModuleExport::ModuleExport() {
-  std::shared_ptr<bookfiler::JsonImpl> jsonImpl =
-      std::make_shared<bookfiler::JsonImpl>();
-  jsonPtr = std::dynamic_pointer_cast<bookfiler::Json>(jsonImpl);
+ModuleExport::ModuleExport(){
+
 };
 
 ModuleExport::~ModuleExport(){};
@@ -77,50 +76,37 @@ int ModuleExport::setSettings(std::shared_ptr<rapidjson::Value> jsonDoc) {
   return 0;
 }
 
-std::shared_ptr<Client> ModuleExport::newClient() {
-  std::shared_ptr<ClientImpl> connectionPtr = std::make_shared<ClientImpl>();
-  connectionPtr->setSettingsDoc(settingsDoc);
-  // connectionPtr->setAccountsDoc(accountsDoc);
-  return std::dynamic_pointer_cast<Client>(connectionPtr);
-}
-
-std::shared_ptr<Client>
-ModuleExport::newClient(std::map<std::string, newClientVariantType> map) {
-  std::shared_ptr<ClientImpl> connectionPtr = std::make_shared<ClientImpl>(map);
-  connectionPtr->setSettingsDoc(settingsDoc);
-  // connectionPtr->setAccountsDoc(accountsDoc);
-  return std::dynamic_pointer_cast<Client>(connectionPtr);
-}
-
-std::shared_ptr<Url>
-ModuleExport::newUrl(std::map<std::string, newUrlVariantType> map_) {
-  std::shared_ptr<UrlImpl> urlPtr = std::make_shared<UrlImpl>(map_);
-  return std::dynamic_pointer_cast<Url>(urlPtr);
-}
-
-std::shared_ptr<Server>
-ModuleExport::newServer(std::map<std::string, newServerVariantType> map) {
-  std::shared_ptr<ServerImpl> serverPtr = std::make_shared<ServerImpl>();
+std::shared_ptr<bookfiler::port::ForwardingServer>
+ModuleExport::newPortForwarding(
+    std::map<std::string, bookfiler::port::newForwardingServerType> map_) {
+  std::shared_ptr<bookfiler::port::ForwardingServerImpl> serverPtr =
+      std::make_shared<bookfiler::port::ForwardingServerImpl>(map_);
   serverPtr->setSettingsDoc(settingsDoc);
-  return std::dynamic_pointer_cast<Server>(serverPtr);
+  return std::dynamic_pointer_cast<bookfiler::port::ForwardingServer>(
+      serverPtr);
 }
 
-std::shared_ptr<bookfiler::certificate::Manager>
-ModuleExport::newCertificateManager() {
-  std::shared_ptr<bookfiler::certificate::ManagerNativeImpl> managerPtr =
-      std::make_shared<bookfiler::certificate::ManagerNativeImpl>();
-  managerPtr->setSettingsDoc(settingsDoc);
-  return std::dynamic_pointer_cast<bookfiler::certificate::Manager>(managerPtr);
+std::shared_ptr<TunnelServer>
+ModuleExport::newTunnelServer(std::map<std::string, newTunnelServerType> map_) {
+  std::shared_ptr<TunnelServerImpl> serverPtr =
+      std::make_shared<TunnelServerImpl>(map_);
+  serverPtr->setSettingsDoc(settingsDoc);
+  return std::dynamic_pointer_cast<TunnelServer>(serverPtr);
 }
 
-std::shared_ptr<bookfiler::Template> ModuleExport::newTemplate() {
-  std::shared_ptr<bookfiler::TemplateImpl> templatePtr =
-      std::make_shared<bookfiler::TemplateImpl>();
-  templatePtr->setSettingsDoc(settingsDoc);
-  return std::dynamic_pointer_cast<bookfiler::Template>(templatePtr);
+std::shared_ptr<bookfiler::ssh::Client> ModuleExport::newSshClient(
+    std::map<std::string, bookfiler::ssh::newSshClientType> map_) {
+  std::shared_ptr<bookfiler::ssh::ClientImpl> clientPtr =
+      std::make_shared<bookfiler::ssh::ClientImpl>(map_);
+  clientPtr->setSettingsDoc(settingsDoc);
+  return std::dynamic_pointer_cast<bookfiler::ssh::Client>(clientPtr);
 }
 
-std::shared_ptr<bookfiler::Json> ModuleExport::Json() { return jsonPtr; }
+std::shared_ptr<bookfiler::ssh::Global> ModuleExport::newSshGlobal() {
+  std::shared_ptr<bookfiler::ssh::GlobalImpl> globalPtr =
+      std::make_shared<bookfiler::ssh::GlobalImpl>();
+  return std::dynamic_pointer_cast<bookfiler::ssh::Global>(globalPtr);
+}
 
 void ModuleExport::wait(const std::string handle_) {
   std::unique_lock<std::mutex> mutexLock(globalMutex);
@@ -140,5 +126,5 @@ void ModuleExport::notify(const std::string handle_) {
   }
 }
 
-} // namespace HTTP
+} // namespace ssh
 } // namespace bookfiler

@@ -95,20 +95,6 @@ public:
 } // namespace bookfiler
 
 /*
- * bookfiler - certificate
- */
-namespace bookfiler {
-namespace port {
-using newForwardingServerType = std::variant<int, double, std::string>;
-
-class ForwardingServer {
-public:
-  virtual int run() = 0;
-};
-} // namespace port
-} // namespace bookfiler
-
-/*
  * bookfiler - MySQL
  */
 namespace bookfiler {
@@ -233,6 +219,18 @@ public:
       std::shared_ptr<std::unordered_map<
           std::string,
           std::function<void(std::shared_ptr<rapidjson::Document>)>>>) = 0;
+
+  // convenience methods for examples
+  virtual void wait(const std::string handle_) = 0;
+  virtual void notify(const std::string handle_) = 0;
+  /* Json class has a bunch of "static" helper utilities for JSON
+   * We could export the object and make it accessible to the user, but
+   * It's too annoying for the module user to load in yet another module.
+   * Instead we just return the object from the primary module.
+   */
+  virtual std::shared_ptr<bookfiler::Json> Json() = 0;
+
+  // module specific methods
   virtual std::shared_ptr<Client> newClient() = 0;
   virtual std::shared_ptr<Client>
       newClient(std::map<std::string, newClientVariantType>) = 0;
@@ -240,19 +238,9 @@ public:
       newUrl(std::map<std::string, newUrlVariantType>) = 0;
   virtual std::shared_ptr<Server>
       newServer(std::map<std::string, newServerVariantType>) = 0;
-  virtual std::shared_ptr<bookfiler::port::ForwardingServer> newPortForwarding(
-      std::map<std::string, bookfiler::port::newForwardingServerType>) = 0;
   virtual std::shared_ptr<bookfiler::certificate::Manager>
   newCertificateManager() = 0;
   virtual std::shared_ptr<bookfiler::Template> newTemplate() = 0;
-  /* Json class has a bunch of "static" helper utilities for JSON
-   * We could export the object and make it accessible to the user, but
-   * It's too annoying for the module user to load in yet another module.
-   * Instead we just return the object from the primary module.
-   */
-  virtual std::shared_ptr<bookfiler::Json> Json() = 0;
-  virtual void wait(const std::string handle_) = 0;
-  virtual void notify(const std::string handle_) = 0;
 };
 
 } // namespace HTTP

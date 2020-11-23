@@ -1,9 +1,9 @@
 /*
- * @name BookFiler Module - HTTP w/ Curl
+ * @name BookFiler Module - SSH
  * @author Branden Lee
  * @version 1.00
  * @license MIT
- * @brief HTTP module for BookFiler™ applications.
+ * @brief SSH module for BookFiler™ applications.
  */
 
 #ifndef BOOKFILER_MODULE_PORT_FORWARDING_SERVER_STATE_H
@@ -30,9 +30,6 @@
  */
 #include <boost/asio/ip/address.hpp>
 
-// Local Project
-#include "PortForwardingServerConnection.hpp"
-
 /*
  * bookfiler - port
  * Port fowarding utilities. Initially this utility was made to forward mysql
@@ -41,7 +38,7 @@
 namespace bookfiler {
 namespace port {
 
-class Connection;
+class ConnectionImpl;
 
 class ServerState {
 public:
@@ -51,7 +48,7 @@ public:
   int threadsNum, sourcePortInt, destPortInt;
   boost::asio::ip::address sourceAddress, destAddress;
   std::string sourceAddressStr, destAddressStr;
-  std::vector<std::shared_ptr<Connection>> connectionList;
+  std::vector<std::shared_ptr<ConnectionImpl>> connectionList;
 };
 
 } // namespace port

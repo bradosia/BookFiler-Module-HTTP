@@ -1,10 +1,11 @@
 /*
- * @name BookFiler Module - HTTP w/ Curl
+ * @name BookFiler Module - SSH
  * @author Branden Lee
  * @version 1.00
  * @license MIT
- * @brief HTTP module for BookFiler™ applications.
+ * @brief SSH module for BookFiler™ applications.
  */
+
 #ifndef BOOKFILER_MODULE_PORT_FORWARDING_SERVER_CONNECTION_H
 #define BOOKFILER_MODULE_PORT_FORWARDING_SERVER_CONNECTION_H
 
@@ -12,18 +13,11 @@
 #include "config.hpp"
 
 // C++17
-//#include <filesystem>
-#include <algorithm>
-#include <cstdlib>
-#include <fstream>
 #include <functional>
 #include <iostream>
-#include <map>
 #include <memory>
+#include <queue>
 #include <string>
-#include <thread>
-#include <utility>
-#include <vector>
 
 /* rapidjson v1.1 (2016-8-25)
  * Developed by Tencent
@@ -39,14 +33,15 @@
 /* boost 1.72.0
  * License: Boost Software License (similar to BSD and MIT)
  */
-#include <boost/config.hpp>
+#include <boost/array.hpp>
+#include <boost/asio.hpp>
+#include <boost/asio/dispatch.hpp>
+#include <boost/asio/spawn.hpp>
+#include <boost/asio/strand.hpp>
 
 // Local Project
 #include "PortForwardingServerState.hpp"
 #include "PortForwardingUtil.hpp"
-
-namespace net = boost::asio;      // from <boost/asio.hpp>
-using tcp = boost::asio::ip::tcp; // from <boost/asio/ip/tcp.hpp>
 
 /*
  * bookfiler - port
@@ -59,25 +54,31 @@ namespace port {
 class ServerState;
 
 // Handles an HTTP server connection
-class Connection {
+class ConnectionImpl {
 private:
-  beast::ssl_stream<beast::tcp_stream> sslStream;
+  boost::asio::ip::tcp::socket srcSocket, destSocket;
   std::shared_ptr<ServerState> serverState;
+  unsigned int connId;
+
+  static const std::size_t read_buffer_length = 1500;
+  char src_read_buffer[read_buffer_length],
+      dest_read_buffer[read_buffer_length];
+  std::size_t write_buffer_length = read_buffer_length;
+  typedef std::pair<void *, size_t> write_buffer_type;
+  std::queue<write_buffer_type> src_write_queue, dest_write_queue;
 
 public:
   // Take ownership of the socket
-  Connection(tcp::socket, std::shared_ptr<ServerState>);
-  ~Connection();
+  ConnectionImpl(boost::asio::ip::tcp::socket, boost::asio::ip::tcp::socket,
+             std::shared_ptr<ServerState>);
+  ~ConnectionImpl();
 
   // Start the asynchronous operation
   int run(boost::asio::yield_context yieldContext);
-
-  int badRequest(requestBeastInternal req, responseBeastInternal res,
-                 beast::string_view what);
-  int notFound(requestBeastInternal req, responseBeastInternal res,
-               beast::string_view what);
-  int serverError(requestBeastInternal req, responseBeastInternal res,
-                  beast::string_view what);
+  int run2(boost::asio::yield_context yieldContext);
+  void src_write_handler(boost::system::error_code, std::size_t);
+  void dest_write_handler(boost::system::error_code, std::size_t);
+  int setId(unsigned int connId_);
 };
 
 } // namespace port

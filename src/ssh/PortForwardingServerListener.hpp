@@ -1,9 +1,9 @@
 /*
- * @name BookFiler Module - HTTP w/ Curl
+ * @name BookFiler Module - SSH
  * @author Branden Lee
  * @version 1.00
  * @license MIT
- * @brief HTTP module for BookFiler™ applications.
+ * @brief SSH module for BookFiler™ applications.
  */
 
 #ifndef BOOKFILER_MODULE_PORT_FORWARDING_SERVER_LISTENER_H
@@ -26,17 +26,6 @@
 #include <utility>
 #include <vector>
 
-/* rapidjson v1.1 (2016-8-25)
- * Developed by Tencent
- * License: MITs
- */
-#include <rapidjson/document.h>
-#include <rapidjson/filewritestream.h>
-#include <rapidjson/ostreamwrapper.h>
-#include <rapidjson/reader.h> // rapidjson::ParseResult
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/writer.h>
-
 /* boost 1.72.0
  * License: Boost Software License (similar to BSD and MIT)
  */
@@ -54,20 +43,19 @@ namespace bookfiler {
 namespace port {
 
 // Accepts incoming connections and launches the sessions
-class Listener {
+class ListenerImpl {
 private:
-  net::io_context &ioContext;
-  ssl::context &sslContext;
-  tcp::endpoint endpoint;
+  boost::asio::io_context &ioContext;
+  boost::asio::ip::tcp::endpoint srcEndpoint, destEndpoint;
   std::shared_ptr<ServerState> serverState;
-  std::shared_ptr<RouteImpl> routePtr;
+  unsigned int connectionIdIncrement;
 
 public:
-  Listener(net::io_context &, ssl::context &, tcp::endpoint,
-           std::shared_ptr<ServerState>, std::shared_ptr<RouteImpl>);
+  ListenerImpl(boost::asio::io_context &, boost::asio::ip::tcp::endpoint,
+               boost::asio::ip::tcp::endpoint, std::shared_ptr<ServerState>);
 
   // Start accepting incoming connections
-  int run(net::yield_context yieldContext);
+  int run(boost::asio::yield_context yieldContext);
 };
 
 } // namespace port

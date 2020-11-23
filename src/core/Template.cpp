@@ -22,7 +22,7 @@ int TemplateImpl::setSettingsDoc(
   return 0;
 }
 int TemplateImpl::readFile(std::string path_) {
-  templateStr = readFile(path_);
+  templateStr = ::bookfiler::readFile(path_);
   return 0;
 }
 int TemplateImpl::mergeData(object) { return 0; }

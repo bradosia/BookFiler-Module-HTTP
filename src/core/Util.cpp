@@ -15,8 +15,6 @@
 namespace bookfiler {
 namespace HTTP {
 
-std::mutex globalMutex;
-
 Util::Util() {}
 Util::~Util() {}
 
@@ -89,40 +87,25 @@ int Util::uriDecode(const std::string &str, std::string &decodedStr) {
 }
 
 void logStatus(std::string functionStr, std::string msg) {
-  const std::lock_guard<std::mutex> lock(globalMutex);
-  std::cout << "\n=== THREAD " << std::this_thread::get_id() << " ===\n"
-            << moduleCode << functionStr << " " << msg << std::endl;
+  ::bookfiler::logStatus(moduleCode, functionStr, msg);
 }
 
 void logStatus(std::string functionStr, std::string msg,
-               boost::beast::error_code ec) {
-  const std::lock_guard<std::mutex> lock(globalMutex);
-  std::cout << "\n=== THREAD " << std::this_thread::get_id() << " ===\n"
-            << moduleCode << functionStr << " " << msg << " ERROR:\n"
-            << ec.message() << std::endl;
+               boost::system::error_code ec) {
+  ::bookfiler::logStatus(moduleCode, functionStr, msg, ec);
 }
 
-std::string read_file(char const *path) {
-  std::string ret;
-  if (auto const fd = std::fopen(path, "rb")) {
-    auto const bytes = std::filesystem::file_size(path);
-    ret.resize(bytes);
-    std::fread(ret.data(), 1, bytes, fd);
-    std::fclose(fd);
-  }
-  return ret;
+void logConnectionStatus(unsigned int socketId, std::string functionStr,
+                         std::string msg) {
+  ::bookfiler::logConnectionStatus(moduleCode, socketId, functionStr, msg);
 }
 
-std::string readFile(std::string path) {
-  std::string ret;
-  if (auto const fd = std::fopen(path.c_str(), "rb")) {
-    auto const bytes = std::filesystem::file_size(path);
-    ret.resize(bytes);
-    std::fread(ret.data(), 1, bytes, fd);
-    std::fclose(fd);
-  }
-  return ret;
+void logConnectionStatus(unsigned int socketId, std::string functionStr,
+                         std::string msg, boost::system::error_code ec) {
+  ::bookfiler::logConnectionStatus(moduleCode, socketId, functionStr, msg, ec);
 }
+
+std::string readFile(std::string path) { return ::bookfiler::readFile(path); }
 
 } // namespace HTTP
 } // namespace bookfiler

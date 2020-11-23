@@ -1,16 +1,16 @@
 /*
- * @name BookFiler Module - HTTP w/ Curl
+ * @name BookFiler Module - SSH
  * @author Branden Lee
  * @version 1.00
  * @license MIT
- * @brief HTTP module for BookFiler™ applications.
+ * @brief SSH module for BookFiler™ applications.
  */
 
-#ifndef BOOKFILER_MODULE_HTTP_EXPORT_H
-#define BOOKFILER_MODULE_HTTP_EXPORT_H
+#ifndef BOOKFILER_MODULE_SSH_EXPORT_H
+#define BOOKFILER_MODULE_SSH_EXPORT_H
 
 // config
-#include "core/config.hpp"
+#include "ssh/config.hpp"
 
 // c++17
 #include <condition_variable>
@@ -39,16 +39,16 @@
 #include <rapidjson/writer.h>
 
 // Local Project
-#include "core/Client.hpp"
-#include "core/Server.hpp"
-#include "core/Template.hpp"
-#include "core/json.hpp"
+#include "ssh/Client.hpp"
+#include "ssh/PortForwardingServer.hpp"
+#include "ssh/TunnelServer.hpp"
 
 /*
- * bookfiler - MySQL
+ * bookfiler - ssh
+ * ssh utilities. The main feature is the ssh tunnel for mysql
  */
 namespace bookfiler {
-namespace HTTP {
+namespace ssh {
 
 /*
  * This widget uses the MVC design pattern.
@@ -60,7 +60,6 @@ private:
   std::shared_ptr<rapidjson::Value> settingsDoc;
   std::shared_ptr<rapidjson::Value> accountsDoc;
   std::map<std::string, std::condition_variable> conditionVariableMap;
-  std::shared_ptr<bookfiler::Json> jsonPtr;
 
 public:
   ModuleExport();
@@ -83,27 +82,25 @@ public:
   // convenience methods for examples
   void wait(const std::string handle_);
   void notify(const std::string handle_);
-  std::shared_ptr<bookfiler::Json> Json();
 
   // module specific methods
   int setAccounts(std::shared_ptr<rapidjson::Value>);
   int setSettings(std::shared_ptr<rapidjson::Value>);
-  std::shared_ptr<Client> newClient();
-  std::shared_ptr<Client>
-      newClient(std::map<std::string, newClientVariantType>);
-  std::shared_ptr<Url> newUrl(std::map<std::string, newUrlVariantType>);
-  std::shared_ptr<Server>
-      newServer(std::map<std::string, newServerVariantType>);
-  std::shared_ptr<bookfiler::certificate::Manager> newCertificateManager();
-  std::shared_ptr<bookfiler::Template> newTemplate();
+  std::shared_ptr<bookfiler::port::ForwardingServer> newPortForwarding(
+      std::map<std::string, bookfiler::port::newForwardingServerType>);
+  std::shared_ptr<TunnelServer>
+      newTunnelServer(std::map<std::string, newTunnelServerType>);
+  std::shared_ptr<bookfiler::ssh::Client>
+      newSshClient(std::map<std::string, bookfiler::ssh::newSshClientType>);
+  std::shared_ptr<bookfiler::ssh::Global> newSshGlobal();
 };
 
 // Exporting `my_namespace::module` variable with alias name `module`
 // (Has the same effect as `BOOST_DLL_ALIAS(my_namespace::module, module)`)
-extern "C" BOOST_SYMBOL_EXPORT ModuleExport bookfilerHttpModule;
-ModuleExport bookfilerHttpModule;
+extern "C" BOOST_SYMBOL_EXPORT ModuleExport bookfilerSshModule;
+ModuleExport bookfilerSshModule;
 
-} // namespace HTTP
+} // namespace ssh
 } // namespace bookfiler
 
 #endif
